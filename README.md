@@ -98,6 +98,6 @@ current page, and shared vendor code.
 
 ## Deploying
 
-Every push to `master` is tested and built into a Docker image by GitHub Actions
-(`.github/workflows/frontend-image.yml`); Jenkins on the VPS then pulls that image and runs it.
+Every push to `master` is tested and built by GitHub Actions (`.github/workflows/frontend-build.yml`);
+Jenkins on the VPS then downloads the built files and Nginx serves them.
 Step-by-step setup: [docs/deployment.md](docs/deployment.md).

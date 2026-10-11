@@ -1,0 +1,77 @@
+# Tests and builds the frontend on GitHub's machines, so the VPS doesn't have to.
+# On master the built site is uploaded as site-<commit>.tar.gz to the "frontend-builds" release; Jenkins on the VPS
+# waits for that file, unpacks it and switches the live site to it (Jenkinsfile, docs/deployment.md).
+name: Frontend build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # create the frontend-builds release and upload to it
+
+concurrency:
+  group: frontend-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: 0
+  # pdfjs-dist (contracts, PDF insurance stickers) needs Promise.withResolvers, which Node 20 lacks.
+  NODE_VERSION: 24
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  build:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE: frontend-builds
+      ARCHIVE: site-${{ github.sha }}.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      # VITE_* values are baked into the bundle here (they override the committed .env). VITE_API_BASE_URL stays
+      # empty: the site calls the API on its own address and the host Nginx forwards /api and /uploads to the backend.
+      - run: npm run build
+        env:
+          VITE_API_BASE_URL: ''
+          VITE_SWAGGER_URL: http://102.68.87.231:8090/swagger-ui/index.html
+          VITE_PESAPAL_ENV: live
+          VITE_GOOGLE_CLIENT_ID: 353452894856-d9tudsttmmma590akjuetpap5na22vs9.apps.googleusercontent.com
+          VITE_ENABLE_WHATSAPP_VERIFICATION: 'false'
+
+      - run: tar -czf "$ARCHIVE" -C dist .
+
+      - name: Upload to the frontend-builds release
+        run: |
+          gh release view "$RELEASE" > /dev/null 2>&1 || gh release create "$RELEASE" --prerelease \
+            --target "$GITHUB_SHA" --title "Frontend builds" \
+            --notes "The built site for each master commit, downloaded by Jenkins on the VPS (docs/deployment.md). Not a product release."
+          gh release upload "$RELEASE" "$ARCHIVE" --clobber
+
+      # Keep the 20 newest builds; older ones are only needed for a rollback that far back.
+      - name: Remove old builds
+        run: |
+          gh release view "$RELEASE" --json assets --jq '.assets | sort_by(.createdAt) | reverse | .[20:] | .[].name' \
+            | xargs -r -I{} gh release delete-asset "$RELEASE" {} --yes

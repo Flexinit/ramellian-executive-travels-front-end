@@ -1,5 +1,5 @@
-// Deploys the frontend image GitHub Actions built and tested for this commit (.github/workflows/frontend-image.yml).
-// The VPS builds nothing: it waits for the image, pulls it, updates the Nginx site and swaps the container.
+// Deploys the site GitHub Actions built and tested for this commit (.github/workflows/frontend-build.yml).
+// The VPS builds nothing: it downloads the built files, puts them live and updates the Nginx site.
 // Setup and first-time steps: docs/deployment.md
 pipeline {
     agent any
@@ -11,33 +11,33 @@ pipeline {
     }
 
     environment {
-        REGISTRY_IMAGE = 'ghcr.io/flexinit/ramellian-executive-travels-front-end'
-        CONTAINER      = 'ramellian-frontend'
-        HOST_PORT      = '8085'   // host Nginx proxies to this; keep in sync with deploy/nginx/ramellian-locations.conf
+        BUILDS_URL = 'https://github.com/Flexinit/ramellian-executive-travels-front-end/releases/download/frontend-builds'
+        SITE_DIR   = '/var/www/ramellian'
+        DOMAIN     = 'ramellianexecutivetravels.co.ke'
     }
 
     stages {
-        stage('Wait for image') {
+        stage('Wait for build') {
             when { branch 'master' }
             steps {
-                // The same push started GitHub Actions, which tests and builds first. Its image appears as
-                // sha-<commit> only if the tests passed, so a failed run never gets deployed.
+                // The same push started GitHub Actions, which tests and builds first. Its file appears only if the
+                // tests passed, so a failed run never gets deployed.
                 sh '''
-                    TAG="$REGISTRY_IMAGE:sha-$GIT_COMMIT"
+                    URL="$BUILDS_URL/site-$GIT_COMMIT.tar.gz"
                     for i in $(seq 1 90); do
-                      if out=$(docker pull -q "$TAG" 2>&1); then echo "Pulled $TAG"; exit 0; fi
-                      case "$out" in
-                        *denied*|*unauthorized*)
-                          echo "$out" >&2
-                          echo "The registry refused the pull. Make the package public (docs/deployment.md, Step 3)." >&2
-                          exit 1 ;;
-                      esac
+                      if curl -fsSL -o site.tar.gz "$URL"; then echo "Downloaded $URL"; exit 0; fi
                       sleep 20
                     done
-                    echo "$out" >&2
-                    echo "No image for $GIT_COMMIT after 30 min. Check its GitHub Actions run: the tests may have failed." >&2
+                    echo "No build for $GIT_COMMIT after 30 min. Check its GitHub Actions run: the tests may have failed." >&2
                     exit 1
                 '''
+            }
+        }
+
+        stage('Deploy') {
+            when { branch 'master' }
+            steps {
+                sh 'sh deploy/release.sh site.tar.gz "$GIT_COMMIT"'
             }
         }
 
@@ -49,28 +49,13 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            when { branch 'master' }
-            steps {
-                sh '''
-                    docker rm -f $CONTAINER 2>/dev/null || true
-                    docker run -d --name $CONTAINER \
-                      --restart unless-stopped \
-                      -p 127.0.0.1:$HOST_PORT:80 \
-                      $REGISTRY_IMAGE:sha-$GIT_COMMIT
-                '''
-            }
-        }
-
         stage('Smoke test') {
             when { branch 'master' }
             steps {
+                // Through Nginx by name, as a visitor would arrive (a redirect to https also counts as up).
                 sh '''
-                    for i in 1 2 3 4 5 6 7 8 9 10; do
-                      curl -fsS http://127.0.0.1:$HOST_PORT/ >/dev/null && exit 0
-                      sleep 2
-                    done
-                    echo "Frontend container did not answer on port $HOST_PORT" && exit 1
+                    curl -fsS -o /dev/null -H "Host: $DOMAIN" http://127.0.0.1/ \
+                      || { echo "Nginx didn't serve the site for $DOMAIN" >&2; exit 1; }
                 '''
             }
         }
@@ -78,16 +63,17 @@ pipeline {
 
     post {
         success {
-            // Images left by the earlier build-on-the-VPS pipeline: unused once the new container runs.
-            sh 'docker images ramellian-frontend -q | sort -u | xargs -r docker rmi -f || true'
+            // The container from the earlier Docker setup, if it's still there: no longer used.
+            sh '''
+                if command -v docker > /dev/null 2>&1; then
+                  docker rm -f ramellian-frontend 2>/dev/null || true
+                  docker images -q ramellian-frontend ghcr.io/flexinit/ramellian-executive-travels-front-end \
+                    | sort -u | xargs -r docker rmi -f 2>/dev/null || true
+                fi
+            '''
         }
         always {
-            // Keep the 5 newest pulled images for rollback (any older one can be pulled again from the registry).
-            sh '''
-                docker images $REGISTRY_IMAGE --format '{{.Tag}}' | grep '^sha-' | tail -n +6 \
-                  | xargs -r -I{} docker rmi $REGISTRY_IMAGE:{} || true
-                docker image prune -f || true
-            '''
+            sh 'rm -f site.tar.gz'
         }
     }
 }

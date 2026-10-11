@@ -1,19 +1,22 @@
-# Deploying the frontend (GitHub Actions + Jenkins + Docker)
+# Deploying the frontend (GitHub Actions + Jenkins + Nginx)
 
 How the frontend goes live on the VPS. The VPS is small, so it builds nothing: GitHub Actions tests the code and
-builds the Docker image on GitHub's machines, and Jenkins on the VPS only pulls that image and runs it next to the backend.
+builds the site on GitHub's machines, and Jenkins on the VPS only downloads the built files and puts them live. The
+host Nginx serves them directly. There is no Docker in this setup.
 
 **Deploying is automatic: push to `master` and it goes live.**
 
 ```
 git push origin master
-  ├─▶ GitHub Actions (GitHub's machines): npm ci → full test suite → build image → publish to ghcr.io   ~5–10 min
-  └─▶ GitHub webhook → Jenkins on the VPS: waits for that image → installs the Nginx site from the repo
-                                           → pulls the image → replaces the container → smoke test    ~1 min of work
+  ├─▶ GitHub Actions (GitHub's machines): npm ci → full test suite → vite build
+  │                                       → uploads site-<commit>.tar.gz to the "frontend-builds" release   ~5–10 min
+  └─▶ GitHub webhook → Jenkins on the VPS: waits for that file → unpacks it into /var/www/ramellian/releases/<commit>
+                                           → switches /var/www/ramellian/current to it → updates the Nginx site
+                                           → smoke test                                                    seconds of work
   → live at ramellianexecutivetravels.co.ke
 ```
 
-If the tests fail on GitHub, no image is published for that commit, so Jenkins has nothing to deploy and the live site
+If the tests fail on GitHub, no file is uploaded for that commit, so Jenkins has nothing to deploy and the live site
 stays as it was.
 
 The one-time setup is below. None of it can come from a push, because it has to exist before a push can trigger
@@ -22,8 +25,8 @@ anything, or because it lives outside the server:
 | One-time | Where | Step |
 |---|---|---|
 | Point the root `A` record at the VPS | DNS Management | [1](#step-1-point-the-domain-at-the-vps) |
-| Check Docker access and port 8085; allow Jenkins to update Nginx | VPS, as root | [2](#step-2-prepare-the-vps) |
-| Make the image package public (after the first Actions run) | GitHub | [3](#step-3-github-actions-and-the-image) |
+| Create the site folder; allow Jenkins to update Nginx | VPS, as root | [2](#step-2-prepare-the-vps) |
+| Check GitHub Actions runs | GitHub | [3](#step-3-github-actions) |
 | `ramellian-frontend` job, push webhook | Jenkins, GitHub repo settings | [4](#step-4-connect-the-repo-to-jenkins) |
 | Get the HTTPS certificate (one command, once DNS has moved) | VPS, as root | [5](#step-5-turn-on-https) |
 | Google OAuth origins, Pesapal URLs, backend links | Outside services | [7](#step-7-outside-services-that-need-the-new-address) |
@@ -34,7 +37,7 @@ anything, or because it lives outside the server:
 Browser ──▶ Host Nginx on the VPS (site installed by Jenkins from deploy/nginx/)
               ├── /api/...      ──▶ backend (Spring Boot) 127.0.0.1:8090
               ├── /uploads/...  ──▶ backend (photos, chat media)
-              └── everything    ──▶ frontend container 127.0.0.1:8085 (Nginx + built site)
+              └── everything    ──▶ files in /var/www/ramellian/current
 ```
 
 - The site calls the API on **its own address**: `VITE_API_BASE_URL` is empty, so requests go to `/api/v1/...` and
@@ -45,8 +48,8 @@ Browser ──▶ Host Nginx on the VPS (site installed by Jenkins from deploy/n
   dropping it is safe, and there's also no "mixed content" problem (an https page calling an http API).
 - Local development works the same way: `npm run dev` forwards `/api` and `/uploads` to `DEV_API_PROXY_TARGET`
   from `.env` and drops `Origin` too (`vite.config.js`).
-- `VITE_*` values are baked into the files when the image is **built** (in the GitHub Actions workflow). Changing one
-  means pushing a new commit; restarting the container is not enough.
+- `VITE_*` values are baked into the files when the site is **built** (in the GitHub Actions workflow). Changing one
+  means pushing a new commit.
 
 ### What runs where
 
@@ -54,24 +57,30 @@ Browser ──▶ Host Nginx on the VPS (site installed by Jenkins from deploy/n
 |---|---|---|
 | Install packages, run all 1,452 tests | ✓ (~5 min) | — |
 | Vite build (needs ~768 MB of memory) | ✓ | — |
-| Build and store the Docker image | ✓ (ghcr.io) | — |
-| Pull the image (~25 MB), run it | — | ✓ |
+| Download the built site (a few MB), unpack it, switch to it | — | ✓ |
 | Install the Nginx site | — | ✓ |
+| Serve the site | — | ✓ (host Nginx, no extra process) |
 
-The VPS's share is a pull, a container restart and an Nginx reload: seconds of work, and a few MB of memory for the
-running site.
+### The site folder
+
+```
+/var/www/ramellian/
+  releases/<commit>/   one folder per deploy; the 5 newest are kept
+  current → releases/<commit>   what Nginx serves
+```
+
+A deploy unpacks into a new folder first and then switches `current` in one step, so visitors never see a half-copied
+site. Rolling back is switching `current` back (see [Rolling back](#rolling-back)).
 
 ### Files involved
 
 | File | What it does |
 |---|---|
-| [`.github/workflows/frontend-image.yml`](../.github/workflows/frontend-image.yml) | On every push and pull request: full test suite. On `master`: also builds the image and publishes it as `ghcr.io/flexinit/ramellian-executive-travels-front-end:sha-<commit>` (and `:latest`) |
-| [`Jenkinsfile`](../Jenkinsfile) | Wait for image → Host Nginx → replace container → smoke test |
-| [`Dockerfile`](../Dockerfile) | Builds the site and packs it into a small Nginx image (used by the workflow) |
-| [`.dockerignore`](../.dockerignore) | Keeps `node_modules`, `dist` and local `.env` files out of the image |
-| [`deploy/nginx/frontend-container.conf`](../deploy/nginx/frontend-container.conf) | Nginx inside the container: client-side routes and caching |
+| [`.github/workflows/frontend-build.yml`](../.github/workflows/frontend-build.yml) | On every push and pull request: full test suite (Node 24). On `master`: also builds the site and uploads `site-<commit>.tar.gz` to the `frontend-builds` release (the 20 newest are kept) |
+| [`Jenkinsfile`](../Jenkinsfile) | Wait for build → Deploy → Host Nginx → smoke test |
+| [`deploy/release.sh`](../deploy/release.sh) | Run by Jenkins: unpacks a build into `releases/<commit>`, switches `current`, keeps the 5 newest |
 | [`deploy/nginx/install-host-site.sh`](../deploy/nginx/install-host-site.sh) | Run by Jenkins: installs the host site, checks it with `nginx -t` (puts the old one back if it fails), reloads Nginx only when something changed |
-| [`deploy/nginx/ramellian-locations.conf`](../deploy/nginx/ramellian-locations.conf) | The routing: `/api` and `/uploads` to the backend, the rest to the container |
+| [`deploy/nginx/ramellian-locations.conf`](../deploy/nginx/ramellian-locations.conf) | The routing: `/api` and `/uploads` to the backend, everything else from `/var/www/ramellian/current`, with caching rules |
 | [`deploy/nginx/host-site.conf`](../deploy/nginx/host-site.conf) | Host site on plain http, used until a certificate exists |
 | [`deploy/nginx/host-site-https.conf`](../deploy/nginx/host-site-https.conf) | Host site on https (http redirects to it), used once the certificate exists |
 | [`deploy/sudoers/jenkins-ramellian`](../deploy/sudoers/jenkins-ramellian) | Lets the `jenkins` user run exactly the Nginx commands the script needs |
@@ -101,17 +110,18 @@ The domain's DNS stays with the current host (its **DNS Management** page), and 
 
 ## Step 2: Prepare the VPS
 
-Jenkins, Docker and Nginx are already there, so this is mostly a check. As root:
+Two one-time commands as root.
+
+**1. The site folder,** owned by Jenkins so it can put new releases there:
 
 ```bash
-sudo -u jenkins docker ps                   # the jenkins user can run docker: prints a table, not "permission denied"
-ss -ltnp | grep -E ':8085|:80 |:443 '       # 8085 must be free; see what already serves web traffic
+install -d -o jenkins -m 755 /var/www/ramellian
 ```
 
-**Let Jenkins update Nginx.** Jenkins installs the site with root rights, using only the commands listed in
+**2. Let Jenkins update Nginx.** Jenkins installs the site with root rights, using only the commands listed in
 [`deploy/sudoers/jenkins-ramellian`](../deploy/sudoers/jenkins-ramellian): writing the two site files, enabling the
 site, `nginx -t`, reloading Nginx, and checking whether the certificate exists. Jenkins already has the file in its
-workspace once the job has run; as root:
+workspace once the job has run:
 
 ```bash
 F=$(ls -d /var/lib/jenkins/workspace/*/deploy/sudoers/jenkins-ramellian | head -1)
@@ -119,12 +129,10 @@ install -m 440 "$F" /etc/sudoers.d/jenkins-ramellian && visudo -c     # must say
 sudo -u jenkins sudo -n /usr/sbin/nginx -t                              # works without a password prompt
 ```
 
-Anyone who can push to `master` can change this Nginx site (but nothing else on the server). That is the same people
-who can already change what the site serves.
+Anyone who can push to `master` can change this Nginx site and what it serves (but nothing else on the server).
 
 Other cases:
 
-- **8085 already in use:** pick a free port and change it in two places: `HOST_PORT` in the `Jenkinsfile`, and the `location /` `proxy_pass` in `deploy/nginx/ramellian-locations.conf`.
 - **Ports 80/443 are taken by something other than Nginx** (for example a proxy container used by another project): the
   automatic Nginx stage won't work. Add the `location` blocks from `deploy/nginx/ramellian-locations.conf` to that proxy instead.
 - **Firewall:** 80 and 443 must be open (`ufw allow 'Nginx Full'`). The site reaches the backend through Nginx, so 8090 doesn't need to be public for it.
@@ -132,26 +140,22 @@ Other cases:
 You don't need to remove `/etc/nginx/sites-enabled/default`: requests for `ramellianexecutivetravels.co.ke` go to this
 site by name. Remove it only if nothing else uses it and you want other names to get no answer.
 
-## Step 3: GitHub Actions and the image
+## Step 3: GitHub Actions
 
-The workflow needs no secrets: it publishes to GitHub's registry with the token GitHub gives every run.
+The workflow needs no secrets. The repository is public, so the built files can be downloaded by the VPS without a login.
 
-1. Push to `master`, then open the repo's **Actions** tab. The **Frontend image** run should go green
-   (**test** → **image**).
-2. **Check the image is public, once.** The repository is public and the image is linked to it, so the package is
-   normally public too. If it shows as private, the VPS would need a login to pull it. Make it public: your profile
-   or organisation → **Packages** → `ramellian-executive-travels-front-end` → **Package settings** → *Danger Zone* →
-   **Change visibility** → **Public**. The image only contains the built website, which anyone visiting the site
-   downloads anyway.
+1. Push to `master`, then open the repo's **Actions** tab. The **Frontend build** run should go green (**test** → **build**).
+2. Open **Releases** on the repo's front page: a pre-release named **Frontend builds** now holds `site-<commit>.tar.gz`.
+   It's how the VPS receives the files, not a product release.
 
-Check from the VPS: `docker pull ghcr.io/flexinit/ramellian-executive-travels-front-end:latest` works without logging in.
-
-If **Actions** is switched off for the repo (*Settings → Actions → General*), allow it there.
+If **Actions** is switched off for the repo (*Settings → Actions → General*), allow it there. If the **build** job fails
+with "Resource not accessible by integration", set *Settings → Actions → General → Workflow permissions* to
+**Read and write**.
 
 ## Step 4: Connect the repo to Jenkins
 
 Jenkins is reachable from the internet, so the GitHub webhook starts it the moment `master` changes. It then waits for
-the image from Step 3.
+the build from Step 3.
 
 1. **The job**: *New Item → **Multibranch Pipeline***, name `ramellian-frontend`:
    - Branch Sources → **GitHub** → `https://github.com/Flexinit/ramellian-executive-travels-front-end.git`,
@@ -192,7 +196,8 @@ Check: `curl -I https://ramellianexecutivetravels.co.ke/swagger-ui/index.html`.
 
 ## Step 6: The live values
 
-These are set in the workflow's `build-args` (`.github/workflows/frontend-image.yml`). Change one by editing it and pushing.
+These are set on the `npm run build` step of the workflow (`.github/workflows/frontend-build.yml`). Change one by
+editing it and pushing. They override the values in the committed `.env`, which are for local development.
 
 | Setting | Value |
 |---|---|
@@ -212,10 +217,10 @@ These are set in the workflow's `build-args` (`.github/workflows/frontend-image.
 ## Step 8: First deploy and checks
 
 1. Push to `master`.
-2. On GitHub → **Actions**: **Frontend image** goes green (**test** → **image**), in about 5–10 minutes.
-3. In Jenkins: **Wait for image → Host Nginx → Deploy → Smoke test** go green. Wait for image finishes once
-   GitHub's run has. The Host Nginx log ends with `Site scheme: http` or `Site scheme: https`.
-4. On the VPS: `docker ps` shows `ramellian-frontend` running on `127.0.0.1:8085`.
+2. On GitHub → **Actions**: **Frontend build** goes green (**test** → **build**), in about 5–10 minutes.
+3. In Jenkins: **Wait for build → Deploy → Host Nginx → Smoke test** go green. Wait for build finishes once GitHub's
+   run has. The Deploy log ends with `Live: <commit>`, and Host Nginx with `Site scheme: http` or `Site scheme: https`.
+4. On the VPS: `ls -l /var/www/ramellian/current` points at `releases/<that commit>`.
 5. Before HTTPS, in a browser at `http://ramellianexecutivetravels.co.ke`:
    - The home page loads with no console errors.
    - Open a deep link (e.g. `/auth/login`) and **refresh**: it loads, not 404.
@@ -227,29 +232,28 @@ These are set in the workflow's `build-args` (`.github/workflows/frontend-image.
 
 ## Everyday use
 
-- **Deploy**: merge or push to `master`. GitHub tests and builds; Jenkins then updates the Nginx site if it changed and
-  swaps the container. Downtime is a second or two while the container restarts.
+- **Deploy**: merge or push to `master`. GitHub tests and builds; Jenkins then puts the new files live and updates the
+  Nginx site if it changed. There's no downtime: the switch is a single rename.
 - **Tests**: the full suite runs on GitHub on every push and pull request, and the pre-commit hook runs it on your
   machine before every commit. A pull request shows its test result before it's merged.
-- **Change routing** (paths, upload size, ports): edit `deploy/nginx/` and push. A broken config fails `nginx -t`, the
-  previous one is put back, and the build stops before deploying.
-- **Change a `VITE_*` value**: edit the workflow's `build-args`, push, and the new image carries it.
-- **Logs**: GitHub → **Actions** (tests, image builds), Jenkins console output (deploys), `docker logs -f ramellian-frontend`
-  (frontend container), `/var/log/nginx/` (host Nginx).
+- **Change routing** (paths, upload size, caching): edit `deploy/nginx/` and push. A broken config fails `nginx -t`,
+  the previous one is put back, and the job fails.
+- **Change a `VITE_*` value**: edit the workflow's build step, push, and the new build carries it.
+- **Logs**: GitHub → **Actions** (tests, builds), Jenkins console output (deploys), `/var/log/nginx/` (host Nginx).
 
 ### Rolling back
 
-Every `master` commit has its own image, `sha-<commit>`; the VPS keeps the last 5 and any other can be pulled again.
-To go back to an earlier commit (find its full hash with `git log` or on GitHub):
+The VPS keeps the 5 newest releases. To go back to one of them, as the `jenkins` user or root:
 
 ```bash
-IMG=ghcr.io/flexinit/ramellian-executive-travels-front-end:sha-<full-commit-hash>
-docker pull $IMG
-docker rm -f ramellian-frontend
-docker run -d --name ramellian-frontend --restart unless-stopped -p 127.0.0.1:8085:80 $IMG
+ls -1t /var/www/ramellian/releases/                    # newest first; names are commit hashes
+cd /var/www/ramellian && ln -sfn releases/<commit> current.tmp && mv -T current.tmp current
 ```
 
-The next successful Jenkins deploy replaces it again. To make a rollback stick, revert the commit on `master` instead.
+It takes effect immediately; no reload needed. To go back further, run `sh deploy/release.sh` with an older
+`site-<commit>.tar.gz` from the **Frontend builds** release (the 20 newest are kept there).
+
+The next deploy replaces a rollback. To make one stick, revert the commit on `master` instead.
 
 ## Troubleshooting
 
@@ -258,18 +262,18 @@ The next successful Jenkins deploy replaces it again. To make a rollback stick, 
 | Pushing to `master` starts no Jenkins build | Webhook missing or failing: GitHub → Settings → Webhooks → *Recent Deliveries*. The URL must end in `/github-webhook/` (Step 4) |
 | Pushing starts no GitHub Actions run | Actions is switched off for the repo: Settings → Actions → General (Step 3) |
 | Actions **test** job fails | A test is failing. Its log shows which; run `npm test` locally, fix it, push. Nothing is deployed meanwhile |
-| Actions **image** job fails at login or push with `denied` / `permission_denied` | The workflow token can't write packages: Settings → Actions → General → *Workflow permissions* → **Read and write**, or in the package's settings give this repository **Write** access |
-| Jenkins **Wait for image** fails: "The registry refused the pull" | The package is private. Make it public (Step 3) |
-| Jenkins **Wait for image** fails: "No image for … after 30 min" | GitHub's run for that commit failed or is still queued: check the Actions tab |
-| `permission denied ... docker.sock` in Jenkins | The job runs on an agent/user without Docker access. Run it where the existing Docker jobs run (Step 2) |
+| Actions test fails with `Promise.withResolvers is not a function` | The workflow runs an old Node. It must be 22 or newer (`NODE_VERSION` in the workflow is 24) |
+| Actions **build** job fails with "Resource not accessible by integration" | The workflow can't create or upload to the release: Settings → Actions → General → *Workflow permissions* → **Read and write** |
+| Jenkins **Wait for build** fails: "No build for … after 30 min" | GitHub's run for that commit failed or is still queued: check the Actions tab |
+| Jenkins **Deploy** fails: "/var/www/ramellian is missing or not writable" | The site folder isn't set up (Step 2). The message shows the exact command |
 | Host Nginx: "User 'jenkins' isn't allowed to update Nginx yet" | The sudoers rule isn't installed (Step 2). The message shows the exact command |
 | Host Nginx fails after `nginx -t` errors | A config in `deploy/nginx/` is broken; the old one was put back. Fix it and push. The log shows the line |
 | All Jenkins stages show as skipped | Job is a plain Pipeline, not a Multibranch Pipeline, or the branch isn't `master` (Step 4) |
 | Still on http after running certbot | No deploy since: push or click **Build Now**. Check the Host Nginx log says `Site scheme: https` |
 | certbot fails | DNS doesn't point at the VPS yet, or port 80 is closed. Check `nslookup` (Step 1) and the firewall (Step 2) |
-| 502 Bad Gateway on `/` | Frontend container isn't running: `docker ps -a`, `docker logs ramellian-frontend` |
+| 403 or 404 on `/` | `/var/www/ramellian/current` is missing or empty: check the Deploy log and `ls -l /var/www/ramellian/current` |
 | 502 on `/api/...` | Backend isn't running on `127.0.0.1:8090` |
-| 404 when refreshing a page | Request isn't reaching the container's Nginx config; check `location /` in `deploy/nginx/ramellian-locations.conf` |
+| 404 when refreshing a page | The `location /` block with `try_files ... /index.html` in `deploy/nginx/ramellian-locations.conf` isn't installed; check the Host Nginx log |
 | Login fails with `403 Invalid CORS request` | The `Origin` header reached the backend. Check `proxy_set_header Origin "";` in the `/api/` block of `deploy/nginx/ramellian-locations.conf` (locally: `DEV_API_PROXY_TARGET` set and `VITE_API_BASE_URL` empty in `.env`, then restart `npm run dev`) |
 | "413 Request Entity Too Large" on photo upload | Raise `client_max_body_size` in `deploy/nginx/ramellian-locations.conf` (and the backend's own upload limit) |
 | Typing indicator in chat never shows | The SSE `location` block in `deploy/nginx/ramellian-locations.conf` is missing or `proxy_buffering` is on |
