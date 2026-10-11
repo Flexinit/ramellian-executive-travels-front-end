@@ -12,12 +12,15 @@ RUN npm ci
 # ─── test: `docker build --target test .` runs the test suite ───────────────
 FROM deps AS test
 COPY . .
-RUN npm test
+# The VPS is shared with the backend and Jenkins: a worker per core starves them all, and renders then miss the usual
+# time limits. Two workers and longer limits keep the run steady (about 20 min, against ~7 on a dev machine).
+ENV TEST_ASYNC_TIMEOUT=15000
+RUN npx vitest --run --maxWorkers=2 --minWorkers=1 --testTimeout=60000
 
 # ─── build: produce dist/ ───────────────────────────────────────────────────
 FROM deps AS build
-# Temporary default: the backend straight on the VPS. Switch to the https site address once it has a certificate.
-ARG VITE_API_BASE_URL=http://102.68.87.231:8090
+# Empty: the site calls the API on its own address and the host Nginx forwards /api and /uploads to the backend.
+ARG VITE_API_BASE_URL=""
 ARG VITE_SWAGGER_URL=http://102.68.87.231:8090/swagger-ui/index.html
 ARG VITE_PESAPAL_ENV=live
 ARG VITE_GOOGLE_CLIENT_ID=""
@@ -28,7 +31,6 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
     VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID \
     VITE_ENABLE_WHATSAPP_VERIFICATION=$VITE_ENABLE_WHATSAPP_VERIFICATION
 COPY . .
-RUN test -n "$VITE_API_BASE_URL" || (echo "VITE_API_BASE_URL build arg is required" && exit 1)
 RUN npm run build
 
 # ─── runtime: just Nginx and the built files ────────────────────────────────

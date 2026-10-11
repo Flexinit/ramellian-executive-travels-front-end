@@ -6,7 +6,7 @@ pipeline {
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '15'))
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')   // the test stage alone takes ~20 min on the VPS
     }
 
     environment {
@@ -14,11 +14,9 @@ pipeline {
         CONTAINER      = 'ramellian-frontend'
         HOST_PORT      = '8085'   // host Nginx proxies to this; keep in sync with deploy/nginx/ramellian-locations.conf
 
-        // Baked into the bundle at build time. The API address is picked in 'Build image': the backend directly while
-        // the site is on http, the site itself (host Nginx forwards /api) once it has HTTPS, since browsers block an
-        // https page from calling an http API.
-        SITE_URL                          = 'https://ramellianexecutivetravels.co.ke'
-        DIRECT_API_URL                    = 'http://102.68.87.231:8090'
+        // Baked into the bundle at build time. VITE_API_BASE_URL is left empty: the site calls the API on its own
+        // address (http or https alike) and the host Nginx forwards /api and /uploads to the backend.
+        VITE_SWAGGER_URL                  = 'http://102.68.87.231:8090/swagger-ui/index.html'
         VITE_PESAPAL_ENV                  = 'live'
         VITE_ENABLE_WHATSAPP_VERIFICATION = 'false'
         VITE_GOOGLE_CLIENT_ID             = credentials('ramellian-google-client-id')
@@ -34,22 +32,17 @@ pipeline {
         stage('Host Nginx') {
             when { branch 'master' }
             steps {
-                // Installs the site from deploy/nginx/ and reports whether it is on https (writes .site-scheme).
+                // Installs the site from deploy/nginx/: https once a certificate exists, http until then.
                 sh 'sh deploy/nginx/install-host-site.sh'
             }
         }
 
         stage('Build image') {
             steps {
-                script {
-                    def https = fileExists('.site-scheme') && readFile('.site-scheme').trim() == 'https'
-                    env.API_BASE_URL = https ? env.SITE_URL : env.DIRECT_API_URL
-                    echo "Building with API_BASE_URL=${env.API_BASE_URL}"
-                }
                 sh '''
                     docker build \
-                      --build-arg VITE_API_BASE_URL="$API_BASE_URL" \
-                      --build-arg VITE_SWAGGER_URL="$API_BASE_URL/swagger-ui/index.html" \
+                      --build-arg VITE_API_BASE_URL="" \
+                      --build-arg VITE_SWAGGER_URL="$VITE_SWAGGER_URL" \
                       --build-arg VITE_PESAPAL_ENV="$VITE_PESAPAL_ENV" \
                       --build-arg VITE_GOOGLE_CLIENT_ID="$VITE_GOOGLE_CLIENT_ID" \
                       --build-arg VITE_ENABLE_WHATSAPP_VERIFICATION="$VITE_ENABLE_WHATSAPP_VERIFICATION" \

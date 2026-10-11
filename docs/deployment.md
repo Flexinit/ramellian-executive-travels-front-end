@@ -37,14 +37,14 @@ Browser ──▶ Host Nginx on the VPS (site installed by Jenkins from deploy/n
 GitHub (master) ──▶ Jenkins on the VPS ──▶ docker build ──▶ replaces the frontend container
 ```
 
-- The frontend calls `${VITE_API_BASE_URL}/api/v1/...` and loads photos from `${VITE_API_BASE_URL}/uploads/...`.
-- The pipeline picks `VITE_API_BASE_URL` itself on every build:
-  - **Before HTTPS** (no certificate yet): the backend directly, `http://102.68.87.231:8090` (`DIRECT_API_URL` in the
-    `Jenkinsfile`, also the `Dockerfile` default). The site is on plain http, and the backend must allow CORS from the
-    site's address, because the site and the API are then different origins.
-  - **After HTTPS**: the site itself, `https://ramellianexecutivetravels.co.ke` (`SITE_URL`). Host Nginx forwards `/api`
-    and `/uploads` to the backend, so both share one origin: no CORS, and no "mixed content" blocking (browsers refuse
-    an https page calling an http API).
+- The site calls the API on **its own address**: `VITE_API_BASE_URL` is empty, so requests go to `/api/v1/...` and
+  photos to `/uploads/...` on whichever address the page was opened from, http or https. Host Nginx forwards them to
+  the backend.
+- Nginx drops the browser's `Origin` header on the way. The backend's CORS settings refuse every browser origin
+  (`403 Invalid CORS request`), so without this the browser could not log in. Because the requests are same-site,
+  dropping it is safe, and there's also no "mixed content" problem (an https page calling an http API).
+- Local development works the same way: `npm run dev` forwards `/api` and `/uploads` to `DEV_API_PROXY_TARGET`
+  from `.env` and drops `Origin` too (`vite.config.js`).
 - `VITE_*` values are baked into the files at **build** time. Changing one means running the Jenkins job again;
   restarting the container is not enough.
 
@@ -123,7 +123,7 @@ Other cases:
 - **8085 already in use:** pick a free port and change it in two places: `HOST_PORT` in the `Jenkinsfile`, and the `location /` `proxy_pass` in `deploy/nginx/ramellian-locations.conf`.
 - **Ports 80/443 are taken by something other than Nginx** (for example a proxy container used by another project): the
   automatic Nginx stage won't work. Add the `location` blocks from `deploy/nginx/ramellian-locations.conf` to that proxy instead.
-- **Firewall:** 80 and 443 must be open (`ufw allow 'Nginx Full'`). Until HTTPS is on, 8090 must be open too, because the site calls the backend directly.
+- **Firewall:** 80 and 443 must be open (`ufw allow 'Nginx Full'`). The site reaches the backend through Nginx, so 8090 doesn't need to be public for it.
 - **If Jenkins runs in a Docker container** (and builds through the host's `/var/run/docker.sock`), it can't reach the
   host's Nginx, and `127.0.0.1` in the smoke test is the Jenkins container, not the host. Tell me and the pipeline can be adapted.
 
@@ -172,11 +172,8 @@ certbot certonly --nginx -d ramellianexecutivetravels.co.ke -d www.ramellianexec
 Use **`certonly`**: it only gets the certificate and leaves the site files alone. The https site comes from the repo
 (`deploy/nginx/host-site-https.conf`). Certbot renews the certificate by itself.
 
-Then push to `master`, or click **Build Now** on `master`. The pipeline sees the certificate and switches everything
-in one go:
-
-- it installs the https site (http now redirects to https)
-- it builds with `VITE_API_BASE_URL=https://ramellianexecutivetravels.co.ke`, so API calls go through Nginx on the same origin.
+Then push to `master`, or click **Build Now** on `master`. The pipeline sees the certificate and installs the https
+site; http now redirects to https. Nothing else changes: the site already calls the API on its own address.
 
 Check: `curl -I https://ramellianexecutivetravels.co.ke/swagger-ui/index.html`.
 
@@ -186,8 +183,7 @@ These live in the `Jenkinsfile`'s `environment` block. Change one by editing it 
 
 | Setting | Value |
 |---|---|
-| `SITE_URL` | `https://ramellianexecutivetravels.co.ke`, used as the API address once HTTPS is on |
-| `DIRECT_API_URL` | `http://102.68.87.231:8090`, used as the API address until then |
+| `VITE_SWAGGER_URL` | `http://102.68.87.231:8090/swagger-ui/index.html`, only shown in developer hints |
 | `VITE_PESAPAL_ENV` | `live` (use `sandbox` while testing payments) |
 | `VITE_ENABLE_WHATSAPP_VERIFICATION` | `false` until WhatsApp verification is switched on |
 
@@ -197,18 +193,17 @@ These live in the `Jenkinsfile`'s `environment` block. Change one by editing it 
   add `https://ramellianexecutivetravels.co.ke` and `https://www.ramellianexecutivetravels.co.ke`. Without this, "Continue with Google" fails.
 - **Pesapal** (live account): register the callback and IPN URLs on `https://ramellianexecutivetravels.co.ke/...`.
 - **Backend config**: links it puts in emails (verify email, reset password), and any allowed origins, must use the https domain.
-  Until HTTPS is on, the backend must also allow CORS from `http://ramellianexecutivetravels.co.ke`.
 
 ## Step 7: First deploy and checks
 
 1. Push to `master`. The webhook starts the build within seconds (or use the job → `master` → **Build Now**).
 2. Watch the stages in Jenkins: **Test → Host Nginx → Build image → Deploy → Smoke test** should all go green.
-   The Host Nginx log ends with `Site scheme: http` or `Site scheme: https`, and Build image prints the API address it used.
+   The Host Nginx log ends with `Site scheme: http` or `Site scheme: https`.
 3. On the VPS: `docker ps` shows `ramellian-frontend` running on `127.0.0.1:8085`.
 4. Before HTTPS, in a browser at `http://ramellianexecutivetravels.co.ke`:
    - The home page loads with no console errors.
    - Open a deep link (e.g. `/auth/login`) and **refresh**: it loads, not 404.
-   - Log in: requests go to `http://102.68.87.231:8090/api/v1/...` (DevTools → Network) with no CORS errors.
+   - Log in: requests go to `http://ramellianexecutivetravels.co.ke/api/v1/...` (DevTools → Network).
    - Vehicle photos load (`/uploads/...`).
 5. After HTTPS (Step 4), repeat at `https://ramellianexecutivetravels.co.ke`. Requests should now go to
    `https://ramellianexecutivetravels.co.ke/api/v1/...`, `http://` should redirect to `https://`, and
@@ -251,8 +246,9 @@ The next successful Jenkins deploy replaces it again.
 | 502 Bad Gateway on `/` | Frontend container isn't running: `docker ps -a`, `docker logs ramellian-frontend` |
 | 502 on `/api/...` | Backend isn't running on `127.0.0.1:8090` |
 | 404 when refreshing a page | Request isn't reaching the container's Nginx config; check `location /` in `deploy/nginx/ramellian-locations.conf` |
-| Console shows "Mixed Content … blocked" | The page is on https but was built with the http API address. Run the job again; Build image should print the https address |
-| Console shows a CORS error | Before HTTPS the site calls the backend directly; the backend must allow `http://ramellianexecutivetravels.co.ke` |
+| Login fails with `403 Invalid CORS request` | The `Origin` header reached the backend. Check `proxy_set_header Origin "";` in the `/api/` block of `deploy/nginx/ramellian-locations.conf` (locally: `DEV_API_PROXY_TARGET` set and `VITE_API_BASE_URL` empty in `.env`, then restart `npm run dev`) |
 | "413 Request Entity Too Large" on photo upload | Raise `client_max_body_size` in `deploy/nginx/ramellian-locations.conf` (and the backend's own upload limit) |
 | Typing indicator in chat never shows | The SSE `location` block in `deploy/nginx/ramellian-locations.conf` is missing or `proxy_buffering` is on |
-| Test stage fails | A test is failing. Run `npm test` locally, fix it, then push |
+| Test stage fails | Run `npm test` locally. If it fails there too, fix it and push |
+| Test stage fails on the VPS only, with `waitFor` / timeout errors or test files that crash | The VPS is too busy for the tests' time limits. The Docker test stage already uses 2 workers and longer limits (`Dockerfile`, `TEST_ASYNC_TIMEOUT`). If it still happens, lower `--maxWorkers` to 1 there |
+| Build stops with "Timeout has been exceeded" | The whole job ran past the `timeout` in the `Jenkinsfile` options (60 min). The test stage alone takes about 20 min on the VPS |

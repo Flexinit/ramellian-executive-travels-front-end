@@ -4,20 +4,20 @@ import Button from '../ui/Button';
 import Textarea from '../ui/Textarea';
 import TypingDots from '../ui/TypingDots';
 import AuthImage from '../vehicles/AuthImage';
+import { mediaHost } from '../../lib/vehiclePhotos';
 import { apiErrorMessage } from '../../lib/apiError';
 import { useSendBotMessage } from '../../hooks/useBot';
 
 const MAX_LENGTH = 1000;
 
-/** A server-relative media path (e.g. `/uploads/bot/<uuid>.png`) resolved against the API host; an
+/** A server-relative media path (e.g. `/uploads/bot/<uuid>.png`) resolved against the API host (`mediaHost`); an
  * already-absolute url (or a missing one) is returned as-is — same resolving rule `lib/vehiclePhotos.js`'s
  * `photoSrc` uses for vehicle photos, kept local here since bot media isn't a vehicle concept. */
 function resolveMediaUrl(media) {
   const path = media?.url || media?.filePath;
   if (!path) return null;
   if (/^(https?:|blob:|data:)/i.test(path)) return path;
-  const host = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-  return `${host}${path.startsWith('/') ? '' : '/'}${path}`;
+  return `${mediaHost()}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 
 /** One file/image the assistant attached to its reply. */

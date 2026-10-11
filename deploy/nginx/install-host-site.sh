@@ -1,8 +1,7 @@
 #!/bin/sh
 # Installs the host Nginx site from this repo. Run by Jenkins on every master deploy (see docs/deployment.md),
 # so the server's routing always matches what's in git. Uses the https site once a certificate exists for the
-# domain (certbot is run by hand, once), the http one until then, and writes "https" or "http" to .site-scheme
-# so the Jenkinsfile knows which API address to build with.
+# domain (certbot is run by hand, once), the http one until then.
 set -eu
 
 DOMAIN=ramellianexecutivetravels.co.ke
@@ -65,5 +64,4 @@ else
   echo "Nginx site unchanged."
 fi
 
-echo "$scheme" > "${SCHEME_FILE:-.site-scheme}"
 echo "Site scheme: $scheme"

@@ -42,12 +42,30 @@ export function angleFromFileName(name) {
   return PHOTO_ANGLES.some((a) => a.key === base) ? base : null;
 }
 
-/** Turns a server-relative photo path into an absolute URL on the API host. */
+/**
+ * Where server-relative media lives: the API host, or — when `VITE_API_BASE_URL` is empty because the API is reached
+ * through this site itself (Vite's dev proxy, the host Nginx in production) — this site's own origin. Always absolute,
+ * so `api.get(url)` in AuthImage doesn't put its `/api/v1` base in front.
+ */
+export function mediaHost() {
+  return String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '') || window.location.origin;
+}
+
+/**
+ * Turns a server-relative photo path into an absolute URL on the API host. When the API is reached through this
+ * site, an absolute `/uploads/...` URL saved earlier with the backend's own address (e.g. a sticker photo stored as
+ * `http://<backend>:8090/uploads/...`) is moved onto this site too: the backend refuses the browser's cross-site
+ * requests, and an https page can't load http media.
+ */
 export function photoSrc(url) {
   if (!url) return url;
-  if (/^(https?:|blob:|data:)/i.test(url)) return url;
-  const host = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
-  return `${host}${url.startsWith('/') ? '' : '/'}${url}`;
+  if (/^(blob:|data:)/i.test(url)) return url;
+  if (/^https?:/i.test(url)) {
+    if (import.meta.env.VITE_API_BASE_URL) return url;
+    const { pathname, search } = new URL(url);
+    return pathname.startsWith('/uploads/') ? `${window.location.origin}${pathname}${search}` : url;
+  }
+  return `${mediaHost()}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 const PHOTOS_KEY = 'ret.vehiclePhotos';

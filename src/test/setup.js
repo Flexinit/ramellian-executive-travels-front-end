@@ -9,7 +9,8 @@ import { server } from '../mocks/server';
 // React.lazy() route chunks (App.jsx, 12.7) can occasionally miss under the
 // heavy parallelism of a full suite run, even though they resolve quickly
 // in isolation — bump it well above what a lazy import + render pass needs.
-configure({ asyncUtilTimeout: 5000 });
+// TEST_ASYNC_TIMEOUT raises it further on slow machines (the Docker test stage on the VPS sets it).
+configure({ asyncUtilTimeout: Number(process.env.TEST_ASYNC_TIMEOUT) || 5000 });
 
 // Extend vitest's expect with jest-dom matchers
 expect.extend(matchers);

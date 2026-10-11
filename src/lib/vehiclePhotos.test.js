@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   angleFromFileName,
   angleFileName,
@@ -25,6 +25,23 @@ describe('photoSrc', () => {
 
   it('passes an empty value through', () => {
     expect(photoSrc(undefined)).toBeUndefined();
+  });
+
+  describe('when the API is reached through this site (VITE_API_BASE_URL empty)', () => {
+    beforeEach(() => vi.stubEnv('VITE_API_BASE_URL', ''));
+    afterEach(() => vi.unstubAllEnvs());
+
+    it("resolves a server-relative path against this site's own origin", () => {
+      expect(photoSrc('/uploads/vehicles/a.png')).toBe(`${window.location.origin}/uploads/vehicles/a.png`);
+    });
+
+    it("moves an upload saved with the backend's own address onto this site", () => {
+      expect(photoSrc('http://102.68.87.231:8090/uploads/vehicles/s.jpg?v=2')).toBe(`${window.location.origin}/uploads/vehicles/s.jpg?v=2`);
+    });
+
+    it('leaves other absolute URLs alone', () => {
+      expect(photoSrc('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
+    });
   });
 });
 
