@@ -261,5 +261,7 @@ The next successful Jenkins deploy replaces it again.
 | Typing indicator in chat never shows | The SSE `location` block in `deploy/nginx/ramellian-locations.conf` is missing or `proxy_buffering` is on |
 | Test stage fails | Run `npm test` locally. If it fails there too, fix it and push |
 | A `full` test run fails on the VPS only, with `waitFor` / timeout errors or test files that crash | The VPS is too busy for the tests' time limits. The Docker test stage already uses 2 workers and longer limits (`Dockerfile`, `TEST_ASYNC_TIMEOUT`). If it still happens, lower `--maxWorkers` to 1 there |
+| Build image fails with `JavaScript heap out of memory` | `vite build` needs 512–768 MB of Node heap. The `Dockerfile` sets 1.5 GB (`NODE_OPTIONS`); raise it if the app grows |
+| Build image dies with `Killed` / exit code 137 | The VPS itself ran out of RAM. Check `free -h`; add swap (e.g. 2 GB) or free memory used by other services |
 | Build stops with "Timeout has been exceeded" | The whole job ran past the `timeout` in the `Jenkinsfile` options (60 min), most likely during a `full` test run |
 | No **Build with Parameters** button | Jenkins only learns the `TESTS` parameter after the job's first run. Pushes use `quick` until then |

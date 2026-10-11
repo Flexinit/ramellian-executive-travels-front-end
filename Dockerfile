@@ -35,6 +35,9 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
     VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID \
     VITE_ENABLE_WHATSAPP_VERIFICATION=$VITE_ENABLE_WHATSAPP_VERIFICATION
 COPY . .
+# Node sizes its heap from the machine's RAM, which on the shared VPS came out too small for this build (it needs
+# 512–768 MB). Set it outright, with headroom.
+ENV NODE_OPTIONS=--max-old-space-size=1536
 RUN npm run build
 
 # ─── runtime: just Nginx and the built files ────────────────────────────────
