@@ -1,7 +1,8 @@
-# Production image for the frontend: Node builds the static site, Nginx serves it.
+# Production image for the frontend: Node builds the static site, Nginx serves it. Built and published by GitHub
+# Actions (.github/workflows/frontend-image.yml), which also runs the tests; the VPS only pulls the result.
 # Vite bakes VITE_* values into the bundle at build time, so they are build args, not runtime env vars.
 
-# ─── deps: install packages once, shared by the build and test stages ───────
+# ─── deps: install packages (cached until package-lock.json changes) ────────
 FROM node:20-alpine AS deps
 WORKDIR /app
 # Husky's git hooks are for developers' machines only.
@@ -23,7 +24,7 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
     VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID \
     VITE_ENABLE_WHATSAPP_VERIFICATION=$VITE_ENABLE_WHATSAPP_VERIFICATION
 COPY . .
-# Node sizes its heap from the machine's RAM, which on the shared VPS came out too small for this build (it needs
+# Node sizes its heap from the machine's RAM, which on a small machine is too little for this build (it needs
 # 512–768 MB). Set it outright, with headroom.
 ENV NODE_OPTIONS=--max-old-space-size=1536
 RUN npm run build
@@ -34,17 +35,3 @@ COPY deploy/nginx/frontend-container.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1
-
-# ─── test: `docker build --target test --build-arg TEST_SCOPE=quick|full .` ──
-# Last on purpose: Docker's older builder works through every stage above its target, so with this stage below
-# `runtime`, building the image (`--target runtime`) never runs the tests again.
-# The pre-commit hook already runs the full suite before every commit, so by default this only re-checks the
-# business-logic tests in src/lib (about 1–2 min on the VPS). TEST_SCOPE=full runs everything (about 20 min).
-FROM deps AS test
-ARG TEST_SCOPE=quick
-COPY . .
-# The VPS is shared with the backend and Jenkins: a worker per core starves them all, and renders then miss the usual
-# time limits. Two workers and longer limits keep the run steady.
-ENV TEST_ASYNC_TIMEOUT=15000
-RUN if [ "$TEST_SCOPE" = full ]; then set -- ; else set -- src/lib; fi; \
-    npx vitest --run --maxWorkers=2 --minWorkers=1 --testTimeout=60000 "$@"

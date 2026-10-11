@@ -98,5 +98,6 @@ current page, and shared vendor code.
 
 ## Deploying
 
-Production runs on the VPS as a Docker container built by Jenkins on every push to `master`.
+Every push to `master` is tested and built into a Docker image by GitHub Actions
+(`.github/workflows/frontend-image.yml`); Jenkins on the VPS then pulls that image and runs it.
 Step-by-step setup: [docs/deployment.md](docs/deployment.md).
