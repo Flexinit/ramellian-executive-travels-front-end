@@ -3,10 +3,16 @@
 pipeline {
     agent any
 
+    parameters {
+        // The pre-commit hook already runs the full suite before every commit, so pushes only re-check src/lib.
+        choice(name: 'TESTS', choices: ['quick', 'full', 'none'],
+               description: 'quick: business-logic tests in src/lib (~1–2 min). full: the whole suite (~20 min). none: skip.')
+    }
+
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '15'))
-        timeout(time: 60, unit: 'MINUTES')   // the test stage alone takes ~20 min on the VPS
+        timeout(time: 60, unit: 'MINUTES')   // room for TESTS=full, which takes ~20 min on the VPS
     }
 
     environment {
@@ -24,8 +30,10 @@ pipeline {
 
     stages {
         stage('Test') {
+            // Builds triggered by a push have no parameters yet on the very first run: treat that as 'quick'.
+            when { expression { (params.TESTS ?: 'quick') != 'none' } }
             steps {
-                sh 'docker build --target test -t $IMAGE:test-$BUILD_NUMBER .'
+                sh "docker build --target test --build-arg TEST_SCOPE=${params.TESTS ?: 'quick'} -t \$IMAGE:test-\$BUILD_NUMBER ."
             }
         }
 

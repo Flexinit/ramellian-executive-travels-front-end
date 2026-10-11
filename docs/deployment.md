@@ -60,7 +60,7 @@ It matches the existing Jenkins + Docker setup:
 
 | File | What it does |
 |---|---|
-| [`Jenkinsfile`](../Jenkinsfile) | Test → Host Nginx → build image → replace container → smoke test |
+| [`Jenkinsfile`](../Jenkinsfile) | Test (`quick` by default, see [Everyday use](#everyday-use)) → Host Nginx → build image → replace container → smoke test |
 | [`Dockerfile`](../Dockerfile) | Installs, tests (`--target test`), builds and packs the site into an Nginx image |
 | [`.dockerignore`](../.dockerignore) | Keeps `node_modules`, `dist` and local `.env` files out of the image |
 | [`deploy/nginx/frontend-container.conf`](../deploy/nginx/frontend-container.conf) | Nginx inside the container: client-side routes and caching |
@@ -213,6 +213,16 @@ These live in the `Jenkinsfile`'s `environment` block. Change one by editing it 
 
 - **Deploy**: merge or push to `master`. Jenkins tests, updates the Nginx site if it changed, builds and swaps the
   container. Downtime is a second or two while the container restarts.
+- **Tests**: the pre-commit hook runs the full suite on your machine before every commit, so the pipeline doesn't
+  repeat all of it. Its Test stage has three settings, chosen with **Build with Parameters** → `TESTS`:
+
+  | `TESTS` | Runs | Time on the VPS |
+  |---|---|---|
+  | `quick` (default, and what every push uses) | Business-logic tests in `src/lib` | about 1–2 min |
+  | `full` | The whole suite | about 20 min |
+  | `none` | Nothing; the stage is skipped | 0 |
+
+  A commit made with `git commit --no-verify` skips the hook. Run a `full` build after one of those.
 - **Change routing** (paths, upload size, ports): edit `deploy/nginx/` and push. A broken config fails `nginx -t`, the
   previous one is put back, and the build stops before deploying.
 - **Change a `VITE_*` value**: edit the `Jenkinsfile`, push, and the new build carries it.
@@ -250,5 +260,6 @@ The next successful Jenkins deploy replaces it again.
 | "413 Request Entity Too Large" on photo upload | Raise `client_max_body_size` in `deploy/nginx/ramellian-locations.conf` (and the backend's own upload limit) |
 | Typing indicator in chat never shows | The SSE `location` block in `deploy/nginx/ramellian-locations.conf` is missing or `proxy_buffering` is on |
 | Test stage fails | Run `npm test` locally. If it fails there too, fix it and push |
-| Test stage fails on the VPS only, with `waitFor` / timeout errors or test files that crash | The VPS is too busy for the tests' time limits. The Docker test stage already uses 2 workers and longer limits (`Dockerfile`, `TEST_ASYNC_TIMEOUT`). If it still happens, lower `--maxWorkers` to 1 there |
-| Build stops with "Timeout has been exceeded" | The whole job ran past the `timeout` in the `Jenkinsfile` options (60 min). The test stage alone takes about 20 min on the VPS |
+| A `full` test run fails on the VPS only, with `waitFor` / timeout errors or test files that crash | The VPS is too busy for the tests' time limits. The Docker test stage already uses 2 workers and longer limits (`Dockerfile`, `TEST_ASYNC_TIMEOUT`). If it still happens, lower `--maxWorkers` to 1 there |
+| Build stops with "Timeout has been exceeded" | The whole job ran past the `timeout` in the `Jenkinsfile` options (60 min), most likely during a `full` test run |
+| No **Build with Parameters** button | Jenkins only learns the `TESTS` parameter after the job's first run. Pushes use `quick` until then |

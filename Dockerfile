@@ -9,13 +9,17 @@ ENV HUSKY=0
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# ─── test: `docker build --target test .` runs the test suite ───────────────
+# ─── test: `docker build --target test --build-arg TEST_SCOPE=quick|full .` ──
+# The pre-commit hook already runs the full suite before every commit, so by default this only re-checks the
+# business-logic tests in src/lib (about 1–2 min on the VPS). TEST_SCOPE=full runs everything (about 20 min).
 FROM deps AS test
+ARG TEST_SCOPE=quick
 COPY . .
 # The VPS is shared with the backend and Jenkins: a worker per core starves them all, and renders then miss the usual
-# time limits. Two workers and longer limits keep the run steady (about 20 min, against ~7 on a dev machine).
+# time limits. Two workers and longer limits keep the run steady.
 ENV TEST_ASYNC_TIMEOUT=15000
-RUN npx vitest --run --maxWorkers=2 --minWorkers=1 --testTimeout=60000
+RUN if [ "$TEST_SCOPE" = full ]; then set -- ; else set -- src/lib; fi; \
+    npx vitest --run --maxWorkers=2 --minWorkers=1 --testTimeout=60000 "$@"
 
 # ─── build: produce dist/ ───────────────────────────────────────────────────
 FROM deps AS build
