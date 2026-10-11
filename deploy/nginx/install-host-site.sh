@@ -14,6 +14,14 @@ CERT=/etc/letsencrypt/live/$DOMAIN/fullchain.pem
 # Root needs no sudo; any other user needs the rule in deploy/sudoers/jenkins-ramellian.
 if [ "$(id -u)" -eq 0 ]; then AS_ROOT=; else AS_ROOT="sudo -n"; fi
 
+# Without the rule every step would fail on its own (and the certificate check would wrongly read as "no certificate").
+if [ -n "$AS_ROOT" ] && ! sudo -n -l /usr/sbin/nginx -t > /dev/null 2>&1; then
+  echo "User '$(id -un)' isn't allowed to update Nginx yet. As root on this server, install the rule once:" >&2
+  echo "  install -m 440 $HERE/../sudoers/jenkins-ramellian /etc/sudoers.d/jenkins-ramellian && visudo -c" >&2
+  echo "(docs/deployment.md, Step 2)" >&2
+  exit 1
+fi
+
 BACKUP=$(mktemp -d)
 trap 'rm -rf "$BACKUP"' EXIT
 
