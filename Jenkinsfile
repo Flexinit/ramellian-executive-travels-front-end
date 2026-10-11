@@ -47,8 +47,9 @@ pipeline {
 
         stage('Build image') {
             steps {
+                // --target runtime is required: the test stage is last in the Dockerfile, so it would be the default.
                 sh '''
-                    docker build \
+                    docker build --target runtime \
                       --build-arg VITE_API_BASE_URL="" \
                       --build-arg VITE_SWAGGER_URL="$VITE_SWAGGER_URL" \
                       --build-arg VITE_PESAPAL_ENV="$VITE_PESAPAL_ENV" \
