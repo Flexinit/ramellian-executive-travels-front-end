@@ -1,0 +1,5 @@
+# Deploy files run on the Linux VPS: keep Unix line endings whatever the checkout.
+*.sh text eol=lf
+deploy/** text eol=lf
+Jenkinsfile text eol=lf
+Dockerfile text eol=lf

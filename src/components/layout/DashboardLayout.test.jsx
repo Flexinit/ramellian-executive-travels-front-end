@@ -115,8 +115,8 @@ describe('DashboardLayout', () => {
 
   it('shows the unread messages and notifications next to their menu items', async () => {
     server.use(
-      http.get('http://192.168.8.11:8080/api/v1/notifications/unread-count', () => HttpResponse.json({ unreadCount: 5 })),
-      http.get('http://192.168.8.11:8080/api/v1/chat/conversations', () =>
+      http.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/notifications/unread-count`, () => HttpResponse.json({ unreadCount: 5 })),
+      http.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/chat/conversations`, () =>
         HttpResponse.json([{ otherUserId: 'x', bookingId: 'b1', unreadCount: 2 }, { otherUserId: 'y', unreadCount: 1 }])
       )
     );

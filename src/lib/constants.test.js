@@ -50,9 +50,9 @@ describe('constants', () => {
     });
   });
 
-  it('SORT_OPTIONS is an array of 5 {value, label} objects', () => {
+  it('SORT_OPTIONS is an array of 6 {value, label} objects', () => {
     expect(Array.isArray(SORT_OPTIONS)).toBe(true);
-    expect(SORT_OPTIONS).toHaveLength(5);
+    expect(SORT_OPTIONS).toHaveLength(6);
     SORT_OPTIONS.forEach((opt) => {
       expect(opt).toHaveProperty('value');
       expect(opt).toHaveProperty('label');

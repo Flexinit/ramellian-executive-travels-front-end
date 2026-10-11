@@ -17,7 +17,7 @@ import EditUserModal from '../components/admin/EditUserModal';
 import Pagination, { pageWindow } from '../components/ui/Pagination';
 import { groupPermissions, permissionAction, permissionGroup, roleTitle } from '../lib/rolesPermissions';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 const PERMS = ['VEHICLE_CREATE', 'VEHICLE_APPROVE', 'BOOKING_READ', 'USER_MANAGE'].map((permissionName, i) => ({
   id: `p-${i}`, permissionName, description: i === 0 ? 'Add vehicles' : null,

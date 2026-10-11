@@ -1,0 +1,12 @@
+# Lets the jenkins user run exactly the commands deploy/nginx/install-host-site.sh needs, and nothing else.
+# Not needed if Jenkins runs as root. Install once on the VPS (as root):
+#   install -m 440 jenkins-ramellian /etc/sudoers.d/jenkins-ramellian && visudo -c
+Cmnd_Alias RAMELLIAN_DEPLOY = \
+    /usr/bin/tee /etc/nginx/sites-available/ramellian, \
+    /usr/bin/tee /etc/nginx/snippets/ramellian-locations.conf, \
+    /usr/bin/ln -sf /etc/nginx/sites-available/ramellian /etc/nginx/sites-enabled/ramellian, \
+    /usr/sbin/nginx -t, \
+    /usr/bin/systemctl reload nginx, \
+    /usr/bin/test -f /etc/letsencrypt/live/ramellianexecutivetravels.co.ke/fullchain.pem
+
+jenkins ALL=(root) NOPASSWD: RAMELLIAN_DEPLOY

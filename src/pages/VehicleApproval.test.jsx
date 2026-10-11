@@ -20,7 +20,7 @@ import { scanSticker } from '../lib/qrScan';
 
 vi.mock('../lib/qrScan', async (importOriginal) => ({ ...(await importOriginal()), scanSticker: vi.fn() }));
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 const pixel = 'data:image/png;base64,iVBORw0KGgo=';
 
 // Shaped like the live `GET /vehicles/admin/all`: a listing waiting, one from before approval existed (all null), one

@@ -24,7 +24,7 @@ import {
   useSetVehicleAvailability,
 } from './useVehicles';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 function wrapper({ children }) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -48,14 +48,14 @@ describe('normalizeVehicle', () => {
   it('attaches the photos remembered from uploads, resolved to full URLs', () => {
     rememberPhoto('v1', { id: 'p1', url: '/uploads/vehicles/a.png' }, 'front');
     expect(normalizeVehicle({ id: 'v1' }).photos).toEqual([
-      { id: 'p1', url: 'http://192.168.8.11:8080/uploads/vehicles/a.png', alt: 'Front view' },
+      { id: 'p1', url: `${import.meta.env.VITE_API_BASE_URL}/uploads/vehicles/a.png`, alt: 'Front view' },
     ]);
   });
 
   it('prefers photos the server sends over remembered ones (for when the backend adds them)', () => {
     rememberPhoto('v1', { id: 'p1', url: '/uploads/vehicles/old.png' }, 'front');
     const v = normalizeVehicle({ id: 'v1', photos: [{ url: '/uploads/vehicles/server.png' }, 'https://cdn.example.com/b.png'] });
-    expect(v.photos.map((p) => p.url)).toEqual(['http://192.168.8.11:8080/uploads/vehicles/server.png', 'https://cdn.example.com/b.png']);
+    expect(v.photos.map((p) => p.url)).toEqual([`${import.meta.env.VITE_API_BASE_URL}/uploads/vehicles/server.png`, 'https://cdn.example.com/b.png']);
   });
 
   it('gives a vehicle with no photos an empty list', () => {
@@ -121,11 +121,20 @@ describe('useVehicleAvailability', () => {
 
   it("keeps a booked vehicle in the list, marked isBooked, rather than dropping it like the backend's own date filter would", async () => {
     server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json([VEHICLE, BOOKED])));
-    const { result } = renderHook(() => useVehicleAvailability(), { wrapper });
+    const { result } = renderHook(() => useVehicleAvailability({ startTime: '2026-10-01T09:00:00Z', endTime: '2026-10-02T09:00:00Z' }), { wrapper });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     const byId = Object.fromEntries(result.current.vehicles.map((v) => [v.id, v.isBooked]));
     expect(byId).toEqual({ v1: false, 'v-booked': true });
+  });
+
+  it('marks nothing booked until dates are chosen, since the flag then only means "booked some time"', async () => {
+    server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json([VEHICLE, BOOKED])));
+    const { result } = renderHook(() => useVehicleAvailability(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.vehicles.map((v) => v.isBooked)).toEqual([false, false]);
+    expect(result.current.hasDates).toBe(false);
   });
 
   it('reports hasDates from whether startTime/endTime were passed', async () => {
@@ -251,7 +260,7 @@ describe('remembering what was created and uploaded', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(normalizeVehicle({ id: 'v1' }).photos).toEqual([
-      { id: 'p1', url: 'http://192.168.8.11:8080/uploads/vehicles/uuid.png', alt: 'Left side view' },
+      { id: 'p1', url: `${import.meta.env.VITE_API_BASE_URL}/uploads/vehicles/uuid.png`, alt: 'Left side view' },
     ]);
   });
 });

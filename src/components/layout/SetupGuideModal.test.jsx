@@ -10,7 +10,7 @@ import { useAuthStore } from '../../store/authStore';
 import SetupGuideModal from './SetupGuideModal';
 import SetupSteps from '../profile/SetupSteps';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 function Where() {
   return <p data-testid="where">{useLocation().pathname}</p>;

@@ -14,7 +14,7 @@ import AdminAnnouncementsPage from './AdminAnnouncementsPage';
 import AdminUserDetailPage from './AdminUserDetailPage';
 import { buildMailtoLinks, cleanAnnouncement, emailAddresses, recipientsFor } from '../lib/announcements';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 const ME = { id: 'me-1', email: 'felix@example.com', firstName: 'Felix', lastName: 'Admin', enabled: true, roles: ['SUPER_ADMIN', 'CAR_OWNER'] };
 const ANN = { id: 'u-2', email: 'ann@example.com', firstName: 'Ann', lastName: 'Renter', enabled: true, roles: [] };

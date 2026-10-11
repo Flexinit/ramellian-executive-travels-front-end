@@ -25,7 +25,7 @@ vi.mock('../components/payment/SignaturePad', () => ({
   },
 }));
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 // A persistent sibling of whichever route matches — see ContractPage.test.jsx — so a navigation from one
 // booking's signature page to the next (same route pattern, different `bookingId`) is still observable.

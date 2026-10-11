@@ -11,7 +11,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { CONTACT_KINDS } from '../../lib/cart';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 const USER = { id: '1', email: 'renter@example.com', firstName: 'Ann', lastName: 'R', phoneNumber: '', hasCompletedProfile: false };
 
 function renderPrompt() {

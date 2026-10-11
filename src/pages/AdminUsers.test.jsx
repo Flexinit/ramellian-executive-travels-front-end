@@ -14,7 +14,7 @@ import { useAuthStore } from '../store/authStore';
 import AdminUsersPage from './AdminUsersPage';
 import AdminUserDetailPage from './AdminUserDetailPage';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 // Shaped like the live `GET /users/admin` answer: a super admin who owns cars, and a plain renter with no roles.
 const FELIX = {

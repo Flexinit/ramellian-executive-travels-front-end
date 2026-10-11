@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '../mocks/server';
 import { api, apiGet, apiPost, apiPatch, _setTokenGetter } from './api';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 describe('api — request interceptor', () => {
   beforeEach(() => {

@@ -12,7 +12,7 @@ import { useAuthStore } from '../store/authStore';
 import LoginPage from './LoginPage';
 import Verify2faPage from './Verify2faPage';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 const jwt = (claims) => {
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

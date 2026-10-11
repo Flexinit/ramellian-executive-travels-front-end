@@ -8,7 +8,7 @@ import { server } from '../../mocks/server';
 import { useAuthStore } from '../../store/authStore';
 import AuthImage from './AuthImage';
 
-const HOST = 'http://192.168.8.11:8080';
+const HOST = import.meta.env.VITE_API_BASE_URL;
 
 function renderImage(props) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

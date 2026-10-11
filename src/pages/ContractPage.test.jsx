@@ -11,7 +11,7 @@ import { server } from '../mocks/server';
 import { useCartStore } from '../store/cartStore';
 import ContractPage from './ContractPage';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 // A persistent sibling of whichever route matches — not a competing route — so a navigation from one
 // booking's contract to the *next* booking's contract (same route pattern, same ContractPage instance,

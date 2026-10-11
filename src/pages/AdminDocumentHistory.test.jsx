@@ -15,7 +15,7 @@ import AdminDocumentsPage from './AdminDocumentsPage';
 import AdminReviewedDocumentsPage from './AdminReviewedDocumentsPage';
 import { getReviews, recordReview } from '../lib/documentReviews';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 const NATIONAL_ID = {
   id: 'd-1', documentType: 'NATIONAL_ID', vehicleId: null, originalFileName: 'photo.jpg', contentType: 'image/jpeg',

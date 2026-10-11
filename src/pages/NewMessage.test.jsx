@@ -12,7 +12,7 @@ import { server } from '../mocks/server';
 import { useAuthStore } from '../store/authStore';
 import MessagesPage from './MessagesPage';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 const ME = { id: 'me-1', email: 'felix@example.com', firstName: 'Felix', lastName: 'Admin', enabled: true, roles: ['SUPER_ADMIN'] };
 const ANN = { id: 'u-2', email: 'ann@example.com', firstName: 'Ann', lastName: 'Renter', enabled: true, roles: [] };

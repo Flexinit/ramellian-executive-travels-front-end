@@ -10,7 +10,7 @@ import { server } from '../mocks/server';
 import { useAuthStore } from '../store/authStore';
 import OwnerCalendarPage from './OwnerCalendarPage';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

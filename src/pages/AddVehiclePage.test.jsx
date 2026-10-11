@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 import AddVehiclePage from './AddVehiclePage';
 import * as stickerFile from '../lib/stickerFile';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -240,13 +240,14 @@ describe('AddVehiclePage photos', () => {
     const user = userEvent.setup();
     // Asserted at the axios layer: jsdom + MSW don't serialise FormData over the fake network.
     const uploaded = [];
-    const realPost = api.post.bind(api);
-    const post = vi.spyOn(api, 'post').mockImplementation((url, data, config) => {
-      if (String(url).includes('/photos')) {
-        uploaded.push(data.get('file').name);
-        return Promise.resolve({ data: { id: 'p', fileName: data.get('file').name } });
+    // Uploads go through `api.request` (see `apiUpload`), so that's where they're caught.
+    const realRequest = api.request.bind(api);
+    const request = vi.spyOn(api, 'request').mockImplementation((config) => {
+      if (String(config.url).includes('/photos')) {
+        uploaded.push(config.data.get('file').name);
+        return Promise.resolve({ data: { id: 'p', fileName: config.data.get('file').name } });
       }
-      return realPost(url, data, config);
+      return realRequest(config);
     });
     renderPage();
     await goToPhotos(user);
@@ -255,7 +256,7 @@ describe('AddVehiclePage photos', () => {
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await waitFor(() => expect([...uploaded].sort()).toEqual(['front.jpg', 'left.png', 'sticker.jpg']));
-    post.mockRestore();
+    request.mockRestore();
   });
 
   it('names the angles whose upload failed', async () => {
@@ -466,13 +467,13 @@ describe('AddVehiclePage submit', () => {
     localStorage.removeItem('ret.vehiclePhotos');
     let put;
     const uploaded = [];
-    const realPost = api.post.bind(api);
-    const post = vi.spyOn(api, 'post').mockImplementation((url, data, config) => {
-      if (String(url).includes('/photos')) {
-        uploaded.push({ url, name: data.get('file').name });
+    const realRequest = api.request.bind(api);
+    const request = vi.spyOn(api, 'request').mockImplementation((config) => {
+      if (String(config.url).includes('/photos')) {
+        uploaded.push({ url: config.url, name: config.data.get('file').name });
         return Promise.resolve({ data: { id: 'p1', fileName: 'x.jpg', url: '/uploads/vehicles/sticker-uuid.jpg' } });
       }
-      return realPost(url, data, config);
+      return realRequest(config);
     });
     server.use(
       http.put(`${BASE}/vehicles/:id`, async ({ request }) => {
@@ -487,10 +488,10 @@ describe('AddVehiclePage submit', () => {
     await screen.findByText(/toyota prado added/i);
     await waitFor(() => expect(put).toBeDefined());
     expect(uploaded).toEqual([{ url: '/vehicles/new-vehicle-id/photos', name: 'sticker.jpg' }]);
-    expect(put.insuranceVerificationStickerPhoto).toBe('http://192.168.8.11:8080/uploads/vehicles/sticker-uuid.jpg');
+    expect(put.insuranceVerificationStickerPhoto).toBe(`${import.meta.env.VITE_API_BASE_URL}/uploads/vehicles/sticker-uuid.jpg`);
     expect(put).toMatchObject({ comprehensiveInsurance: true, model: 'Toyota Prado' });
     expect(localStorage.getItem('ret.vehiclePhotos')).toBeNull();
-    post.mockRestore();
+    request.mockRestore();
   });
 
   it('offers a retry when the server says OK but does not keep the insurance sticker', async () => {

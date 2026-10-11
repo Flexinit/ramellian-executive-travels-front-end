@@ -11,7 +11,7 @@ import { server } from '../mocks/server';
 import VehiclesPage from './VehiclesPage';
 import { useBookingStore } from '../store/bookingStore';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 // A vehicle exactly as the live backend returned it (VehicleResponse).
 const LIVE_MERCEDES = {

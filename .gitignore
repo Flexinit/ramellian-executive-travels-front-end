@@ -23,3 +23,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Written by deploy/nginx/install-host-site.sh during Jenkins builds
+.site-scheme

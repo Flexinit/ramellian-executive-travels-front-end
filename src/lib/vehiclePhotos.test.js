@@ -14,7 +14,7 @@ import {
 
 describe('photoSrc', () => {
   it('resolves a server-relative path against the API host', () => {
-    expect(photoSrc('/uploads/vehicles/a.png')).toBe('http://192.168.8.11:8080/uploads/vehicles/a.png');
+    expect(photoSrc('/uploads/vehicles/a.png')).toBe(`${import.meta.env.VITE_API_BASE_URL}/uploads/vehicles/a.png`);
   });
 
   it('leaves absolute, blob and data URLs alone', () => {

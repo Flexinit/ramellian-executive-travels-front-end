@@ -31,7 +31,7 @@ Set these in a local `.env` file (see `.env.example`):
 
 | Variable | Description |
 |---|---|
-| `VITE_API_BASE_URL` | Base URL of the backend API, e.g. `http://192.168.8.11:8080` |
+| `VITE_API_BASE_URL` | Base URL of the backend API, e.g. `http://102.68.87.231:8090` locally, `https://ramellianexecutivetravels.co.ke` in production |
 | `VITE_SWAGGER_URL` | Swagger UI URL for the backend, used only as a developer reference |
 | `VITE_PESAPAL_ENV` | `sandbox` or `live` — which Pesapal environment to initiate checkout against |
 
@@ -76,6 +76,10 @@ red → green → refactor workflow (see `docs/implementation-plan.md`). Tests
 run against MSW-mocked API responses (`src/mocks/handlers.js`) and are
 checked for accessibility violations with `jest-axe` wherever practical.
 
+Mocked endpoints are built from `import.meta.env.VITE_API_BASE_URL` (set in
+`.env.test`), never a hard-coded host, so pointing the app at a different
+backend doesn't break the tests.
+
 A pre-commit hook (via [Husky](https://typicode.github.io/husky/)) runs the
 full test suite before every commit. It activates automatically the first
 time you run `npm install` inside a git repository — if you're starting
@@ -90,3 +94,8 @@ npm run build
 Output goes to `dist/`. Every route is its own lazy-loaded chunk (see
 `src/App.jsx`), so the initial bundle only includes the app shell, the
 current page, and shared vendor code.
+
+## Deploying
+
+Production runs on the VPS as a Docker container built by Jenkins on every push to `master`.
+Step-by-step setup: [docs/deployment.md](docs/deployment.md).

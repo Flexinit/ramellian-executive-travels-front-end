@@ -18,7 +18,7 @@ import AdminReportsPage from './AdminReportsPage';
 import { emptyReport } from '../mocks/handlers';
 import { withPlatformClause } from '../lib/contractBoilerplate';
 
-const BASE = 'http://192.168.8.11:8080/api/v1';
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 function renderPage(element) {
   return render(
