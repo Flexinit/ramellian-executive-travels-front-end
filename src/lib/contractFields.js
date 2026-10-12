@@ -11,10 +11,13 @@ import { TRIP_TYPE_LABELS, BOOKING_MODES } from './constants';
  * filling when it drafts the contract; once it does, the text arrives already filled and this has nothing
  * left to replace.
  *
- * Deliberately left blank here (`BLANK`): anything the renter's own view doesn't have — the owner's name and
- * business details (the portal never gives a renter the owner's profile), and the vehicle's registration and
- * VIN (kept from renters everywhere else in the portal, see VehicleDetailPage) — and anything not stored at
- * all yet (vehicle year, insurer, policy number, licence number, destination, passengers).
+ * The vehicle's registration and VIN are filled in here even though the rest of the portal keeps them from
+ * renters (see VehicleDetailPage): a signed agreement has to say exactly which vehicle it covers. Pick-up and
+ * return default to the vehicle's own location when it isn't being delivered and no place was entered.
+ *
+ * Left blank (`BLANK`): anything the renter's own view doesn't have — the owner's name and business details
+ * (no endpoint gives a renter the owner's profile; backend-requests item 37) — and anything not stored at all
+ * yet (vehicle year, insurer, policy number, licence number, destination, passengers, booking created time).
  */
 
 export const BLANK = '__________';
@@ -41,6 +44,8 @@ function postponementTerms(policy) {
  */
 export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy, now = new Date() }) {
   const mode = booking.bookingMode;
+  // Not delivered, so it's collected from and returned to where the vehicle is kept.
+  const baseLocation = booking.deliveryRequested ? undefined : vehicle.location;
   return {
     booking_reference: booking.id,
     agreement_date: formatDate(now),
@@ -51,6 +56,8 @@ export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy
     renter_location: renter.location,
 
     vehicle_model: vehicle.model,
+    vehicle_registration: vehicle.registrationNumber,
+    vehicle_vin: vehicle.vin,
     vehicle_colour: vehicle.color,
     vehicle_seats: vehicle.capacity != null ? String(vehicle.capacity) : undefined,
     vehicle_fuel_type: titleCase(vehicle.fuelType),
@@ -63,8 +70,8 @@ export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy
     trip_type: booking.tripType ? TRIP_TYPE_LABELS[booking.tripType] || titleCase(booking.tripType) : undefined,
     start_date_time: booking.startTime ? formatDateTime(booking.startTime) : undefined,
     end_date_time: booking.endTime ? formatDateTime(booking.endTime) : undefined,
-    pickup_location: booking.pickupLocation,
-    dropoff_location: booking.dropoffLocation,
+    pickup_location: booking.pickupLocation || baseLocation,
+    dropoff_location: booking.dropoffLocation || baseLocation,
     number_of_days: booking.numberOfDays != null ? String(booking.numberOfDays) : undefined,
     delivery_requested: yesNo(booking.deliveryRequested),
     chauffeur_name: booking.chauffeurName || booking.chauffeurEmail || (mode === BOOKING_MODES.CHAUFFEURED ? 'To be assigned' : 'Not applicable'),

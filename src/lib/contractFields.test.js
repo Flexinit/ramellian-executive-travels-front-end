@@ -44,8 +44,15 @@ describe('contract fields', () => {
     expect(values.total_amount).toMatch(/31,500/);
   });
 
-  it('keeps the registration and VIN out of the renter\'s view, like the rest of the portal', () => {
-    expect(fillContractText('Reg {{vehicle_registration}} VIN {{vehicle_vin}}', values)).toBe(`Reg ${BLANK} VIN ${BLANK}`);
+  it('names the exact vehicle — registration and VIN — since the agreement has to identify it', () => {
+    expect(fillContractText('Reg {{vehicle_registration}} VIN {{vehicle_vin}}', values)).toBe('Reg KDA 123A VIN VIN-1');
+  });
+
+  it("collects and returns at the vehicle's own location when it isn't delivered and no place was given", () => {
+    const v = contractValues({ booking: { deliveryRequested: false }, vehicle });
+    expect(v.pickup_location).toBe('Roysambu');
+    expect(v.dropoff_location).toBe('Roysambu');
+    expect(contractValues({ booking: { deliveryRequested: true }, vehicle }).pickup_location).toBeUndefined();
   });
 
   it('replaces every field, leaving a blank line rather than a raw code for anything unknown', () => {

@@ -168,6 +168,7 @@ export default function PaymentPage() {
             <PaymentStatusPanel
               status={status}
               exhausted={paymentStatus.exhausted}
+              errorMessage={paymentStatus.errorMessage}
               onRecheck={() => paymentStatus.refetch()}
               onRetry={handlePay}
               retrying={isSubmitting}

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
@@ -45,7 +45,25 @@ function serveStatus(status) {
   server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status })));
 }
 
-beforeEach(() => sessionStorage.clear());
+const realLocation = window.location;
+let assign;
+beforeEach(() => {
+  sessionStorage.clear();
+  assign = vi.fn();
+  Object.defineProperty(window, 'location', { configurable: true, value: { ...realLocation, assign } });
+});
+afterEach(() => {
+  Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
+});
+
+function serveCheckout(onCall = () => {}) {
+  server.use(
+    http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, ({ params }) => {
+      onCall(params.bookingId);
+      return HttpResponse.json({ redirectUrl: `https://pay.pesapal.com/checkout?booking=${params.bookingId}` });
+    })
+  );
+}
 
 describe('PaymentSuccessPage — where Pesapal redirects back to', () => {
   it("reads the booking from a stale link with nothing to go on, and says so", async () => {
@@ -91,24 +109,65 @@ describe('PaymentSuccessPage — where Pesapal redirects back to', () => {
     expect(screen.queryByRole('button', { name: /continue to sign contract/i })).not.toBeInTheDocument();
   });
 
-  it('retrying re-starts checkout for the same booking', async () => {
+  it('retrying re-starts checkout for the same booking and goes straight to the new Pesapal link', async () => {
     const user = userEvent.setup();
     let checkedOutFor = null;
     serveBooking();
     serveStatus('FAILED');
-    server.use(
-      http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, ({ params }) => {
-        checkedOutFor = params.bookingId;
-        return HttpResponse.json({ redirectUrl: 'https://pay.pesapal.com/checkout?booking=b1' });
-      })
-    );
+    serveCheckout((id) => { checkedOutFor = id; });
     renderAt('/payment/success?bookingId=b1');
 
     await user.click(await screen.findByRole('button', { name: /try again/i }));
-    await waitFor(() => expect(checkedOutFor).toBe('b1'));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+    expect(checkedOutFor).toBe('b1');
   });
 
-  it('keeps a plain waiting state while still pending', async () => {
+  it('starts only one checkout for a double-click', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    serveBooking();
+    serveStatus('FAILED');
+    serveCheckout(() => { calls += 1; });
+    renderAt('/payment/success?bookingId=b1');
+
+    const retry = await screen.findByRole('button', { name: /try again/i });
+    await user.dblClick(retry);
+    await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+    expect(calls).toBe(1);
+  });
+
+  it('lets someone who backed out of Pesapal (status never settles) pay again or check again', async () => {
+    const user = userEvent.setup();
+    serveBooking();
+    serveStatus('PENDING');
+    serveCheckout();
+    renderAt('/payment/success?bookingId=b1');
+
+    expect(await screen.findByRole('button', { name: /check again/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+  });
+
+  it("stops waiting and says why when the status check itself fails (e.g. the backend can't reach Pesapal)", async () => {
+    const user = userEvent.setup();
+    serveBooking();
+    server.use(
+      http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () =>
+        HttpResponse.json({ message: 'Pesapal response missing token' }, { status: 500 })
+      )
+    );
+    serveCheckout();
+    renderAt('/payment/success?bookingId=b1');
+
+    expect(await screen.findByText("Couldn't check your payment")).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/internal error \(500\)/i);
+    expect(screen.queryByText(/waiting for your payment/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /check again/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    await waitFor(() => expect(assign).toHaveBeenCalled());
+  });
+
+  it('keeps a waiting state while still pending', async () => {
     serveBooking();
     serveStatus('PENDING');
     renderAt('/payment/success?bookingId=b1');

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
@@ -23,7 +23,10 @@ import { PAYMENT_STATUSES } from '../lib/constants';
  * `usePaymentStatus` `PaymentPage.jsx` uses) and never infers success itself, per
  * "do not mark payment successful in the browser" (FRONTEND_INTEGRATION.md §4). Successful, it offers
  * Continue to Sign Contract (the vehicle id for that route comes from the booking record, not the URL);
- * failed, it offers to retry checkout for the same booking; still pending, it keeps polling.
+ * failed, it offers to retry checkout for the same booking; still pending, it keeps polling, and once polling
+ * gives up (most often someone who backed out of Pesapal, which never reports a failure) it says so and offers
+ * Check again alongside the retry. A retry starts a fresh checkout and goes straight to its Pesapal link —
+ * the renter already chose to pay again, so there's no "ready to pay" step in between.
  */
 export default function PaymentSuccessPage() {
   const navigate = useNavigate();
@@ -35,6 +38,21 @@ export default function PaymentSuccessPage() {
   const paymentStatus = usePaymentStatus(bookingId, !!bookingId);
   const retryCheckout = usePesapalCheckout();
   const status = paymentStatus.data?.status;
+  // A ref, not just `isPending`: two fast clicks both run before a re-render, and two checkouts for one
+  // booking could become two real charges.
+  const retryingRef = useRef(false);
+
+  async function handleRetry() {
+    if (retryingRef.current) return;
+    retryingRef.current = true;
+    // usePesapalCheckout's own onSuccess/onError stash the link and show any error.
+    const data = await retryCheckout.mutateAsync(bookingId).catch(() => null);
+    if (data?.redirectUrl) {
+      window.location.assign(data.redirectUrl);
+      return; // leaving the page — keep the guard on
+    }
+    retryingRef.current = false;
+  }
 
   if (!bookingId) {
     return (
@@ -69,7 +87,16 @@ export default function PaymentSuccessPage() {
           <p className="text-brand-grey text-sm mt-1">Checking whether your payment went through.</p>
         </div>
 
-        <PaymentStatusPanel status={status} onRetry={() => retryCheckout.mutate(bookingId)} booking={booking} vehicle={vehicle} />
+        <PaymentStatusPanel
+          status={status}
+          exhausted={paymentStatus.exhausted}
+          errorMessage={paymentStatus.errorMessage}
+          onRecheck={() => paymentStatus.refetch()}
+          onRetry={handleRetry}
+          retrying={retryCheckout.isPending || retryCheckout.isSuccess}
+          booking={booking}
+          vehicle={vehicle}
+        />
 
         {status === PAYMENT_STATUSES.SUCCESSFUL && (
           <Button

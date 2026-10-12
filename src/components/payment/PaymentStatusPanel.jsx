@@ -13,6 +13,7 @@ const AUTO_REDIRECT_SECONDS = AUTO_REDIRECT_DELAY_MS / 1000;
  * @param {boolean} [exhausted] — every poll attempt used up with no SUCCESSFUL/FAILED/INVALID ever coming
  *   back (most often Pesapal's callback to the backend never landing) — shown distinctly from "still
  *   checking" so a renter isn't left staring at a spinner that has, in fact, already given up silently.
+ * @param {string} [errorMessage] — why the status couldn't be checked at all (shown with the exhausted state)
  * @param {function} [onRecheck] — re-polls status once more without starting a brand new Pesapal checkout
  * @param {function} onRetry — starts an entirely new checkout: offered once payment is confirmed FAILED, and
  *   as the fallback once polling is exhausted with no `redirectUrl` to fall back to (e.g. a different
@@ -37,7 +38,7 @@ const AUTO_REDIRECT_SECONDS = AUTO_REDIRECT_DELAY_MS / 1000;
  *   renter their receipt right there (see ReceiptActions) — the moment the payment actually completes is
  *   the most natural place to "issue" it, rather than making them go find it in My Bookings afterwards.
  */
-export default function PaymentStatusPanel({ status, exhausted, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle }) {
+export default function PaymentStatusPanel({ status, exhausted, errorMessage, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle }) {
   // Only the initial "ready to pay" panel auto-redirects — guarded on `exhausted` and `status` too, since
   // those cover the SUCCESSFUL/FAILED/INVALID and exhausted-with-redirectUrl branches below, which also
   // render while `redirectUrl` is set but must never auto-navigate themselves.
@@ -120,9 +121,10 @@ export default function PaymentStatusPanel({ status, exhausted, onRecheck, onRet
           <Clock size={26} className="text-amber-400" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-brand-white font-semibold">Still confirming your payment</p>
+          <p className="text-brand-white font-semibold">{errorMessage ? "Couldn't check your payment" : 'Still confirming your payment'}</p>
+          {errorMessage && <p role="alert" className="text-red-400 text-sm mt-1">{errorMessage}</p>}
           <p className="text-brand-grey text-sm mt-1">
-            This is taking longer than usual — we haven&apos;t heard back yet.{' '}
+            {errorMessage ? '' : <>This is taking longer than usual — we haven&apos;t heard back yet.{' '}</>}
             {redirectUrl
               ? "If you haven't finished paying yet, continue to payment below. Already paid? Check again."
               : 'If you already paid, it can still land in a moment — check again. Otherwise, try again to start a fresh payment.'}

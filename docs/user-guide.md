@@ -363,6 +363,11 @@ saved through registering, verifying your email and logging in, and picks up whe
 7. **Review and accept the owner's contract** — the contract is the one for that vehicle's owner, so it can only be
    shown once the booking exists; it is read, and accepted, just before you pay. There is no contract to read before
    you sign up, because the portal can't fetch an owner's terms without a booking (see `docs/backend-requests.md`).
+   The contract shows this booking's details: your name, ID number and location (from your profile), the vehicle
+   (including its registration number and VIN), dates, places and amounts. If no pick-up or return place was given
+   and the car isn't delivered, it says the vehicle's own location. The owner's name and business details stay
+   blank for now, because the portal can't look them up. These details are filled in **on screen only**: the
+   signed copy the backend keeps is still the owner's template wording until the backend fills them in itself.
    Going back to this step after already accepting that contract (the browser's Back button, or a stale link) no
    longer shows a dead-end error — it offers **Continue to payment** instead (or, if you'd cancelled the booking,
    says so and offers **Browse other vehicles**).

@@ -1,9 +1,12 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
  * Accessible focus-trapped modal dialog.
- * Matches otto.rentals' overlay panel style.
+ * Matches otto.rentals' overlay panel style. Rendered into `document.body`, so it always covers the whole
+ * screen: opened from inside a frosted-glass card (`backdrop-blur` makes the card the box `fixed` is measured
+ * against), it was otherwise squeezed into that card — e.g. Log In inside the vehicle page's booking panel.
  *
  * @param {boolean} isOpen
  * @param {function} onClose
@@ -50,7 +53,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
     if (e.target === e.currentTarget) onClose();
   }
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       data-testid="modal-backdrop"
@@ -82,6 +85,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         {/* Body — scrolls on its own when the content is taller than the screen, so the header and Close button stay put */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

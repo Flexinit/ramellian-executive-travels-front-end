@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { PanelRightOpen, X } from 'lucide-react';
 import Button from './Button';
 
@@ -12,6 +13,9 @@ import Button from './Button';
  * Dismissing it (the X, Escape, or clicking outside) leaves a small tab docked to the right edge instead of
  * just vanishing, labelled "Continue: {title}" so it's clear what it reopens rather than having to go find
  * the button that first opened it — the form itself starts fresh again, same as opening it the first time.
+ * Like `Modal`, it's rendered into `document.body`: opened from inside a frosted-glass card (`backdrop-blur`
+ * makes the card the box `fixed` is measured against), it was otherwise squeezed into that card — Log In
+ * opened from the vehicle page's booking panel showed inside the panel.
  * The tab only appears for a dismissal like that; when the caller closes the drawer itself because the job is
  * done (e.g. signed in successfully), `isOpen` just goes false with no tab left behind.
  *
@@ -74,7 +78,7 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
 
   if (!isOpen) {
     if (justDismissed && onReopen) {
-      return (
+      return createPortal(
         <Button
           size="sm"
           onClick={() => {
@@ -84,7 +88,8 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
           className="fixed right-4 top-1/2 z-50 -translate-y-1/2 bg-brand-navy shadow-xl"
         >
           <PanelRightOpen size={16} aria-hidden="true" /> Continue: {title}
-        </Button>
+        </Button>,
+        document.body
       );
     }
     return null;
@@ -97,7 +102,7 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
     xl: 'max-w-2xl',
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-end p-4 sm:p-8">
       {/* Light, unblurred overlay — dims the page just enough to show the drawer has focus without
           hiding what's behind it (a booking in progress, a vehicle being viewed). It sits on top of
@@ -137,6 +142,7 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
         {/* Body — scrolls on its own when the content is taller than the screen, so the header and Close button stay put */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost } from '../lib/api';
+import { apiErrorMessage } from '../lib/apiError';
 import { PAYMENT_POLL_INTERVAL_MS, PAYMENT_POLL_MAX_ATTEMPTS, PAYMENT_STATUSES } from '../lib/constants';
 
 /**
@@ -173,6 +174,9 @@ function pollExhausted(queryClient, bookingId, status) {
  * still no answer after every attempt, most often because Pesapal's callback to the backend never landed
  * (wrong `PESAPAL_CALLBACK_URL`, network issue, etc.) — worth surfacing distinctly from "still checking",
  * since an indefinite spinner with no explanation looks identical to a page that's simply broken.
+ * A status check that errors (e.g. the backend's own call to Pesapal failing — seen live as a 500 "invalid
+ * consumer key or secret") counts as exhausted too, with `errorMessage` saying why: an error never advances
+ * the attempt count, so the page otherwise spun on "Waiting for your payment…" forever.
  *
  * @param {string} bookingId
  * @param {boolean} enabled
@@ -180,7 +184,12 @@ function pollExhausted(queryClient, bookingId, status) {
 export function usePaymentStatus(bookingId, enabled = true) {
   const queryClient = useQueryClient();
   const query = useQuery(paymentStatusQuery(bookingId, enabled));
-  return { ...query, exhausted: enabled && pollExhausted(queryClient, bookingId, query.data?.status) };
+  const failedToCheck = query.isError && !query.data;
+  return {
+    ...query,
+    exhausted: enabled && (failedToCheck || pollExhausted(queryClient, bookingId, query.data?.status)),
+    errorMessage: enabled && failedToCheck ? apiErrorMessage(query.error, "We couldn't check your payment.") : '',
+  };
 }
 
 /** Same "gave up without an answer" check as `usePaymentStatus`, for a group payment polling several

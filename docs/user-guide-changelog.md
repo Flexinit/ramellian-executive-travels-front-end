@@ -3,6 +3,31 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-12 (contract: registration, VIN and pick-up place filled in)
+
+- **Changed:** the contract a renter reads and signs now shows the vehicle's **registration number** and
+  **VIN**, so the agreement identifies the exact car. Pick-up and return show the vehicle's own location when no
+  place was given and it isn't delivered (`contractFields`).
+- **Documented:** what stays blank and why (owner's details, which the portal can't look up), and that the
+  backend's signed copy is still the raw template.
+
+## 2026-10-12 (paying again after a failed or abandoned Pesapal payment)
+
+- **Fixed:** on the **Payment Status** page (where Pesapal sends you back), **Try Again** / **Continue to
+  Payment** didn't do anything: a new payment was started but you were never taken to it. It now takes you
+  straight to Pesapal to pay again. One click starts one payment, even if you double-click.
+- **Fixed:** if you backed out of Pesapal without paying, the page could spin on "Waiting for your payment to be
+  confirmed…" forever. It now offers **Check again** next to the pay button, and after about 30 seconds it says
+  it's still waiting to hear back. If the payment check itself fails (a server problem, such as the backend
+  being unable to reach Pesapal), it now says **Couldn't check your payment** instead of spinning, with **Check
+  again** and **Try Again** (`PaymentSuccessPage`, `PaymentPage`, `usePaymentStatus`).
+
+## 2026-10-12 (Log In no longer squeezed inside the booking panel)
+
+- **Fixed:** pressing a button inside the vehicle page's booking panel while signed out opened the **Log In**
+  window inside the panel, squeezed into its box. Pop-up windows and side panels now always open over the
+  whole screen (`Modal`, `Drawer`).
+
 ## 2026-10-12 (identity document: ID or passport, selfies, number read from the photo)
 
 - **Changed:** Documents now has one **Identity Document** card where you choose **National ID** or
