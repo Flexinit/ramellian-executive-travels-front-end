@@ -491,8 +491,14 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     await user.click(screen.getByRole('button', { name: /upload now/i }));
 
     expect(await screen.findByText(/verification required/i)).toBeInTheDocument();
+    // National ID (the default): choose, then front, back and the two selfies holding it.
+    expect(screen.getByText(/step 1 of 5/i)).toBeInTheDocument();
+    expect(screen.getByText(/which do you have/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Passport' }));
+    // Passport: choose, then the photo page and one selfie.
     expect(screen.getByText(/step 1 of 3/i)).toBeInTheDocument();
-    expect(screen.getByText(/what's your id number/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^continue$/i }));
+    expect(screen.getByText('Passport photo page')).toBeInTheDocument();
   });
 
   it('shows the document gate when the backend says the documents are not approved (422)', async () => {

@@ -1,5 +1,8 @@
 import { ACCOUNT_TYPES, DOCUMENT_STATUSES, DOCUMENT_TYPES, USER_ROLES } from './constants';
 
+/** The identity slot's `type` — not a backend type: it uploads as NATIONAL_ID or PASSPORT. */
+export const IDENTITY_SLOT = 'IDENTITY';
+
 /**
  * Which documents an account is asked for, driven by its account type
  * (the backend's `ownerType`) and whether it rents cars. Everyone supplies an
@@ -11,7 +14,7 @@ import { ACCOUNT_TYPES, DOCUMENT_STATUSES, DOCUMENT_TYPES, USER_ROLES } from './
  * company (sole traders and other unregistered businesses have neither). The
  * backend refuses those two for anyone whose owner profile isn't BUSINESS.
  *
- * @typedef {{ type: string, title: string, description: string, required: boolean }} DocumentSlot
+ * @typedef {{ type: string, title: string, description: string, required: boolean, identity?: boolean, twoSided?: boolean }} DocumentSlot
  * @param {string} [accountType] — an ACCOUNT_TYPES value; anything else is treated as Individual
  * @param {{ isRenter?: boolean }} [options]
  * @returns {DocumentSlot[]}
@@ -19,18 +22,12 @@ import { ACCOUNT_TYPES, DOCUMENT_STATUSES, DOCUMENT_TYPES, USER_ROLES } from './
 export function getDocumentSlots(accountType, { isRenter = false } = {}) {
   const slots = [
     {
-      type: DOCUMENT_TYPES.NATIONAL_ID,
-      title: 'National ID',
-      description: 'Required (or a Passport instead) — a photo of the front and a photo of the back, plus your ID number below.',
+      // One card for both: the person gives a National ID or a Passport, whichever they have.
+      type: IDENTITY_SLOT,
+      title: 'Identity Document',
+      description: 'Required — a National ID or a Passport, plus a selfie holding it.',
       required: true,
-      requireIdNumber: true,
-      twoSided: true,
-    },
-    {
-      type: DOCUMENT_TYPES.PASSPORT,
-      title: 'Passport',
-      description: 'Alternative to a National ID — just the photo page.',
-      required: true,
+      identity: true,
     },
     ...(isRenter
       ? [

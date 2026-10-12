@@ -139,7 +139,7 @@ describe('AddVehiclePage steps', () => {
     expect(screen.getByRole('heading', { name: /price and location/i })).toBeInTheDocument();
   });
 
-  it('requires at least one booking mode before leaving the features step', async () => {
+  it('treats no booking mode picked as both, instead of blocking the features step', async () => {
     const user = userEvent.setup();
     renderPage();
     await fillCar(user);
@@ -154,8 +154,8 @@ describe('AddVehiclePage steps', () => {
     await user.click(screen.getByRole('button', { name: 'Self-Drive' }));
     await next(user);
 
-    expect(await screen.findByText(/select at least one booking mode/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /^features$/i })).toBeInTheDocument();
+    expect(screen.queryByText(/select at least one booking mode/i)).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /photos/i })).toBeInTheDocument();
   });
 
   it('toggles a trip type chip on and off', async () => {

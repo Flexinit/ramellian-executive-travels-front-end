@@ -3,6 +3,24 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-12 (identity document: ID or passport, selfies, number read from the photo)
+
+- **Changed:** Documents now has one **Identity Document** card where you choose **National ID** or
+  **Passport**. One is enough; you're never asked for both. The checkout "Verification Required" window
+  asks the same way.
+- **Added:** a selfie holding the document: two for a National ID (holding the front, holding the back), one
+  for a Passport (holding the photo page). On a phone these open the front camera. They're sent with the
+  document as one image, so the reviewer sees them together.
+- **Changed:** the ID number (or passport number) is read from the photo automatically and can no longer be
+  typed, here or on the profile (where it's now shown read-only). If it can't be read, you're asked to retake
+  the photo (`IdentityDocumentCard`, `DocumentGateModal`, `PersonalDetailsForm`, `lib/identity`).
+
+## 2026-10-12 (no booking mode picked means both)
+
+- **Changed:** when adding or editing a vehicle, leaving both **Self-Drive** and **Chauffeured** unselected no
+  longer shows "Select at least one booking mode" — the vehicle is saved as offering both, and a short note
+  says so (`vehicleForm`, `AddVehiclePage`, `EditVehiclePage`).
+
 ## 2026-10-09 (bigger vehicle photo)
 
 - **Changed:** the vehicle page's photo is a little bigger (about 12% — it now takes two thirds of the left side,

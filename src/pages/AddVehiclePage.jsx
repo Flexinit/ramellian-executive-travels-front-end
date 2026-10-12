@@ -115,11 +115,6 @@ export default function AddVehiclePage() {
       setStickerError('Upload a photo of the insurance sticker');
       return;
     }
-    if (step.key === 'features' && !selfDrive && !chauffeured) {
-      // The whole-form refinement only runs once every field is valid, so check the booking mode here.
-      setError('chauffeured', { type: 'manual', message: 'Select at least one booking mode' });
-      return;
-    }
     if (step.key === 'features') {
       const problems = Object.entries(windowErrors(getValues()));
       if (problems.length > 0) {
@@ -315,7 +310,7 @@ export default function AddVehiclePage() {
                         Chauffeured
                       </ToggleChip>
                     </div>
-                    {errors.chauffeured && <p className="text-xs text-red-400">{errors.chauffeured.message}</p>}
+                    {!selfDrive && !chauffeured && <p className="text-xs text-brand-grey">None picked — renters can book it either way.</p>}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

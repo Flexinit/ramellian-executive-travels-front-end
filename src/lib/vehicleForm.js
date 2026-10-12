@@ -62,13 +62,11 @@ export const vehicleSchema = z
     comprehensiveInsurance: z.boolean().refine((v) => v === true, 'Every vehicle must have comprehensive insurance'),
     tripTypes: z.array(z.string()).optional(),
   })
-  .refine((data) => data.selfDrive || data.chauffeured, {
-    message: 'Select at least one booking mode',
-    path: ['chauffeured'],
-  })
   .superRefine((data, ctx) => {
     Object.entries(windowErrors(data)).forEach(([path, message]) => ctx.addIssue({ code: 'custom', path: [path], message }));
-  });
+  })
+  // Product rule: picking no booking mode isn't an error — it means the vehicle offers both.
+  .transform((data) => (data.selfDrive || data.chauffeured ? data : { ...data, selfDrive: true, chauffeured: true }));
 
 // Every field has a default, so an emptied form reads as pristine (not "dirty") and the draft clears properly.
 export const VEHICLE_DEFAULTS = {

@@ -112,11 +112,7 @@ export default function EditVehiclePage() {
   }
 
   async function onSubmit(values) {
-    // The whole-form rules that only run once every field is valid.
-    if (!values.selfDrive && !values.chauffeured) {
-      setError('chauffeured', { type: 'manual', message: 'Select at least one booking mode' });
-      return;
-    }
+    // The whole-form rule that only runs once every field is valid.
     const problems = Object.entries(windowErrors(getValues()));
     if (problems.length > 0) {
       problems.forEach(([field, message]) => setError(field, { type: 'manual', message }));
@@ -221,7 +217,7 @@ export default function EditVehiclePage() {
                   Chauffeured
                 </ToggleChip>
               </div>
-              {errors.chauffeured && <p className="text-xs text-red-400">{errors.chauffeured.message}</p>}
+              {!selfDrive && !chauffeured && <p className="text-xs text-brand-grey">None picked — renters can book it either way.</p>}
             </div>
 
             <label className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 cursor-pointer">

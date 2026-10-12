@@ -5,13 +5,12 @@ const types = (slots) => slots.map((s) => s.type);
 
 describe('getDocumentSlots', () => {
   it('asks an Individual for identity and proof of address only — no driving licence unless they rent cars', () => {
-    expect(types(getDocumentSlots('INDIVIDUAL'))).toEqual(['NATIONAL_ID', 'PASSPORT', 'PROOF_OF_ADDRESS']);
+    expect(types(getDocumentSlots('INDIVIDUAL'))).toEqual(['IDENTITY', 'PROOF_OF_ADDRESS']);
   });
 
   it('adds the driving licence for car renters', () => {
     expect(types(getDocumentSlots('INDIVIDUAL', { isRenter: true }))).toEqual([
-      'NATIONAL_ID',
-      'PASSPORT',
+      'IDENTITY',
       'DRIVING_LICENSE',
       'PROOF_OF_ADDRESS',
     ]);
@@ -29,18 +28,17 @@ describe('getDocumentSlots', () => {
 
   it('lists the registration and tax certificates for a Business', () => {
     expect(types(getDocumentSlots('BUSINESS'))).toEqual([
-      'NATIONAL_ID',
-      'PASSPORT',
+      'IDENTITY',
       'PROOF_OF_ADDRESS',
       'BUSINESS_REGISTRATION',
       'TAX_CERTIFICATE',
     ]);
   });
 
-  it('collects the ID number alongside the National ID upload — saved to the profile (ProfileRequest.idNumber), not the document itself', () => {
-    const slots = getDocumentSlots('INDIVIDUAL');
-    expect(slots.find((s) => s.type === 'NATIONAL_ID').requireIdNumber).toBe(true);
-    expect(slots.filter((s) => s.type !== 'NATIONAL_ID').some((s) => s.requireIdNumber)).toBe(false);
+  it('asks for one identity document — a National ID or a Passport, not both', () => {
+    const identity = getDocumentSlots('INDIVIDUAL').filter((s) => s.identity);
+    expect(identity).toHaveLength(1);
+    expect(identity[0].required).toBe(true);
   });
 });
 

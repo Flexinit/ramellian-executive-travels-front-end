@@ -6,7 +6,6 @@ import Spinner from '../ui/Spinner';
 import DocumentFilePreview from './DocumentFilePreview';
 import { DOCUMENT_STATUSES } from '../../lib/constants';
 import { useUploadDocument } from '../../hooks/useDocuments';
-import { useUpdateProfile } from '../../hooks/useProfile';
 
 const STATUS_META = {
   [DOCUMENT_STATUSES.APPROVED]: { icon: FileCheck2, variant: 'success', label: 'Approved' },
@@ -26,19 +25,12 @@ const ACCEPTED_TYPES = 'image/jpeg,image/png,application/pdf';
  * @param {string} title
  * @param {string} description
  * @param {object} [document] — existing record for this type, if any: { status, rejectionReason }
- * @param {boolean} [requireIdNumber] — also collect an ID number alongside the file. It isn't part of the
- *   document upload itself — the backend keeps it on the profile (`ProfileRequest.idNumber`) — so it's
- *   saved there first (only if it actually changed) before the file upload starts.
- * @param {string} [currentIdNumber] — the id number already on file, to prefill the field with
  */
-export default function DocumentUploadCard({ type, title, description, document, requireIdNumber = false, currentIdNumber = '' }) {
+export default function DocumentUploadCard({ type, title, description, document }) {
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [idNumber, setIdNumber] = useState(currentIdNumber);
-  const [idNumberError, setIdNumberError] = useState('');
   const inputRef = useRef(null);
   const upload = useUploadDocument();
-  const updateProfile = useUpdateProfile();
 
   const status = document?.status;
   const meta = status && STATUS_META[status];
@@ -46,20 +38,8 @@ export default function DocumentUploadCard({ type, title, description, document,
 
   function handleFile(file) {
     if (!file) return;
-    const trimmedId = idNumber.trim();
-    if (requireIdNumber && !trimmedId) {
-      inputRef.current && (inputRef.current.value = '');
-      setIdNumberError('Enter your ID number first — the backend checks for it alongside the document.');
-      return;
-    }
-    setIdNumberError('');
     setProgress(0);
-    const doUpload = () => upload.mutate({ type, file, onProgress: setProgress });
-    if (requireIdNumber && trimmedId !== currentIdNumber) {
-      updateProfile.mutate({ idNumber: trimmedId }, { onSuccess: doUpload });
-    } else {
-      doUpload();
-    }
+    upload.mutate({ type, file, onProgress: setProgress });
   }
 
   function handleDrop(e) {
@@ -86,26 +66,6 @@ export default function DocumentUploadCard({ type, title, description, document,
 
       <DocumentFilePreview document={document} />
 
-      {requireIdNumber && canUpload && (
-        <div className="flex flex-col gap-1">
-          <label htmlFor={`${type}-id-number`} className="text-sm font-medium text-brand-white">
-            ID Number
-          </label>
-          <input
-            id={`${type}-id-number`}
-            type="text"
-            value={idNumber}
-            onChange={(e) => {
-              setIdNumber(e.target.value);
-              if (idNumberError) setIdNumberError('');
-            }}
-            placeholder="e.g. 12345678"
-            className={`w-full rounded-lg bg-white/5 border px-3 py-2.5 text-brand-white placeholder-brand-grey text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition ${idNumberError ? 'border-red-500/50' : 'border-white/10 hover:border-brand-gold/50'}`}
-          />
-          {idNumberError && <p role="alert" className="text-red-400 text-xs">{idNumberError}</p>}
-        </div>
-      )}
-
       {canUpload && (
         <div
           onDragOver={(e) => {
@@ -118,16 +78,16 @@ export default function DocumentUploadCard({ type, title, description, document,
             dragOver ? 'border-brand-gold bg-brand-gold/5' : 'border-white/15 hover:border-brand-gold/40'
           }`}
         >
-          {upload.isPending || updateProfile.isPending ? (
+          {upload.isPending ? (
             <>
               <Spinner size="md" label="Uploading" />
               <div className="w-full max-w-[180px] h-1.5 rounded-full bg-white/10 overflow-hidden mt-1">
                 <div
                   className="h-full bg-brand-gold transition-all duration-200"
-                  style={{ width: `${updateProfile.isPending ? 0 : progress}%` }}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-brand-grey text-xs">{updateProfile.isPending ? 'Saving your ID number…' : `${progress}%`}</p>
+              <p className="text-brand-grey text-xs">{progress}%</p>
             </>
           ) : (
             <>

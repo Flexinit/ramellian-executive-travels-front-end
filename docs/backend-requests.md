@@ -1164,3 +1164,21 @@ is that renter contact details are never shown to owners and phone numbers are n
 signing (`lib/contractFields.js`), so they never see a raw `{{…}}` — but the stored contract and the signed PDF
 are still the template's raw text, so the signed document still says `{{renter_full_name}}`. That gap is why this
 needs doing server-side before the template goes live.
+
+## 38. Identity selfies and a trusted ID number — a separate selfie document type, and reading the number server-side — requested 2026-10-12
+
+**Why.** The product now asks everyone for a selfie holding their identity document (two for a National ID:
+holding the front and the back; one for a Passport: holding the photo page), so an administrator can check the
+document belongs to the person uploading it. It also wants the ID / passport number taken from the document,
+not typed. `POST /documents` only accepts its fixed `documentType` values (anything else is refused with 400
+"Invalid document type"), so the portal currently stacks the document photos and the selfies into **one image**
+uploaded as `NATIONAL_ID` / `PASSPORT`. The number is read in the browser (Tesseract) and saved with
+`PATCH /users/me` (`idNumber`). A browser-side check can be bypassed by someone calling the API directly.
+
+**Ask.**
+1. Accept a new `documentType`, e.g. `SELFIE_WITH_ID`, reviewed like any other document, so a reviewer can
+   reject just the selfie. The portal will then upload the selfies on their own.
+2. Read the ID / passport number from the uploaded `NATIONAL_ID` / `PASSPORT` image on the server and
+   store it as the user's `idNumber`, or at least refuse a `PATCH /users/me` `idNumber` that differs from it, so
+   the number can't be changed through the API.
+

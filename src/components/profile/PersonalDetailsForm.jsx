@@ -18,9 +18,10 @@ import { apiErrorMessage } from '../../lib/apiError';
  * Personal details — `ProfileRequest`, saved with `PATCH /users/me` and NOTHING
  * else (the owner/business/payout details are a different endpoint, see
  * OwnerProfileForm). Limits are from the live OpenAPI spec: firstName ≤100,
- * middleName ≤100, lastName ≤100, phoneNumber ≤30, location ≤255, idNumber ≤100. The spec marks
+ * middleName ≤100, lastName ≤100, phoneNumber ≤30, location ≤255. The spec marks
  * nothing required; the phone number is mandatory by the user's own product
- * rule. (The spec's idNumberUrlFront / idNumberUrlBack / drivingLicenseFrontUrl /
+ * rule. The ID number is shown but not editable: it's read off the identity document's photo when it's
+ * uploaded (see `useIdentityCapture`), so it can't be typed in here. (The spec's idNumberUrlFront / idNumberUrlBack / drivingLicenseFrontUrl /
  * drivingLicenseBackUrl / profilePhotoUrl take links that nothing in the API gives a
  * user, so they aren't offered.)
  * Used by every role — a renter's whole profile is this form.
@@ -33,10 +34,9 @@ const schema = z.object({
   lastName: limited(100, 'Last name'),
   phoneNumber: limited(30, 'Phone number').min(1, 'Enter your phone number'),
   location: limited(255, 'Location'),
-  idNumber: limited(100, 'ID number'),
 });
 
-const FIELDS = ['firstName', 'middleName', 'lastName', 'phoneNumber', 'location', 'idNumber'];
+const FIELDS = ['firstName', 'middleName', 'lastName', 'phoneNumber', 'location'];
 
 const baseValues = (user) => ({
   firstName: user?.firstName || '',
@@ -44,7 +44,6 @@ const baseValues = (user) => ({
   lastName: user?.lastName || '',
   phoneNumber: user?.phoneNumber || '',
   location: user?.location || '',
-  idNumber: user?.idNumber || '',
 });
 
 /**
@@ -64,7 +63,7 @@ export default function PersonalDetailsForm({ onSaved, submitLabel = 'Save Perso
     formState: { errors, dirtyFields, isDirty },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { firstName: '', middleName: '', lastName: '', phoneNumber: '', location: '', idNumber: '' },
+    defaultValues: { firstName: '', middleName: '', lastName: '', phoneNumber: '', location: '' },
   });
 
   useEffect(() => {
@@ -123,7 +122,13 @@ export default function PersonalDetailsForm({ onSaved, submitLabel = 'Save Perso
       <Input label="Email" type="email" value={currentUser?.email || ''} disabled readOnly hint="Contact support to change your email." />
       <Input label="Phone" required type="tel" autoComplete="tel" error={errors.phoneNumber?.message} register={register('phoneNumber')} />
       <Input label="Location" autoComplete="address-level2" error={errors.location?.message} register={register('location')} />
-      <Input label="ID Number" hint="Your National ID or Passport number." error={errors.idNumber?.message} register={register('idNumber')} />
+      <Input
+        label="ID Number"
+        value={currentUser?.idNumber || ''}
+        disabled
+        readOnly
+        hint="Read from your National ID or Passport when you upload it under Documents."
+      />
 
       <Button type="submit" size="lg" loading={updateProfile.isPending} className="self-start">
         {submitLabel}

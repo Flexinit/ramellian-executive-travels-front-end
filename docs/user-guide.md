@@ -150,8 +150,9 @@ it, one step at a time:
 1. **Profile** — pick **Individual** or **Business** (this is the only place it's
    asked). The profile fields are **the same for car owners and renters**,
    and come straight from the backend's own API definition: first name, last name,
-   phone number, location, and **ID number**, plus payout provider and payout
-   account reference (where any earnings are sent). A Business also has business
+   phone number and location, plus payout provider and payout account reference
+   (where any earnings are sent). The **ID number** is shown but can't be edited — it's
+   read from your National ID or Passport photo when you upload it under Documents. A Business also has business
    name, registration number, tax number (KRA PIN), and address — a business **does
    not have to be a limited company**. The **phone number is mandatory** (marked with a `*`;
    the form won't save without it, and the setup window and banner keep asking until
@@ -164,7 +165,15 @@ it, one step at a time:
    has fields for the front and back of your ID and a profile photo, but they take
    image *links*, and nothing in the portal produces one, so they aren't offered.)
 2. **Documents** — upload right in the window. The only required document is an
-   identity document (a **National ID** or a **Passport** — either one is enough).
+   identity document: pick **National ID** or **Passport**, whichever you have — one is
+   enough, you never need both. For a National ID you add four photos: the front, the
+   back, a **selfie holding the front** and a **selfie holding the back**. For a Passport
+   you add two: the photo page and a **selfie holding the photo page**. (On a phone the
+   selfie buttons open the front camera.) The selfies let an administrator check the
+   document belongs to you. Your **ID number** (or passport number) is **read off the
+   photo automatically** and can't be typed or changed. If it can't be read, you're asked
+   to retake a flat, well-lit, in-focus photo. All the photos go to the reviewer together
+   as one image.
    A **Proof of Address** is optional for everyone. A **Driving Licence** is only
    asked of accounts that rent cars (car renters), since it's for self-drive
    bookings — an owner-only account never sees it. A Business can optionally add
@@ -492,7 +501,7 @@ normal fleet view:
    isn't asked of owner-only accounts.)
 3. **Add your first vehicle** — model, VIN, registration number, location, price per
    day, seats, color, fuel type, transmission, and which booking modes it supports
-   (self-drive, chauffeured, or both). **Comprehensive insurance is mandatory** — we
+   (self-drive, chauffeured, or both — pick neither and it's listed as both). **Comprehensive insurance is mandatory** — we
    don't list vehicles without it — so you must tick **Comprehensive insurance** and
    **upload a photo of the insurance sticker** (the form won't continue without both).
    If the sticker upload fails after the vehicle is created, you're offered a
