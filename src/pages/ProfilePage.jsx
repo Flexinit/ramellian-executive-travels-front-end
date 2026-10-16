@@ -7,6 +7,7 @@ import Spinner from '../components/ui/Spinner';
 import ProfilePhotoPicker from '../components/profile/ProfilePhotoPicker';
 import SetupSteps from '../components/profile/SetupSteps';
 import SecuritySection from '../components/profile/SecuritySection';
+import SavedSignatureSection from '../components/profile/SavedSignatureSection';
 import { useAuthStore } from '../store/authStore';
 import { useCurrentUser } from '../hooks/useProfile';
 import { USER_ROLES } from '../lib/constants';
@@ -47,6 +48,8 @@ export default function ProfilePage() {
           ) : (
             <SetupSteps onFinish={() => navigate(isOwner ? '/owner' : '/dashboard')} />
           )}
+
+          <SavedSignatureSection />
 
           <SecuritySection />
         </div>

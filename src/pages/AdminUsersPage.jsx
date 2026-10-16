@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Users } from 'lucide-react';
+import { Pencil, Users, UserPlus } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Avatar from '../components/ui/Avatar';
 import EditUserModal from '../components/admin/EditUserModal';
+import AddRenterModal from '../components/admin/AddRenterModal';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Skeleton from '../components/ui/Skeleton';
@@ -36,6 +37,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [role, setRole] = useState('');
   const [editing, setEditing] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   const shown = (Array.isArray(users) ? users : []).filter((u) => matchesUserSearch(u, search) && (!role || hasRole(u, role)));
   const pages = usePagination(shown, 10, `${search}|${role}`);
@@ -44,9 +46,14 @@ export default function AdminUsersPage() {
     <PageWrapper>
       <PageTitle title="Users" />
       <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Users</h1>
-          <p className="text-brand-grey text-sm mt-1">Every account on the platform. Use Edit to change someone's role or switch their account on or off, or open a row for their full details.</p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Users</h1>
+            <p className="text-brand-grey text-sm mt-1">Every account on the platform. Use Edit to change someone's role or switch their account on or off, or open a row for their full details.</p>
+          </div>
+          <Button onClick={() => setAdding(true)}>
+            <UserPlus size={15} aria-hidden="true" /> Add a renter
+          </Button>
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
@@ -155,6 +162,7 @@ export default function AdminUsersPage() {
       </div>
 
       <EditUserModal user={editing} onClose={() => setEditing(null)} />
+      <AddRenterModal isOpen={adding} onClose={() => setAdding(false)} />
     </PageWrapper>
   );
 }

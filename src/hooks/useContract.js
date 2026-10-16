@@ -1,10 +1,11 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost, apiUpload } from '../lib/api';
 import { stashContractId } from '../lib/contracts';
 import { useCartStore } from '../store/cartStore';
-import { dataUrlToBlob } from '../lib/utils';
+import { signRequest } from './useSignature';
+import { apiErrorMessage } from '../lib/apiError';
 
 /**
  * Contract mutations/queries per FRONTEND_INTEGRATION.md §3-4. Note the
@@ -119,40 +120,76 @@ export function useContract(contractId) {
  * unpaid contract) whether `consent` is this query param or a form field — the query param is kept here
  * to match the backend team's own stated contract even though either works today.
  */
+/**
+ * Where to go once `bookingId`'s contract is signed (marks it signed in the selection): the next booking in the
+ * group still to sign, else the confirmation page. Shared by a fresh signature and a contract found already signed.
+ */
+export function goOnAfterSigning(bookingId, navigate) {
+  const { items, groupId, updateItem } = useCartStore.getState();
+  const current = items.find((i) => i.bookingId === bookingId);
+  if (current) updateItem(current.vehicleId, { signed: true });
+
+  // `replace: true` throughout, same reasoning as useAcceptContract above — a signed contract can't be
+  // re-signed, so the page it came from shouldn't be reachable again via Back.
+  if (!groupId) {
+    navigate(`/book/${bookingId}/confirm`, { replace: true });
+    return;
+  }
+  const updated = current ? { ...current, signed: true } : current;
+  const rest = items.map((i) => (i.vehicleId === current?.vehicleId ? updated : i));
+  const next = nextUnfinished(rest, 'signed');
+  navigate(
+    next ? `/book/${next.bookingId}/sign` : `/book/${bookingId}/confirm`,
+    { ...(next ? { state: { bookingId: next.bookingId } } : {}), replace: true }
+  );
+}
+
 export function useSignContract() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ contractId, signature, bookingId }) => {
-      const formData = new FormData();
-      formData.append('signature', dataUrlToBlob(signature), 'signature.png');
-      return apiUpload(`/payments/contracts/${contractId}/sign?consent=true`, formData, undefined, 'post').then((data) => ({
+    // Live spec 2026-10-16: sign with the drawn `signature`, or `useSaved` (the saved signature, no file), and
+    // optionally `saveAsProfile` to keep the drawn one for next time (see hooks/useSignature.js).
+    mutationFn: ({ contractId, signature, bookingId, useSaved, saveAsProfile }) => {
+      const { formData, query } = signRequest({ signature, useSaved, saveAsProfile });
+      return apiUpload(`/payments/contracts/${contractId}/sign?${query}`, formData, undefined, 'post').then((data) => ({
         ...data,
         bookingId,
       }));
     },
-    onSuccess: (data) => {
+    onSuccess: (data, { saveAsProfile }) => {
       toast.success('Contract signed.');
-      const { items, groupId, updateItem } = useCartStore.getState();
-      const current = items.find((i) => i.bookingId === data.bookingId);
-      if (current) updateItem(current.vehicleId, { signed: true });
-
-      // `replace: true` throughout, same reasoning as useAcceptContract above — a signed contract can't be
-      // re-signed, so the page it came from shouldn't be reachable again via Back.
-      if (!groupId) {
-        navigate(`/book/${data.bookingId}/confirm`, { replace: true });
-        return;
-      }
-      const updated = current ? { ...current, signed: true } : current;
-      const rest = items.map((i) => (i.vehicleId === current?.vehicleId ? updated : i));
-      const next = nextUnfinished(rest, 'signed');
-      navigate(
-        next ? `/book/${next.bookingId}/sign` : `/book/${data.bookingId}/confirm`,
-        { ...(next ? { state: { bookingId: next.bookingId } } : {}), replace: true }
-      );
+      if (saveAsProfile) queryClient.invalidateQueries({ queryKey: ['profile', 'signature'] });
+      goOnAfterSigning(data.bookingId, navigate);
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || 'Could not submit your signature. Please try again.');
     },
   });
 }
+
+/**
+ * The owner (or their fleet manager) signs a booking's contract — `POST /payments/contracts/{contractId}/owner-sign`
+ * (live spec 2026-10-16), with a drawn `signature` or `useSaved` (their saved signature), `consent=true`.
+ * Pass `{ contractId, signature?, useSaved? }`.
+ */
+export function useOwnerSignContract() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ contractId, signature, useSaved }) => {
+      const { formData, query } = signRequest({ signature, useSaved });
+      return apiUpload(`/payments/contracts/${contractId}/owner-sign?${query}`, formData, undefined, 'post');
+    },
+    onSuccess: (contract, { contractId }) => {
+      queryClient.setQueryData(['contracts', contractId], contract);
+      toast.success('Contract signed.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't sign the contract.")),
+  });
+}
+
+/** When the renter signed: `renterSignedAt` (live spec 2026-10-16), else the old single `signedAt`. */
+export const renterSignedAt = (contract) => contract?.renterSignedAt ?? contract?.signedAt ?? null;
+/** When the owner signed (`ownerSignedAt`, live spec 2026-10-16). */
+export const ownerSignedAt = (contract) => contract?.ownerSignedAt ?? null;

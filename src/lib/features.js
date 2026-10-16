@@ -17,3 +17,22 @@ export const isWhatsAppVerificationEnabled = () => import.meta.env.VITE_ENABLE_W
  */
 export const googleClientId = () => String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
 export const isGoogleSignInEnabled = () => googleClientId().length > 0;
+
+/**
+ * Verifying a phone number by SMS code with Google Firebase (Profile → phone → Verify by SMS). Switched off for
+ * now (product decision 2026-10-16): on only with `VITE_ENABLE_PHONE_VERIFICATION=true` **and** the Firebase web
+ * app's config set — `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`,
+ * `VITE_FIREBASE_APP_ID` (Firebase Console → Project settings → Your apps → Web app). It also needs the backend's
+ * `POST /auth/verify-firebase-phone` (see hooks/usePhoneVerification.js).
+ */
+export const firebaseConfig = () => ({
+  apiKey: String(import.meta.env.VITE_FIREBASE_API_KEY || '').trim(),
+  authDomain: String(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '').trim(),
+  projectId: String(import.meta.env.VITE_FIREBASE_PROJECT_ID || '').trim(),
+  appId: String(import.meta.env.VITE_FIREBASE_APP_ID || '').trim(),
+});
+export const isPhoneVerificationEnabled = () => {
+  if (import.meta.env.VITE_ENABLE_PHONE_VERIFICATION !== 'true') return false;
+  const c = firebaseConfig();
+  return !!(c.apiKey && c.authDomain && c.projectId && c.appId);
+};

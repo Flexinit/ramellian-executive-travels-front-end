@@ -1,13 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Drawer from '../ui/Drawer';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import { UserPlus } from 'lucide-react';
 import Divider from '../ui/Divider';
 import GoogleSignInButton from './GoogleSignInButton';
+import RememberMe from './RememberMe';
 import { useGoogleLogin, useLogin } from '../../hooks/useAuth';
 import { isGoogleSignInEnabled } from '../../lib/features';
 
@@ -81,6 +82,7 @@ export default function LoginModal({ isOpen, onClose, onReopen, onSwitchToRegist
             error={errors.password?.message}
             register={register('password')}
           />
+          <RememberMe />
           <Button type="submit" size="lg" loading={login.isPending} className="mt-1">
             Log In
           </Button>
@@ -93,29 +95,26 @@ export default function LoginModal({ isOpen, onClose, onReopen, onSwitchToRegist
           </>
         )}
 
-        <p className="text-center text-brand-grey text-sm">
-          Don&apos;t have an account?{' '}
+        {/* Easy to spot: a full-width button, not a small link. */}
+        <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+          <p className="text-brand-white text-sm font-medium">New to Ramellian Executive Travels?</p>
           {onSwitchToRegister ? (
-            <button
-              type="button"
+            <Button
+              size="lg"
+              className="w-full"
               onClick={() => {
                 reset();
                 onSwitchToRegister();
               }}
-              className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md"
             >
-              Create one
-            </button>
+              <UserPlus size={16} aria-hidden="true" /> Create an account
+            </Button>
           ) : (
-            <Link
-              to="/auth/register"
-              onClick={handleClose}
-              className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md"
-            >
-              Create one
-            </Link>
+            <Button to="/auth/register" size="lg" className="w-full" onClick={handleClose}>
+              <UserPlus size={16} aria-hidden="true" /> Create an account
+            </Button>
           )}
-        </p>
+        </div>
       </div>
     </Drawer>
   );

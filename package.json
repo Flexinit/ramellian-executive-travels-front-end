@@ -18,6 +18,7 @@
     "@tanstack/react-query-devtools": "^5.59.0",
     "axios": "^1.7.7",
     "date-fns": "^3.6.0",
+    "firebase": "^10.14.1",
     "jsqr": "^1.4.0",
     "lucide-react": "^0.454.0",
     "mammoth": "^1.13.0",

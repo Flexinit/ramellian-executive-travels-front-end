@@ -13,6 +13,9 @@
 
   html {
     scroll-behavior: smooth;
+    /* Never scroll sideways: an element a few pixels too wide shifted every page (the logo and the menu were cut
+       off on the left). `clip`, not `hidden`, so sticky things (the menu, the top bar) keep working. */
+    overflow-x: clip;
   }
 
   body {
@@ -35,5 +38,23 @@
   /* Reusable focus ring consistent with brand gold */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark;
+  }
+}
+
+/* Print / Save as PDF on a contract (lib/printContract.js): only the contract document is printed. */
+@media print {
+  body.printing-contract * {
+    visibility: hidden;
+  }
+  body.printing-contract .contract-document,
+  body.printing-contract .contract-document * {
+    visibility: visible;
+  }
+  body.printing-contract .contract-document {
+    position: absolute;
+    inset: 0 0 auto 0;
+    max-width: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

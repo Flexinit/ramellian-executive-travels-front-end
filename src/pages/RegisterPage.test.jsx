@@ -29,8 +29,9 @@ async function fillForm(user) {
   await user.type(screen.getByLabelText('First Name'), 'Ann');
   await user.type(screen.getByLabelText('Last Name'), 'Lee');
   await user.type(screen.getByLabelText('Email'), 'ann@example.com');
-  await user.type(screen.getByLabelText('Password'), 'supersecret1');
-  await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1');
+  await user.type(screen.getByLabelText(/phone number/i), '0712 345 678');
+  await user.type(screen.getByLabelText('Password'), 'supersecret1!');
+  await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1!');
   await user.click(screen.getByLabelText(/terms of service/i));
 }
 
@@ -65,7 +66,7 @@ describe('RegisterPage account type', () => {
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => expect(body).toBeDefined());
-    expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1' });
+    expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1!' });
   });
 
   it('starts the verify page\'s one-minute code countdown when the account is created', async () => {
@@ -77,6 +78,21 @@ describe('RegisterPage account type', () => {
 
     await waitFor(() => expect(getCodeSentAt('ann@example.com')).not.toBeNull());
     expect(Date.now() - getCodeSentAt('ann@example.com')).toBeLessThan(5000);
+  });
+});
+
+describe('RegisterPage — phone number', () => {
+  it('asks for a phone number and will not register without it (it is saved to the profile after sign-in)', async () => {
+    const user = userEvent.setup();
+    let called = false;
+    server.use(http.post(`${BASE}/auth/register`, () => { called = true; return HttpResponse.json({ message: 'ok' }, { status: 201 }); }));
+    renderPage();
+    await fillForm(user);
+    await user.clear(screen.getByLabelText(/phone number/i));
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+
+    expect(await screen.findByText(/enter your phone number/i)).toBeInTheDocument();
+    expect(called).toBe(false);
   });
 });
 
@@ -102,7 +118,7 @@ describe('RegisterPage — WhatsApp verification is hidden for now', () => {
     await fillForm(user);
     await user.click(screen.getByRole('button', { name: /create account/i }));
     await waitFor(() => expect(body).toBeDefined());
-    expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1' });
+    expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1!' });
   });
 });
 
@@ -130,7 +146,7 @@ describe('RegisterPage — verify by email or WhatsApp (feature switched on)', (
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => expect(sent.body).toBeDefined());
-    expect(sent.body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1' });
+    expect(sent.body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1!' });
   });
 
   it('asks for a WhatsApp number when WhatsApp is chosen, and will not register without it', async () => {
@@ -140,8 +156,9 @@ describe('RegisterPage — verify by email or WhatsApp (feature switched on)', (
     await user.click(screen.getByRole('radio', { name: 'WhatsApp' }));
     expect(screen.getByLabelText(/whatsapp number/i)).toBeInTheDocument();
 
+    await user.clear(screen.getByLabelText(/whatsapp number/i));
     await user.click(screen.getByRole('button', { name: /create account/i }));
-    expect(await screen.findByText(/enter your whatsapp number/i)).toBeInTheDocument();
+    expect(await screen.findByText(/enter your phone number/i)).toBeInTheDocument();
   });
 
   it('registers with the phone number and the WhatsApp channel', async () => {
@@ -151,13 +168,14 @@ describe('RegisterPage — verify by email or WhatsApp (feature switched on)', (
     renderPage();
     await fillForm(user);
     await user.click(screen.getByRole('radio', { name: 'WhatsApp' }));
+    await user.clear(screen.getByLabelText(/whatsapp number/i));
     await user.type(screen.getByLabelText(/whatsapp number/i), '0712 345 678');
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => expect(sent.body).toBeDefined());
     expect(sent.body).toEqual({
-      firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1',
-      phoneNumber: '0712 345 678', verificationChannel: 'WHATSAPP',
+      firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1!',
+      phoneNumber: '+254712345678', verificationChannel: 'WHATSAPP',
     });
     expect(sent.body).not.toHaveProperty('verifyVia');
   });
@@ -169,7 +187,6 @@ describe('RegisterPage — verify by email or WhatsApp (feature switched on)', (
     renderPage();
     await fillForm(user);
     await user.click(screen.getByRole('radio', { name: 'WhatsApp' }));
-    await user.type(screen.getByLabelText(/whatsapp number/i), '0712345678');
     await user.click(screen.getByRole('radio', { name: 'Email' }));
     await user.click(screen.getByRole('button', { name: /create account/i }));
 
@@ -199,8 +216,8 @@ describe('RegisterPage — agreeing to the Terms of Service and Privacy Policy',
     await user.type(screen.getByLabelText('First Name'), 'Ann');
     await user.type(screen.getByLabelText('Last Name'), 'Lee');
     await user.type(screen.getByLabelText('Email'), 'ann@example.com');
-    await user.type(screen.getByLabelText('Password'), 'supersecret1');
-    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1');
+    await user.type(screen.getByLabelText('Password'), 'supersecret1!');
+    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1!');
 
     await user.click(screen.getByRole('button', { name: /create account/i }));
 

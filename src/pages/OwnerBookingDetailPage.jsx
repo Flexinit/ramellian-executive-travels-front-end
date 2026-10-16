@@ -12,6 +12,9 @@ import BookingStatusControl from '../components/booking/BookingStatusControl';
 import ConfirmPaymentForm from '../components/booking/ConfirmPaymentForm';
 import HandoverHistory from '../components/booking/HandoverHistory';
 import ContractPdfActions from '../components/booking/ContractPdfActions';
+import ReviewForm from '../components/reviews/ReviewForm';
+import OwnerContractSigning from '../components/contract/OwnerContractSigning';
+import Card from '../components/ui/Card';
 import { useBooking } from '../hooks/useBookings';
 import { useVehicle } from '../hooks/useVehicles';
 import { formatDateRange, formatCurrency, calculateTotalPrice } from '../lib/utils';
@@ -23,6 +26,8 @@ export default function OwnerBookingDetailPage() {
   const { data: booking, isLoading, isError, error, refetch } = useBooking(bookingId);
   const { data: vehicle } = useVehicle(booking?.vehicleId);
   const [assigning, setAssigning] = useState(false);
+  // Rating the renter, once the trip is over (POST /reviews/bookings/{id}/renter). Hidden once sent.
+  const [renterReviewed, setRenterReviewed] = useState(false);
   // `BookingResponse` has no `contractId` field (docs/backend-requests.md item 13) — this is only ever found
   // for a contract drafted earlier in this same browser session (an owner/admin who just stepped through
   // ContractPage themselves, or a renter's session on a shared device), same limitation BookingDetailPage's
@@ -114,6 +119,20 @@ export default function OwnerBookingDetailPage() {
         <ConfirmPaymentForm booking={booking} />
 
         <HandoverHistory bookingId={booking.id} />
+
+        {booking.status === 'COMPLETED' && !renterReviewed && (
+          <Card className="p-5 flex flex-col gap-3">
+            <div>
+              <h2 className="font-heading text-brand-white text-base font-semibold">Rate the renter</h2>
+              <p className="text-brand-grey text-sm mt-1">
+                How was {booking.renterName || 'this renter'}? It helps other owners decide on future bookings.
+              </p>
+            </div>
+            <ReviewForm bookingId={booking.id} target="renter" onSent={() => setRenterReviewed(true)} />
+          </Card>
+        )}
+
+        {contractId && <OwnerContractSigning contractId={contractId} booking={booking} />}
 
         {contractId && (
           <div className="flex flex-col gap-2">

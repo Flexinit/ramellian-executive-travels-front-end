@@ -64,3 +64,13 @@ describe('contract fields', () => {
     expect(fillContractText('Rental agreement\n\nTerms and conditions apply', values)).toBe('Rental agreement\n\nTerms and conditions apply');
   });
 });
+
+describe('contract fields the backend added (live spec 2026-10-16)', () => {
+  it("fills the vehicle's year, insurer and policy number, and the booking's passengers, when given", () => {
+    const v = contractValues({
+      booking: { passengerCount: 4 },
+      vehicle: { year: 2019, insurer: 'Jubilee Insurance', policyNumber: 'POL-123' },
+    });
+    expect(v).toMatchObject({ vehicle_year: '2019', insurer_name: 'Jubilee Insurance', insurance_policy_number: 'POL-123', passenger_count: '4' });
+  });
+});

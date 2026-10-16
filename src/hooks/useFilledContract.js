@@ -12,12 +12,17 @@ import { contractValues, fillContractText } from '../lib/contractFields';
  * raw `{{…}}`.
  * @param {string} bookingId
  * @param {string} text — the contract text as the backend returned it
+ * @param {string|Date} [agreementDate] — when the agreement was made (the contract's `acceptedAt`); today
+ *   while it's still being reviewed
+ * @param {{ asOwner?: boolean }} [options] — the owner is viewing: their own profile isn't the renter's, so the
+ *   renter's details come from the booking only
  */
-export function useFilledContract(bookingId, text) {
+export function useFilledContract(bookingId, text, agreementDate, { asOwner = false } = {}) {
   const { data: booking } = useBooking(bookingId);
   const { data: vehicle } = useVehicle(booking?.vehicleId);
   const { data: renter } = useCurrentUser();
   const { data: policy } = useEffectivePolicy(bookingId);
   if (!text) return text;
-  return fillContractText(text, contractValues({ booking: booking || {}, vehicle: vehicle || {}, renter: renter || {}, policy }));
+  const now = agreementDate ? new Date(agreementDate) : new Date();
+  return fillContractText(text, contractValues({ booking: booking || {}, vehicle: vehicle || {}, renter: asOwner ? {} : renter || {}, policy, now }));
 }

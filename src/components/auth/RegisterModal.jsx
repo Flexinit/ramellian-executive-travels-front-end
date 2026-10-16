@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { newPasswordField } from '../../lib/password';
+import PasswordChecklist from './PasswordChecklist';
+import { phoneField } from '../../lib/phone';
 import Input from '../ui/Input';
+import RememberMe from './RememberMe';
 import Checkbox from '../ui/Checkbox';
 import Button from '../ui/Button';
 import Drawer from '../ui/Drawer';
@@ -11,6 +15,7 @@ import Divider from '../ui/Divider';
 import SegmentedControl from '../ui/SegmentedControl';
 import GoogleSignInButton from './GoogleSignInButton';
 import { useGoogleLogin, useRegister, WHATSAPP_CHANNEL } from '../../hooks/useAuth';
+import { useCreateBookingLead, bookingLeadsFor } from '../../hooks/useBookingLeads';
 import { isGoogleSignInEnabled, isWhatsAppVerificationEnabled } from '../../lib/features';
 import { useCartStore } from '../../store/cartStore';
 import { CONTACT_KINDS } from '../../lib/cart';
@@ -22,8 +27,9 @@ const schema = z
     lastName: z.string().min(1, 'Enter your last name'),
     email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
     verifyVia: z.enum(['EMAIL', WHATSAPP_CHANNEL]),
-    phoneNumber: z.string().trim().max(30, 'Phone number must be 30 characters or fewer'),
-    password: z.string().min(8, 'At least 8 characters'),
+    // Always asked (product rule) — see RegisterPage's own copy of this field.
+    phoneNumber: phoneField,
+    password: newPasswordField,
     confirmPassword: z.string().min(1, 'Confirm your password'),
     // Client-side only — see RegisterPage's own copy of this field for why it's never sent to the backend.
     agreeToTerms: z.literal(true, { errorMap: () => ({ message: 'Required to create an account' }) }),
@@ -31,24 +37,9 @@ const schema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
-  })
-  .refine((data) => data.verifyVia !== WHATSAPP_CHANNEL || data.phoneNumber.length > 0, {
-    message: 'Enter your WhatsApp number',
-    path: ['phoneNumber'],
   });
 
-function passwordStrength(password = '') {
-  let score = 0;
-  if (password.length >= 8) score += 1;
-  if (password.length >= 12) score += 1;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
-  if (/\d/.test(password)) score += 1;
-  if (/[^a-zA-Z0-9]/.test(password)) score += 1;
-  return Math.min(score, 4);
-}
 
-const STRENGTH_LABELS = ['Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-const STRENGTH_COLORS = ['bg-red-500', 'bg-red-500', 'bg-amber-500', 'bg-brand-gold', 'bg-emerald-500'];
 
 /**
  * The same registration form as RegisterPage, offered as a right-side drawer — same reasoning as LoginModal,
@@ -82,14 +73,14 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
     defaultValues: { firstName: '', lastName: '', email: sharedEmail, verifyVia: 'EMAIL', phoneNumber: '', password: '', confirmPassword: '', agreeToTerms: false },
   });
   const registerUser = useRegister();
+  const createLead = useCreateBookingLead();
   const googleLogin = useGoogleLogin('register');
   const password = watch('password', '');
   const whatsappOffered = isWhatsAppVerificationEnabled();
   const verifyVia = whatsappOffered ? watch('verifyVia') : 'EMAIL';
-  const strength = passwordStrength(password);
 
-  // The email shared on the "How can we reach you?" step can arrive after this form already mounted (it's
-  // its own page, visited before checkout) — keeps the field in sync rather than only seeding it once at mount.
+  // An email shared on the old contact step (still in some browsers' saved selection) starts the field — kept
+  // in sync rather than only seeded once at mount, since the saved selection can load after this mounts.
   useEffect(() => {
     if (sharedEmail) setValue('email', sharedEmail);
   }, [sharedEmail, setValue]);
@@ -97,7 +88,11 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
   function onSubmit(values) {
     const { confirmPassword, agreeToTerms, verifyVia: via, phoneNumber, ...rest } = values;
     const payload = via === WHATSAPP_CHANNEL ? { ...rest, phoneNumber, verificationChannel: WHATSAPP_CHANNEL } : rest;
-    registerUser.mutate(payload, {
+    // A visitor with vehicles chosen is a booking lead the moment they give their details, whether or not they
+    // go on to verify — fire-and-forget, never shown or blocking (useBookingLeads).
+    const { items } = useCartStore.getState();
+    bookingLeadsFor(items, { email: values.email, phoneNumber }).forEach((lead) => createLead.mutate(lead));
+    registerUser.mutate({ ...payload, profilePhone: phoneNumber }, {
       onError: (error) => {
         const fieldErrors = error?.response?.data?.fieldErrors;
         if (fieldErrors) {
@@ -153,34 +148,21 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
             </div>
           )}
 
-          {verifyVia === WHATSAPP_CHANNEL && (
-            <Input
-              label="WhatsApp number"
-              type="tel"
-              autoComplete="tel"
-              required
-              hint="The number on WhatsApp, e.g. 0712 345 678 or +254 712 345 678."
-              error={errors.phoneNumber?.message}
-              register={register('phoneNumber')}
-            />
-          )}
+          <Input
+            label={verifyVia === WHATSAPP_CHANNEL ? 'WhatsApp number' : 'Phone number'}
+            type="tel"
+            autoComplete="tel"
+            required
+            hint={verifyVia === WHATSAPP_CHANNEL ? 'The number on WhatsApp, e.g. 0712 345 678 or +254 712 345 678.' : 'e.g. 0712 345 678. Never shown to vehicle owners.'}
+            error={errors.phoneNumber?.message}
+            register={register('phoneNumber')}
+          />
 
           {/* Side by side (like First/Last Name), so the whole form fits in the panel without scrolling. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
             <div className="flex flex-col gap-1.5">
               <Input label="Password" type="password" autoComplete="new-password" error={errors.password?.message} register={register('password')} />
-              {password && (
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-1" aria-hidden="true">
-                    {[0, 1, 2, 3].map((i) => (
-                      <span key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < strength ? STRENGTH_COLORS[strength] : 'bg-white/10'}`} />
-                    ))}
-                  </div>
-                  <span className="text-xs text-brand-grey">
-                    Strength: <span className="text-brand-white font-medium">{STRENGTH_LABELS[strength]}</span>
-                  </span>
-                </div>
-              )}
+              <PasswordChecklist password={password} />
             </div>
 
             <Input
@@ -192,6 +174,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
             />
           </div>
 
+          <RememberMe />
           <Checkbox
             register={register('agreeToTerms')}
             error={errors.agreeToTerms?.message}

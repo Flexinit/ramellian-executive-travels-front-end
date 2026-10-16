@@ -6,13 +6,14 @@ import Card from '../ui/Card';
 import { useUpdateProfile } from '../../hooks/useProfile';
 import { useCartStore } from '../../store/cartStore';
 import { CONTACT_KINDS, contactProblem } from '../../lib/cart';
+import { normalizePhone } from '../../lib/phone';
 
 /**
- * Shown on checkout only to a signed-in renter whose profile has no phone number yet. A signed-in renter skips
- * the "How can we reach you?" step (their account is how we reach them), so this is the one place a missing
- * phone is caught before a booking is made. It is saved to the profile (`PATCH /users/me`, the same call as the
- * Personal Details form), so it is asked once — never again on later bookings. A phone shared before signing up
- * starts the field. Never shown to vehicle owners.
+ * Shown on checkout only to a signed-in renter whose profile has no phone number yet — sign-up asks for it and
+ * saves it, so this catches older accounts (or a save that failed), the one place a missing phone is caught
+ * before a booking is made. It is saved to the profile (`PATCH /users/me`, the same call as the
+ * Personal Details form), so it is asked once — never again on later bookings. A phone shared on the old
+ * contact step (still in some browsers' saved selection) starts the field. Never shown to vehicle owners.
  */
 export default function CheckoutPhonePrompt() {
   const sharedPhone = useCartStore((s) => (s.contact?.kind === CONTACT_KINDS.PHONE ? s.contact.value : ''));
@@ -28,7 +29,7 @@ export default function CheckoutPhonePrompt() {
       return;
     }
     // On success the fresh profile lands in authStore, which hides this prompt and lets checkout continue.
-    updateProfile.mutate({ phoneNumber: value.trim() });
+    updateProfile.mutate({ phoneNumber: normalizePhone(value) });
   }
 
   return (

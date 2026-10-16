@@ -24,9 +24,9 @@ import { VEHICLE_TRIP_TYPES } from '../lib/vehicleOptions';
 
 /** The vehicle is added in short steps so the form never looks like one long wall of fields. */
 const STEPS = [
-  { key: 'car', label: 'The car', title: 'About the car', blurb: 'The make and model, its colour, and its registration details.', fields: ['model', 'color', 'registrationNumber', 'vin'] },
+  { key: 'car', label: 'The car', title: 'About the car', blurb: 'The make and model, its colour, and its registration details.', fields: ['model', 'color', 'registrationNumber', 'vin', 'year'] },
   { key: 'price', label: 'Price & place', title: 'Price and location', blurb: 'Where the car is kept and what it costs per day.', fields: ['location', 'pricePerDay', 'capacity'] },
-  { key: 'features', label: 'Features', title: 'Features', blurb: 'Fuel, transmission, and how renters can book it.', fields: ['fuelType', 'transmissionType', 'selfDrive', 'chauffeured', 'hasWorkingAC', 'comprehensiveInsurance', 'available', 'availabilityMode', 'availableFrom', 'availableTo', 'tripTypes'] },
+  { key: 'features', label: 'Features', title: 'Features', blurb: 'Fuel, transmission, and how renters can book it.', fields: ['fuelType', 'transmissionType', 'selfDrive', 'chauffeured', 'hasWorkingAC', 'comprehensiveInsurance', 'insurer', 'policyNumber', 'available', 'availabilityMode', 'availableFrom', 'availableTo', 'tripTypes'] },
   { key: 'photos', label: 'Photos', title: 'Photos', blurb: 'Optional, but renters book with more confidence when they can see every angle.', fields: [] },
 ];
 
@@ -261,6 +261,15 @@ export default function AddVehiclePage() {
                     <Input label="Registration Number" error={errors.registrationNumber?.message} register={register('registrationNumber')} />
                     <Input label="VIN" error={errors.vin?.message} register={register('vin')} />
                   </div>
+                  <Input
+                    label="Year of manufacture (optional)"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="e.g. 2019"
+                    error={errors.year?.message}
+                    register={register('year')}
+                    className="sm:max-w-[50%]"
+                  />
                 </>
               )}
 
@@ -326,6 +335,10 @@ export default function AddVehiclePage() {
                     </label>
                   </div>
                   {errors.comprehensiveInsurance && <p className="text-xs text-red-400">{errors.comprehensiveInsurance.message}</p>}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input label="Insurer (optional)" placeholder="e.g. Jubilee Insurance" error={errors.insurer?.message} register={register('insurer')} />
+                    <Input label="Policy number (optional)" error={errors.policyNumber?.message} register={register('policyNumber')} />
+                  </div>
 
                   <div className="flex flex-col gap-1.5">
                     <span className="text-sm font-medium text-brand-white">

@@ -155,7 +155,7 @@ describe('App routing', () => {
       const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
       expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
         'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Add Vehicle', 'Reports', 'Contract Templates',
-        'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
+        'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
       ]);
       expect(screen.getAllByRole('navigation', { name: 'Dashboard' })).toHaveLength(1);
     });
@@ -410,7 +410,7 @@ describe('App routing', () => {
           const labels = within(menu).getAllByRole('link').map((l) => l.textContent);
           expect(labels).toEqual([
             'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
             'Back to Main Site',
           ]);
@@ -456,7 +456,7 @@ describe('App routing', () => {
         signInWith(['SUPER_ADMIN', 'MANAGE', 'CAR_OWNER'], LIVE_ADMIN_PERMISSIONS);
         expect(await menuLabels('/admin')).toEqual([
           'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
           'Back to Main Site',
         ]);
@@ -465,7 +465,7 @@ describe('App routing', () => {
       it('hides the vehicle and booking items from an administrator who lacks those permissions', async () => {
         signInWith(['SUPER_ADMIN'], ['USER_MANAGE', 'DOCUMENT_REVIEW']);
         expect(await menuLabels('/admin')).toEqual([
-          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Review Documents', 'Approved Documents',
+          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Review Documents', 'Approved Documents',
           'Rejected Documents', 'Back to Main Site',
         ]);
       });
@@ -473,14 +473,14 @@ describe('App routing', () => {
       it('shows an administrator who can only manage users just the user pages', async () => {
         signInWith(['ADMIN'], ['USER_MANAGE']);
         expect(await menuLabels('/admin')).toEqual([
-          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Back to Main Site',
+          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Back to Main Site',
         ]);
       });
 
       it('hides Add Vehicle from an owner who can update vehicles but not create them', async () => {
         signInWith(['CAR_OWNER'], ['BOOKING_READ', 'VEHICLE_UPDATE', 'DOCUMENT_UPLOAD', 'PROFILE_READ']);
         expect(await menuLabels('/owner')).toEqual([
-          'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Reports', 'Contract Templates', 'Documents', 'Browse Vehicles',
+          'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Reports', 'Contract Templates', 'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles',
           'Switch to Renter', 'Back to Main Site',
         ]);
       });
@@ -488,7 +488,7 @@ describe('App routing', () => {
       it('hides the fleet items from an owner without vehicle or booking permissions', async () => {
         signInWith(['CAR_OWNER'], ['PROFILE_READ', 'DOCUMENT_READ']);
         expect(await menuLabels('/owner')).toEqual([
-          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Contract Templates', 'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
+          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Contract Templates', 'Booking Policy', 'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
         ]);
       });
 

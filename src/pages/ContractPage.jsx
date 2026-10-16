@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
+import BackLink from '../components/ui/BackLink';
+import ContractConfirmBar from '../components/contract/ContractConfirmBar';
+import ContractPageLayout from '../components/contract/ContractPageLayout';
+import { useRenterName } from '../hooks/useRenterName';
 import { RotateCcw, Trash2, Car, CreditCard, CheckCircle2 } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
-import Logo from '../components/ui/Logo';
 import ContractViewer from '../components/payment/ContractViewer';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
 import BookingWarningsModal from '../components/documents/BookingWarningsModal';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
-import { useContractDraft, useAcceptContract } from '../hooks/useContract';
+import { useContractDraft, useAcceptContract, renterSignedAt, ownerSignedAt } from '../hooks/useContract';
 import { useBooking } from '../hooks/useBookings';
 import { useFilledContract } from '../hooks/useFilledContract';
 import { useCartStore } from '../store/cartStore';
@@ -48,6 +51,15 @@ export default function ContractPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const bookingId = location.state?.bookingId;
+  // "I have read and understood this agreement" — Accept stays off until it's ticked.
+  const [confirmedRead, setConfirmedRead] = useState(false);
+  // Read part by part; the confirmation and Accept only come once the last part (the signatures) is reached.
+  const [readToEnd, setReadToEnd] = useState(false);
+  // A group moves on to the next booking's contract on this same page: that one is read and confirmed afresh.
+  useEffect(() => {
+    setConfirmedRead(false);
+    setReadToEnd(false);
+  }, [bookingId]);
   const warnings = location.state?.warnings || [];
   const draft = useContractDraft();
   const accept = useAcceptContract();
@@ -67,13 +79,14 @@ export default function ContractPage() {
   // Re-fetched fresh (not from an earlier, possibly stale cache): the owner may have declined the booking,
   // or its payment hold may have run out, while the renter was still on this page — see useBookings.js.
   const { data: booking } = useBooking(bookingId, { staleTime: 0 });
+  const renterName = useRenterName(booking);
   const unfulfilled = isBookingUnfulfilled(booking?.status);
   // The backend refused to draft it because it's already past that stage — not the same as `unfulfilled`
   // (rejected/expired), and not worth retrying: "Try again" would only ever fail the same way again.
   const alreadyPastContract = draft.isError && !unfulfilled && ALREADY_HANDLED_HINT.test(draft.error?.response?.data?.message || '');
   const cancelledCartItem = booking?.status === 'CANCELLED' ? cartItems.find((i) => i.bookingId === bookingId) : undefined;
   // The template's {{fields}} (renter, vehicle, trip, charges) filled in with this booking's details.
-  const contractText = useFilledContract(bookingId, draft.data?.contractText);
+  const contractText = useFilledContract(bookingId, draft.data?.contractText, draft.data?.acceptedAt);
 
   function rebookCancelled() {
     updateCartItem(cancelledCartItem.vehicleId, { bookingId: undefined, contractAccepted: false, signed: false });
@@ -116,17 +129,13 @@ export default function ContractPage() {
   }
 
   return (
-    <PageWrapper className="max-w-2xl mx-auto">
+    <PageWrapper className="max-w-[80rem] mx-auto">
       <PageTitle title="Review Contract" />
-      <div className="flex flex-col gap-6">
-        <Link to="/" className="self-center focus-ring rounded-lg">
-          <Logo size="md" />
-        </Link>
-
-        <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Your Rental Contract</h1>
-          <p className="text-brand-grey text-sm mt-1">Read the terms below, then accept to continue to payment.</p>
-        </div>
+      <ContractPageLayout
+        back={<BackLink to="/booking/checkout" label="Back to checkout" />}
+        title="Your Rental Contract"
+        intro="Read it part by part with Next. On the last part, confirm you have read it, then accept to continue to payment."
+      >
 
         {draft.isPending && (
           <div className="flex justify-center py-10">
@@ -175,13 +184,32 @@ export default function ContractPage() {
 
         {draft.isSuccess && !unfulfilled && (
           <>
-            <ContractViewer contractText={contractText} pdfUrl={draft.data?.pdfUrl} />
-            <Button size="lg" loading={accept.isPending} onClick={() => accept.mutate(bookingId)}>
+            <ContractViewer
+              key={bookingId}
+              contractText={contractText}
+              pdfUrl={draft.data?.pdfUrl}
+              document={{
+                reference: bookingId,
+                agreementDate: draft.data?.acceptedAt || new Date(),
+                renter: { name: renterName, signedAt: renterSignedAt(draft.data) },
+                owner: { name: draft.data?.ownerSignedBy, signedAt: ownerSignedAt(draft.data) },
+                staged: true,
+                onProgress: ({ atEnd }) => atEnd && setReadToEnd(true),
+              }}
+            />
+            {readToEnd && (
+            <ContractConfirmBar
+              confirmed={confirmedRead}
+              onConfirmedChange={setConfirmedRead}
+              loading={accept.isPending}
+              onAction={() => accept.mutate(bookingId)}
+            >
               {!accept.isPending && <CheckCircle2 size={16} aria-hidden="true" />} Accept &amp; Continue
-            </Button>
+            </ContractConfirmBar>
+            )}
           </>
         )}
-      </div>
+      </ContractPageLayout>
 
       <BookingWarningsModal isOpen={warningsOpen} onClose={() => setWarningsOpen(false)} warnings={warnings} />
     </PageWrapper>

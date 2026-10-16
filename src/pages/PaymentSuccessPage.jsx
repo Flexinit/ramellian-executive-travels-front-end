@@ -1,58 +1,27 @@
-import React, { useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageTitle from '../components/layout/PageTitle';
-import PaymentStatusPanel from '../components/payment/PaymentStatusPanel';
-import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
-import { useVehicle } from '../hooks/useVehicles';
-import { usePaymentStatus, usePesapalCheckout } from '../hooks/usePayment';
-import { PAYMENT_STATUSES } from '../lib/constants';
 
 /**
- * The landing page Pesapal's own redirect comes back to once someone finishes (or abandons) paying —
- * `bookingId` isn't in this URL's path (unlike `/book/:vehicleId/payment`, which needs `vehicleId` there
- * too), so it's read from a `?bookingId=` query param first, falling back to the `lastCheckoutBookingId`
- * `usePesapalCheckout` stashes in sessionStorage right before redirecting to Pesapal — the same reasoning
- * `PaymentPage.jsx` already documents: Pesapal's redirect is a full page load, which loses React Router
- * state, so anything this page needs has to survive that some other way.
+ * The landing page Pesapal's own redirect comes back to once someone finishes (or abandons) paying. It only
+ * works out which booking that was and hands over to that booking's Payment page (`/book/:vehicleId/payment`),
+ * which shows the result — paid, failed, still checking — and every next step (sign the contract, try again,
+ * check again). One page for all of it, so the two can't drift apart: the "Try Again" that did nothing lived
+ * in a separate copy of this logic here.
  *
- * Purely a status check: it polls `GET /payments/pesapal/bookings/{bookingId}/status` (via the same
- * `usePaymentStatus` `PaymentPage.jsx` uses) and never infers success itself, per
- * "do not mark payment successful in the browser" (FRONTEND_INTEGRATION.md §4). Successful, it offers
- * Continue to Sign Contract (the vehicle id for that route comes from the booking record, not the URL);
- * failed, it offers to retry checkout for the same booking; still pending, it keeps polling, and once polling
- * gives up (most often someone who backed out of Pesapal, which never reports a failure) it says so and offers
- * Check again alongside the retry. A retry starts a fresh checkout and goes straight to its Pesapal link —
- * the renter already chose to pay again, so there's no "ready to pay" step in between.
+ * `bookingId` comes from a `?bookingId=` query param first, falling back to the `lastCheckoutBookingId`
+ * `usePesapalCheckout` stashes in sessionStorage right before redirecting to Pesapal (the redirect is a full
+ * page load, which loses React Router state). The vehicle id for the Payment page's URL comes from the booking
+ * record. The `checkout:{bookingId}` flag is set first so the Payment page resumes checking the payment rather
+ * than offering "Proceed to Payment" again — including in a browser that never started this checkout.
  */
 export default function PaymentSuccessPage() {
-  const navigate = useNavigate();
   const { search } = useLocation();
   const bookingId = new URLSearchParams(search).get('bookingId') || sessionStorage.getItem('lastCheckoutBookingId');
-
-  const { data: booking, isLoading: bookingLoading, isError: bookingError } = useBooking(bookingId, { staleTime: 0 });
-  const { data: vehicle } = useVehicle(booking?.vehicleId);
-  const paymentStatus = usePaymentStatus(bookingId, !!bookingId);
-  const retryCheckout = usePesapalCheckout();
-  const status = paymentStatus.data?.status;
-  // A ref, not just `isPending`: two fast clicks both run before a re-render, and two checkouts for one
-  // booking could become two real charges.
-  const retryingRef = useRef(false);
-
-  async function handleRetry() {
-    if (retryingRef.current) return;
-    retryingRef.current = true;
-    // usePesapalCheckout's own onSuccess/onError stash the link and show any error.
-    const data = await retryCheckout.mutateAsync(bookingId).catch(() => null);
-    if (data?.redirectUrl) {
-      window.location.assign(data.redirectUrl);
-      return; // leaving the page — keep the guard on
-    }
-    retryingRef.current = false;
-  }
+  const { data: booking, isLoading, isError } = useBooking(bookingId, { staleTime: 0 });
 
   if (!bookingId) {
     return (
@@ -62,7 +31,7 @@ export default function PaymentSuccessPage() {
     );
   }
 
-  if (bookingLoading) {
+  if (isLoading) {
     return (
       <PageWrapper className="flex items-center justify-center min-h-[50vh]">
         <Spinner size="lg" label="Loading your booking" />
@@ -70,7 +39,7 @@ export default function PaymentSuccessPage() {
     );
   }
 
-  if (bookingError || !booking) {
+  if (isError || !booking?.vehicleId) {
     return (
       <PageWrapper>
         <ErrorBanner message="Could not load your booking." />
@@ -78,35 +47,7 @@ export default function PaymentSuccessPage() {
     );
   }
 
-  return (
-    <PageWrapper className="max-w-md mx-auto">
-      <PageTitle title="Payment Status" />
-      <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Payment Status</h1>
-          <p className="text-brand-grey text-sm mt-1">Checking whether your payment went through.</p>
-        </div>
-
-        <PaymentStatusPanel
-          status={status}
-          exhausted={paymentStatus.exhausted}
-          errorMessage={paymentStatus.errorMessage}
-          onRecheck={() => paymentStatus.refetch()}
-          onRetry={handleRetry}
-          retrying={retryCheckout.isPending || retryCheckout.isSuccess}
-          booking={booking}
-          vehicle={vehicle}
-        />
-
-        {status === PAYMENT_STATUSES.SUCCESSFUL && (
-          <Button
-            size="lg"
-            onClick={() => navigate(`/book/${booking.vehicleId}/sign`, { state: { bookingId }, replace: true })}
-          >
-            Continue to Sign Contract
-          </Button>
-        )}
-      </div>
-    </PageWrapper>
-  );
+  sessionStorage.setItem(`checkout:${bookingId}`, '1');
+  sessionStorage.setItem(`booking:${booking.vehicleId}`, bookingId);
+  return <Navigate to={`/book/${booking.vehicleId}/payment`} state={{ bookingId }} replace />;
 }

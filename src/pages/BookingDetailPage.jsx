@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageSquare, Mail, KeyRound, FlagOff } from 'lucide-react';
+import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, CreditCard } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
+import BackLink from '../components/ui/BackLink';
 import BookingStatusBadge from '../components/booking/BookingStatusBadge';
 import Modal from '../components/ui/Modal';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
 import CancelBookingModal from '../components/booking/CancelBookingModal';
+import PostponeBookingModal from '../components/booking/PostponeBookingModal';
+import { useOverstayCheckout } from '../hooks/usePayment';
 import ReviewForm from '../components/reviews/ReviewForm';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
 import ContractPdfActions from '../components/booking/ContractPdfActions';
@@ -29,6 +32,8 @@ export default function BookingDetailPage() {
   const { data: booking, isLoading, isError, error, refetch } = useBooking(bookingId);
   const { data: vehicle } = useVehicle(booking?.vehicleId);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [movingDates, setMovingDates] = useState(false);
+  const overstay = useOverstayCheckout();
   // Which handover modal is open, if either — 'pickup' once the booking's confirmed and waiting to be
   // collected, 'return' once it's out (ACTIVE) and due back. Never both: a booking is only ever in one of
   // those states at a time. The backend only accepts handover details from the renter (a 403 "Only the
@@ -77,6 +82,7 @@ export default function BookingDetailPage() {
     <PageWrapper className="max-w-2xl">
       <PageTitle title="Booking Details" />
       <div className="flex flex-col gap-6">
+        <BackLink to="/dashboard/bookings" label="Back to My Bookings" />
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-white/5">
@@ -146,10 +152,27 @@ export default function BookingDetailPage() {
           </div>
         </div>
 
+        {Number(booking.overstayAmount) > 0 && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <p className="text-sm text-brand-white">
+              Returned late{booking.overstayDays ? ` by ${booking.overstayDays} day${booking.overstayDays === 1 ? '' : 's'}` : ''}: an
+              overstay charge of <span className="font-semibold">{formatCurrency(booking.overstayAmount)}</span> is due.
+            </p>
+            <Button className="shrink-0" loading={overstay.isPending} onClick={() => overstay.mutate(booking.id)}>
+              {!overstay.isPending && <CreditCard size={15} aria-hidden="true" />} Pay overstay
+            </Button>
+          </div>
+        )}
+
         {canCancel && (
-          <Button variant="danger" className="self-start" onClick={() => setConfirmingCancel(true)}>
-            Cancel booking
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => setMovingDates(true)}>
+              <CalendarClock size={15} aria-hidden="true" /> Move dates
+            </Button>
+            <Button variant="danger" onClick={() => setConfirmingCancel(true)}>
+              Cancel booking
+            </Button>
+          </div>
         )}
 
         {booking.status === BOOKING_STATUSES.CONFIRMED && (
@@ -203,6 +226,7 @@ export default function BookingDetailPage() {
       </div>
 
       <CancelBookingModal isOpen={confirmingCancel} onClose={() => setConfirmingCancel(false)} booking={booking} />
+      <PostponeBookingModal isOpen={movingDates} onClose={() => setMovingDates(false)} booking={booking} />
 
       <VehicleHandoverModal
         isOpen={!!handover}

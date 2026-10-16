@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { UserCircle, IdCard, Car, ArrowRight, X } from 'lucide-react';
 import { useSetupPrompts } from '../../hooks/useProfile';
+import { isBookingFlowPath } from '../../lib/utils';
 
 function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
   return (
@@ -50,7 +51,8 @@ export default function SetupPrompts() {
   const showDocuments = needsDocuments && !dismissed.documents && pathname !== documentsPath && pathname !== profilePath;
   const showVehicle = needsVehicle && !dismissed.vehicle && pathname !== vehiclePath;
 
-  if (!showProfile && !showDocuments && !showVehicle) return null;
+  // Hidden while booking — see isBookingFlowPath.
+  if (isBookingFlowPath(pathname) || (!showProfile && !showDocuments && !showVehicle)) return null;
 
   return (
     <div role="region" aria-label="Finish setting up your account" className="bg-brand-gold/10 border-b border-brand-gold/20">

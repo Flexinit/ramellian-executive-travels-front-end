@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import PageBackdrop from '../components/layout/PageBackdrop';
+import coastalLodge from '../assets/destinations/coastal-lodge.jpg';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, LayoutDashboard, Car } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -40,6 +42,7 @@ export default function BookingConfirmPage() {
   }, [bookingId, completeBooking, completeGroup]);
 
   return (
+    <PageBackdrop image={coastalLodge}>
     <PageWrapper className="max-w-md mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center gap-6">
       <PageTitle title="Booking Confirmed" />
       <Link to="/" className="focus-ring rounded-lg">
@@ -79,5 +82,6 @@ export default function BookingConfirmPage() {
         </Button>
       </div>
     </PageWrapper>
+    </PageBackdrop>
   );
 }

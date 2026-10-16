@@ -4,6 +4,7 @@ import Modal from '../ui/Modal';
 import SetupSteps from '../profile/SetupSteps';
 import { useSetupPrompts } from '../../hooks/useProfile';
 import { useAuthStore } from '../../store/authStore';
+import { isBookingFlowPath } from '../../lib/utils';
 
 /**
  * Right after sign-in, if the backend says something is still missing (see
@@ -15,7 +16,8 @@ import { useAuthStore } from '../../store/authStore';
  * closes when they finish. "Remind me later" closes it for this session (per
  * account) and leaves the SetupPrompts banner as the reminder. It stays out
  * of the way on the pages the steps live on (the Profile, Documents and
- * add-vehicle pages) and while the flags are still unknown.
+ * add-vehicle pages), while the flags are still unknown, and while booking a vehicle (checkout to signature —
+ * someone who just signed up mid-checkout shouldn't be pulled away from paying); it opens once they leave.
  */
 export default function SetupGuideModal() {
   const { needsProfile, needsPhone, needsDocuments, documentsReady, needsVehicle, profilePath, documentsPath, vehiclePath } =
@@ -31,7 +33,7 @@ export default function SetupGuideModal() {
     if (anythingNeeded && documentsReady) setActive(true);
   }, [anythingNeeded, documentsReady]);
 
-  if (!active || dismissedFor === userId || [profilePath, documentsPath, vehiclePath].includes(pathname)) return null;
+  if (!active || dismissedFor === userId || [profilePath, documentsPath, vehiclePath].includes(pathname) || isBookingFlowPath(pathname)) return null;
 
   const close = () => setDismissedFor(userId);
 

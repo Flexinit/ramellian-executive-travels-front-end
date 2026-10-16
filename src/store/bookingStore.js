@@ -27,6 +27,7 @@ const INITIAL_DRAFT = {
   pickupLocation:  '',
   dropoffLocation: '',
   deliveryRequested: false,
+  passengerCount:  null,
 };
 
 /**

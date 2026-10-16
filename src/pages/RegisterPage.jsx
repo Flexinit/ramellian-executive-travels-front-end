@@ -3,7 +3,11 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { newPasswordField } from '../lib/password';
+import PasswordChecklist from '../components/auth/PasswordChecklist';
+import { phoneField } from '../lib/phone';
 import Input from '../components/ui/Input';
+import RememberMe from '../components/auth/RememberMe';
 import Checkbox from '../components/ui/Checkbox';
 import Button from '../components/ui/Button';
 import PageTitle from '../components/layout/PageTitle';
@@ -36,9 +40,10 @@ const schema = z
     email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
     // How the verification code is delivered: by email (the default) or on WhatsApp.
     verifyVia: z.enum(['EMAIL', WHATSAPP_CHANNEL]),
-    // Only asked for when the code goes to WhatsApp (`RegisterRequest.phoneNumber`, up to 30 characters).
-    phoneNumber: z.string().trim().max(30, 'Phone number must be 30 characters or fewer'),
-    password: z.string().min(8, 'At least 8 characters'),
+    // Always asked (the phone number is mandatory — product rule). Sent as `RegisterRequest.phoneNumber` only
+    // when the code goes to WhatsApp; otherwise saved to the profile right after sign-in (useAuth.js).
+    phoneNumber: phoneField,
+    password: newPasswordField,
     confirmPassword: z.string().min(1, 'Confirm your password'),
     // Client-side only — `RegisterRequest` has no field for this (confirmed against the live OpenAPI
     // spec), so it's never sent to the backend, just required before the form can submit at all.
@@ -47,25 +52,9 @@ const schema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
-  })
-  .refine((data) => data.verifyVia !== WHATSAPP_CHANNEL || data.phoneNumber.length > 0, {
-    message: 'Enter your WhatsApp number',
-    path: ['phoneNumber'],
   });
 
-/** Simple 0–4 strength score: length, upper/lower mix, digit, symbol. */
-function passwordStrength(password = '') {
-  let score = 0;
-  if (password.length >= 8) score += 1;
-  if (password.length >= 12) score += 1;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
-  if (/\d/.test(password)) score += 1;
-  if (/[^a-zA-Z0-9]/.test(password)) score += 1;
-  return Math.min(score, 4);
-}
 
-const STRENGTH_LABELS = ['Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-const STRENGTH_COLORS = ['bg-red-500', 'bg-red-500', 'bg-amber-500', 'bg-brand-gold', 'bg-emerald-500'];
 
 export default function RegisterPage() {
   // "List Your Car" arrives here as `?as=owner`; remember it so the first login opens the Owner Panel's setup steps.
@@ -110,13 +99,12 @@ export default function RegisterPage() {
   // WhatsApp verification is switched off for now (lib/features.js): everyone verifies by email.
   const whatsappOffered = isWhatsAppVerificationEnabled();
   const verifyVia = whatsappOffered ? watch('verifyVia') : 'EMAIL';
-  const strength = passwordStrength(password);
 
   function onSubmit(values) {
     const { confirmPassword, agreeToTerms, verifyVia: via, phoneNumber, ...rest } = values;
     // The phone number and channel are only sent when the code is to go to WhatsApp.
     const payload = via === WHATSAPP_CHANNEL ? { ...rest, phoneNumber, verificationChannel: WHATSAPP_CHANNEL } : rest;
-    registerUser.mutate(payload, {
+    registerUser.mutate({ ...payload, profilePhone: phoneNumber }, {
       onSuccess: () => clearDraft('register'),
       onError: (error) => {
         const fieldErrors = error?.response?.data?.fieldErrors;
@@ -190,17 +178,15 @@ export default function RegisterPage() {
             </div>
             )}
 
-            {verifyVia === WHATSAPP_CHANNEL && (
-              <Input
-                label="WhatsApp number"
-                type="tel"
-                autoComplete="tel"
-                required
-                hint="The number on WhatsApp, e.g. 0712 345 678 or +254 712 345 678."
-                error={errors.phoneNumber?.message}
-                register={register('phoneNumber')}
-              />
-            )}
+            <Input
+              label={verifyVia === WHATSAPP_CHANNEL ? 'WhatsApp number' : 'Phone number'}
+              type="tel"
+              autoComplete="tel"
+              required
+              hint={verifyVia === WHATSAPP_CHANNEL ? 'The number on WhatsApp, e.g. 0712 345 678 or +254 712 345 678.' : 'e.g. 0712 345 678. Never shown to vehicle owners.'}
+              error={errors.phoneNumber?.message}
+              register={register('phoneNumber')}
+            />
 
             <div className="flex flex-col gap-1.5">
               <Input
@@ -210,23 +196,7 @@ export default function RegisterPage() {
                 error={errors.password?.message}
                 register={register('password')}
               />
-              {password && (
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-1" aria-hidden="true">
-                    {[0, 1, 2, 3].map((i) => (
-                      <span
-                        key={i}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
-                          i < strength ? STRENGTH_COLORS[strength] : 'bg-white/10'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-brand-grey">
-                    Password strength: <span className="text-brand-white font-medium">{STRENGTH_LABELS[strength]}</span>
-                  </span>
-                </div>
-              )}
+              <PasswordChecklist password={password} />
             </div>
 
             <Input
@@ -237,6 +207,7 @@ export default function RegisterPage() {
               register={register('confirmPassword')}
             />
 
+            <RememberMe />
             <Checkbox
               register={register('agreeToTerms')}
               error={errors.agreeToTerms?.message}

@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, ShieldCheck } from 'lucide-react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import ContractDocument from '../contract/ContractDocument';
 import Spinner from '../ui/Spinner';
 import { extractTemplateText, TEMPLATE_UPLOAD_ACCEPT } from '../../lib/extractTemplateText';
 import { PLATFORM_LIABILITY_CLAUSE, withPlatformClause, stripPlatformClause } from '../../lib/contractBoilerplate';
@@ -118,11 +119,10 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
             <Spinner size="lg" label="Reading file" />
           </div>
         ) : (
-          <div className="rounded-lg bg-white/5 border border-white/10 p-3 max-h-96 overflow-y-auto">
+          <div className="rounded-lg max-h-[32rem] overflow-y-auto">
             {content.trim() ? (
-              <pre className="whitespace-pre-wrap break-words font-body text-sm text-brand-white leading-relaxed">
-                {withPlatformClause(content)}
-              </pre>
+              // Exactly how renters will see it (blanks show as "Not provided" until a booking fills them).
+              <ContractDocument contractText={withPlatformClause(content)} />
             ) : (
               <p className="text-brand-grey text-sm">Nothing to preview yet.</p>
             )}

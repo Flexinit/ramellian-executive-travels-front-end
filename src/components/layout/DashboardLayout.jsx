@@ -86,7 +86,8 @@ function MenuGroup({ label, icon: GroupIcon, containsActive, children }) {
  * repeated here. Rendered below the global Navbar
  * (see App.jsx's RootLayout). `flex-1` rather than `min-h-screen` so it
  * fills the remaining space under the Navbar instead of stacking a second
- * full viewport height underneath it.
+ * full viewport height underneath it. From `md` up the sidebar is sticky: it stays in view, under the top bar,
+ * while a long page (a contract, a report) scrolls beside it.
  *
  * @param {Array<{label: string, to: string, icon?: React.ComponentType, badge?: 'messages'|'notifications', switchTo?: 'renter'|'owner', group?: string, groupIcon?: React.ComponentType}>} items
  *   — `group` (with a `groupIcon`) puts neighbouring items under one collapsible heading (used when an account holds more than one
@@ -110,7 +111,8 @@ export default function DashboardLayout({ items = [], heading }) {
 
   return (
     <div className="flex flex-col md:flex-row flex-1 bg-brand-dark">
-      <aside className="flex flex-col md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/10 px-4 md:px-5 py-3 md:py-7">
+      {/* From md up the menu stays put under the top bar (h-20) while the page scrolls, scrolling on its own if taller. */}
+      <aside className="flex flex-col md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/10 px-4 md:px-5 py-3 md:py-7 md:sticky md:top-20 md:self-start md:h-[calc(100vh-5rem)] md:overflow-y-auto">
         {user && (
           <Link
             to="/dashboard/profile"
@@ -142,6 +144,7 @@ export default function DashboardLayout({ items = [], heading }) {
         </nav>
       </aside>
 
+      {/* Each page centres itself in the space beside the menu (its own PageWrapper width + mx-auto). */}
       <div className="flex-1 min-w-0">
         <Outlet />
       </div>

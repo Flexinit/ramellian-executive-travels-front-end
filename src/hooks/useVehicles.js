@@ -139,7 +139,7 @@ export function useVehicleAvailability(filters = {}) {
 
 /**
  * Whether `vehicleId` is already booked for `startTime`–`endTime` — the same `booked` field as
- * `useVehicleAvailability`, read from `GET /vehicles/{id}` for one vehicle and one exact window, asked
+ * `useVehicleAvailability`, for one vehicle and one exact window (read from the dated list, see below), asked
  * right before it's added to a booking (`AddToBookingPanel`) so a renter is warned up front rather than
  * only finding out from a raw error at checkout.
  */
@@ -147,8 +147,15 @@ export function useVehicleWindowBooked(vehicleId, startTime, endTime) {
   const enabled = !!(vehicleId && startTime && endTime);
   const query = useQuery({
     queryKey: ['vehicles', vehicleId, 'window-availability', startTime, endTime],
-    queryFn: () => apiGet(`/vehicles/${vehicleId}`, { startTime, endTime }),
-    select: (data) => data?.booked === true,
+    // Read from the list (`GET /vehicles?startTime&endTime`), not `GET /vehicles/{id}`: tested live 2026-10-13, the
+    // single-vehicle endpoint ignores the dates and says `booked: true` for any window once the vehicle has a booking
+    // anywhere (docs/backend-requests.md item 39), while the list answers for exactly the window asked. A vehicle
+    // missing from the list (switched off, not approved) isn't reported booked here — the page handles that itself.
+    queryFn: () => apiGet('/vehicles', { startTime, endTime }),
+    select: (data) => {
+      const list = Array.isArray(data) ? data : data?.content || [];
+      return list.find((v) => v?.id === vehicleId)?.booked === true;
+    },
     enabled,
   });
   return { isBooked: enabled && query.data === true, isLoading: enabled && query.isLoading };
@@ -242,6 +249,9 @@ export function vehicleToRequest(vehicle) {
     availableFrom: vehicle.availableFrom,
     availableTo: vehicle.availableTo,
     insuranceVerificationStickerPhoto: vehicle.insuranceVerificationStickerPhoto,
+    year: vehicle.year,
+    insurer: vehicle.insurer,
+    policyNumber: vehicle.policyNumber,
   };
   return Object.fromEntries(Object.entries(request).filter(([, value]) => value !== undefined && value !== null));
 }

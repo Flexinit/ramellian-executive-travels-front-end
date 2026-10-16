@@ -27,6 +27,22 @@ vi.mock('../components/payment/SignaturePad', () => ({
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
+// The contract is read part by part (Next…), and only on the last part can "I have read and understood" be
+// ticked — which is what makes the signature pad (and its Submit) button appear and work.
+async function readToEndAndConfirm() {
+  const user = userEvent.setup();
+  await screen.findByRole('article', { name: /rental contract/i });
+  while (screen.queryByRole('button', { name: /^next/i })) {
+    await user.click(screen.getByRole('button', { name: /^next/i }));
+  }
+  await user.click(await screen.findByLabelText(/i have read and understood this agreement/i));
+}
+
+async function submitSignatureButton() {
+  await readToEndAndConfirm();
+  return screen.findByRole('button', { name: /submit signature/i });
+}
+
 // A persistent sibling of whichever route matches — see ContractPage.test.jsx — so a navigation from one
 // booking's signature page to the next (same route pattern, different `bookingId`) is still observable.
 function LocationProbe() {
@@ -67,7 +83,7 @@ describe('SignaturePage — a booking that no longer holds', () => {
     stashContractId('b1', 'c-b1');
     renderAt();
 
-    expect(await screen.findByRole('button', { name: /submit signature/i })).toBeInTheDocument();
+    expect(await submitSignatureButton()).toBeInTheDocument();
   });
 
   it('shows the decline notice instead of a signature pad if it was rejected after payment', async () => {
@@ -113,12 +129,12 @@ describe('SignaturePage — signing a contract that is part of a group (docs/bac
     stashContractId('bk-2', 'c-bk-2');
     renderAt('bk-1', 'a');
 
-    await user.click(await screen.findByRole('button', { name: /submit signature/i }));
+    await user.click(await submitSignatureButton());
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/bk-2/sign'));
     expect(useCartStore.getState().items.find((i) => i.bookingId === 'bk-1').signed).toBe(true);
     // Its own contract is fetched afresh, not left showing bk-1's.
-    expect(await screen.findByRole('button', { name: /submit signature/i })).toBeInTheDocument();
+    expect(await submitSignatureButton()).toBeInTheDocument();
   });
 
   it('goes on to the confirmation page once every booking in the group is signed', async () => {
@@ -128,7 +144,7 @@ describe('SignaturePage — signing a contract that is part of a group (docs/bac
     stashContractId('bk-2', 'c-bk-2');
     renderAt('bk-2', 'b');
 
-    await user.click(await screen.findByRole('button', { name: /submit signature/i }));
+    await user.click(await submitSignatureButton());
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/bk-2/confirm'));
   });

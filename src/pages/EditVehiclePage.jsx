@@ -189,6 +189,7 @@ export default function EditVehiclePage() {
               <Input label="Model" error={errors.model?.message} register={register('model')} />
               <Input label="Color" error={errors.color?.message} register={register('color')} />
               <Input label="Registration Number" error={errors.registrationNumber?.message} register={register('registrationNumber')} />
+              <Input label="Year of manufacture (optional)" type="number" inputMode="numeric" placeholder="e.g. 2019" error={errors.year?.message} register={register('year')} />
               <Input label="VIN" error={errors.vin?.message} register={register('vin')} />
             </div>
           </Section>
@@ -284,6 +285,10 @@ export default function EditVehiclePage() {
               </span>
             </label>
             {errors.comprehensiveInsurance && <p className="text-xs text-red-400">{errors.comprehensiveInsurance.message}</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Insurer (optional)" placeholder="e.g. Jubilee Insurance" error={errors.insurer?.message} register={register('insurer')} />
+              <Input label="Policy number (optional)" error={errors.policyNumber?.message} register={register('policyNumber')} />
+            </div>
 
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-brand-white">Insurance sticker photo</span>

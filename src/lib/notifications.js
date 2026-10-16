@@ -37,6 +37,9 @@ export function notificationLink(notification, who = {}) {
   const refType = String(notification?.referenceType || '').toUpperCase();
   const id = notification?.referenceId;
 
+  // "Please sign the contract" (sent to the owner, referenceId = the contract): the contract's signing page, which
+  // works out the booking and whose side the reader is on (ContractSignPage).
+  if (refType.includes('CONTRACT') && id) return `/contracts/${id}/sign`;
   if (refType.includes('BOOKING') && id) {
     return isOwnerSide(notification, who) ? `/owner/bookings/${id}` : `/dashboard/bookings/${id}`;
   }
@@ -57,6 +60,7 @@ export function notificationLink(notification, who = {}) {
  */
 export function notificationActionLabel(notification, who = {}) {
   const refType = String(notification?.referenceType || '').toUpperCase();
+  if (refType.includes('CONTRACT')) return 'Sign Contract';
   if (refType.includes('BOOKING')) return isOwnerSide(notification, who) ? 'Review Booking' : 'View Booking';
   if (/CHAT|MESSAGE/.test(refType)) return 'Reply';
   return null;

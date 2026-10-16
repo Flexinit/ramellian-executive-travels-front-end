@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Eye, Download } from 'lucide-react';
+import { Eye, Download, FileDown } from 'lucide-react';
+import { downloadBookingReceipt } from '../../lib/contracts';
 import { useBookingReceipt } from '../../hooks/usePayment';
 import ReceiptModal from './ReceiptModal';
 
@@ -45,6 +46,19 @@ export default function ReceiptActions({ booking, vehicle, enabled = true }) {
           className="p-1.5 text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
         >
           <Download size={14} aria-hidden="true" />
+        </button>
+        {/* The backend's own official receipt, as a PDF. */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            downloadBookingReceipt(booking.id);
+          }}
+          aria-label="Download the official receipt (PDF)"
+          title="Official receipt (PDF)"
+          className="p-1.5 text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+        >
+          <FileDown size={14} aria-hidden="true" />
         </button>
       </div>
 

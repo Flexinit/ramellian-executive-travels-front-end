@@ -254,3 +254,13 @@ export function dataUrlToBlob(dataUrl) {
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return new Blob([bytes], { type: mime });
 }
+
+/**
+ * Whether `pathname` is part of booking a vehicle — the basket, checkout, contract, payment (including
+ * Pesapal's return page) and signature. Account-setup nudges stay out of the way there: checkout asks for
+ * what a booking itself needs (e.g. the phone number) and documents never block it.
+ * @param {string} pathname
+ */
+export function isBookingFlowPath(pathname = '') {
+  return pathname === '/booking' || pathname.startsWith('/booking/') || pathname.startsWith('/book/') || pathname.startsWith('/payment/');
+}

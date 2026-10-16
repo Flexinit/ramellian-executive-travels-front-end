@@ -7,11 +7,11 @@ import { formatDateRange, calculateTotalPrice } from '../../lib/utils';
  * @param {object} booking — { startTime, endTime, numberOfDays }
  * @param {object} vehicle — { model, dailyPrice }
  */
-export default function PaymentSummary({ booking, vehicle }) {
+export default function PaymentSummary({ booking, vehicle, paid = false, className = '' }) {
   const total = calculateTotalPrice(vehicle?.dailyPrice, booking?.numberOfDays);
 
   return (
-    <Card className="p-5 flex flex-col gap-4">
+    <Card className={`p-4 flex flex-col gap-3 ${className}`}>
       <div>
         <h3 className="font-heading text-brand-white font-semibold">{vehicle?.model}</h3>
         {booking?.startTime && booking?.endTime && (
@@ -19,8 +19,8 @@ export default function PaymentSummary({ booking, vehicle }) {
         )}
       </div>
       <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-        <span className="text-brand-grey text-sm">Total Due</span>
-        <PriceDisplay amount={total} period="" size="lg" />
+        <span className="text-brand-grey text-sm">{paid ? 'Total Paid' : 'Total Due'}</span>
+        <PriceDisplay amount={total} period="" size="md" />
       </div>
     </Card>
   );

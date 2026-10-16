@@ -52,18 +52,18 @@ export function mediaHost() {
 }
 
 /**
- * Turns a server-relative photo path into an absolute URL on the API host. When the API is reached through this
- * site, an absolute `/uploads/...` URL saved earlier with the backend's own address (e.g. a sticker photo stored as
- * `http://<backend>:8090/uploads/...`) is moved onto this site too: the backend refuses the browser's cross-site
+ * Turns a server-relative photo path into an absolute URL on the API host. An absolute `/uploads/...` URL saved
+ * with some other address (e.g. a sticker photo stored as `http://<backend>:8090/uploads/...`, or under the live
+ * domain by a local backend) is moved onto the API host in use too — `mediaHost()`, i.e. this site when the API is
+ * reached through it: the file lives on the backend being called, the backend refuses the browser's cross-site
  * requests, and an https page can't load http media.
  */
 export function photoSrc(url) {
   if (!url) return url;
   if (/^(blob:|data:)/i.test(url)) return url;
   if (/^https?:/i.test(url)) {
-    if (import.meta.env.VITE_API_BASE_URL) return url;
     const { pathname, search } = new URL(url);
-    return pathname.startsWith('/uploads/') ? `${window.location.origin}${pathname}${search}` : url;
+    return pathname.startsWith('/uploads/') ? `${mediaHost()}${pathname}${search}` : url;
   }
   return `${mediaHost()}${url.startsWith('/') ? '' : '/'}${url}`;
 }

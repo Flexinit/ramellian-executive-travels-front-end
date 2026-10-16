@@ -7,7 +7,6 @@ import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import BookingProgress from '../components/booking/BookingProgress';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
-import GuestBookingPanels from '../components/booking/GuestBookingPanels';
 import CartTotals from '../components/booking/CartTotals';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -32,13 +31,12 @@ export default function BookingCartPage() {
   // first — it only forgets the cart entry, the booking itself stays in My Bookings to cancel from there.
   const [pendingRemove, setPendingRemove] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
   const pendingItem = items.find((i) => i.vehicleId === pendingRemove);
   const hasStarted = items.some((i) => i.bookingId);
   // The backend's own price, per vehicle not yet booked — a booked vehicle's amount is already fixed by
   // its BookingResponse, so it has nothing left to quote.
   const quoteResults = useQueries({
-    queries: items.filter((i) => !i.bookingId).map((i) => bookingQuoteQuery({ vehicleId: i.vehicleId, startTime: i.startTime, endTime: i.endTime, deliveryRequested: i.deliveryRequested })),
+    queries: items.filter((i) => !i.bookingId).map((i) => bookingQuoteQuery({ vehicleId: i.vehicleId, startTime: i.startTime, endTime: i.endTime, deliveryRequested: i.deliveryRequested, bookingMode: i.bookingMode })),
   });
   const quotes = Object.fromEntries(
     items.filter((i) => !i.bookingId).map((i, idx) => [i.vehicleId, quoteResults[idx]?.data]).filter(([, data]) => !!data)
@@ -114,7 +112,7 @@ export default function BookingCartPage() {
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
             <CartTotals items={items} quotes={quotes} />
             <div className="flex flex-col gap-3">
-              <Button size="lg" onClick={() => (isAuthenticated ? navigate('/booking/checkout') : setContactOpen(true))}>
+              <Button size="lg" onClick={() => navigate('/booking/checkout', isAuthenticated ? undefined : { state: { auth: 'register' } })}>
                 <ArrowRight size={16} aria-hidden="true" /> Book
               </Button>
               <Button to="/vehicles" className="self-start">
@@ -128,7 +126,6 @@ export default function BookingCartPage() {
         </div>
       </div>
 
-      <GuestBookingPanels contactOpen={contactOpen} setContactOpen={setContactOpen} />
 
       <Modal isOpen={!!pendingRemove} onClose={() => setPendingRemove(null)} title="Remove from your booking">
         <div className="flex flex-col gap-4">

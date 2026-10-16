@@ -11,7 +11,6 @@ import { server } from '../mocks/server';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import BookingCartPage from './BookingCartPage';
-import BookingContactPage from './BookingContactPage';
 import BookingCheckoutPage from './BookingCheckoutPage';
 import RegisterPage from './RegisterPage';
 import LoginPage from './LoginPage';
@@ -36,7 +35,6 @@ function renderAt(route) {
         <MemoryRouter initialEntries={[route]}>
           <Routes>
             <Route path="/booking" element={<BookingCartPage />} />
-            <Route path="/booking/contact" element={<BookingContactPage />} />
             <Route path="/booking/checkout" element={<BookingCheckoutPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
             <Route path="/auth/login" element={<LoginPage />} />
@@ -91,10 +89,11 @@ describe('Your Booking — the basket', () => {
 
     expect(screen.getByRole('heading', { name: 'Prado' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Alphard' })).toBeInTheDocument();
-    expect(screen.getByText('3 days × KES 15,000')).toBeInTheDocument();
-    expect(screen.getByText('3 days × KES 20,000')).toBeInTheDocument();
+    // On each vehicle's card, and again in the price breakdown.
+    expect(screen.getAllByText('3 days × KES 15,000')).toHaveLength(2);
+    expect(screen.getAllByText('3 days × KES 20,000')).toHaveLength(2);
     // 3 × 15,000 + 3 × 20,000
-    expect(within(screen.getByLabelText('Booking total')).getByText('KES 105,000')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Total to pay')).getByText('KES 105,000')).toBeInTheDocument();
     expect(screen.getByText(/2 vehicles/i)).toBeInTheDocument();
   });
 
@@ -115,7 +114,7 @@ describe('Your Booking — the basket', () => {
     expect(useCartStore.getState().items).toEqual([]);
   });
 
-  it('offers another vehicle and takes a visitor from Book to sharing a contact', async () => {
+  it('offers another vehicle and takes a visitor from Book straight to checkout, with Create Account open', async () => {
     const user = userEvent.setup();
     seed([line('a', 'Prado', 15000)]);
     renderAt('/booking');
@@ -123,7 +122,8 @@ describe('Your Booking — the basket', () => {
     expect(screen.getByRole('link', { name: /add another vehicle/i })).toHaveAttribute('href', '/vehicles');
     await user.click(screen.getByRole('button', { name: /^book$/i }));
 
-    expect(await screen.findByRole('heading', { name: /how can we reach you/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Checkout' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('takes someone already signed in straight from Book to checkout', async () => {
@@ -139,125 +139,63 @@ describe('Your Booking — the basket', () => {
   });
 });
 
-describe('Your Contact — a phone number or an email, their pick', () => {
-  it('asks for a phone number first, and will not go on without one', async () => {
-    const user = userEvent.setup();
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
+describe('Signing up from checkout — the visitor becomes a booking lead', () => {
+  async function fillSignUp(user, dialog) {
+    await user.type(within(dialog).getByLabelText('First Name'), 'Ann');
+    await user.type(within(dialog).getByLabelText('Last Name'), 'Lee');
+    await user.type(within(dialog).getByLabelText('Email'), 'ann@example.com');
+    await user.type(within(dialog).getByLabelText(/phone number/i), '0712 345 678');
+    await user.type(within(dialog).getByLabelText('Password'), 'supersecret1!');
+    await user.type(within(dialog).getByLabelText('Confirm Password'), 'supersecret1!');
+    await user.click(within(dialog).getByLabelText(/terms of service/i));
+    await user.click(within(dialog).getByRole('button', { name: /create account/i }));
+  }
 
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
-
-    expect(screen.getByText(/enter your phone number/i)).toBeInTheDocument();
-    expect(useCartStore.getState().contact).toBeNull();
-  });
-
-  it('keeps a phone number and goes on to checkout', async () => {
-    const user = userEvent.setup();
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
-
-    await user.type(screen.getByLabelText(/phone number/i), '0712 345 678');
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
-
-    expect(useCartStore.getState().contact).toEqual({ kind: 'phone', value: '0712 345 678' });
-    expect(await screen.findByRole('heading', { name: 'Checkout' })).toBeInTheDocument();
-  });
-
-  it('records a lead for every vehicle in the selection, so the business can follow up (docs/backend-requests.md item 4)', async () => {
+  it('records a lead for every vehicle in the selection, with the email and phone, so the business can follow up (docs/backend-requests.md item 4)', async () => {
     const user = userEvent.setup();
     const leads = [];
     server.use(
       http.post(`${BASE}/booking-leads`, async ({ request }) => {
         leads.push(await request.json());
         return HttpResponse.json({ id: 'lead1' }, { status: 201 });
-      })
+      }),
+      http.post(`${BASE}/auth/register`, () => HttpResponse.json({ message: 'ok' }, { status: 201 }))
     );
     seed([line('a', 'Prado', 15000, { renterNotes: 'Please arrive early' }), line('b', 'Alphard', 20000)]);
-    renderAt('/booking/contact');
+    renderAt({ pathname: '/booking/checkout', state: { auth: 'register' } });
 
-    await user.type(screen.getByLabelText(/phone number/i), '0712 345 678');
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
+    await fillSignUp(user, await screen.findByRole('dialog', { name: /create account/i }));
 
     await waitFor(() => expect(leads).toHaveLength(2));
-    expect(leads[0]).toMatchObject({ phoneNumber: '0712 345 678', vehicleId: 'a', notes: 'Please arrive early' });
-    expect(leads[1]).toMatchObject({ phoneNumber: '0712 345 678', vehicleId: 'b' });
+    expect(leads[0]).toMatchObject({ email: 'ann@example.com', phoneNumber: '+254712345678', vehicleId: 'a', notes: 'Please arrive early' });
+    expect(leads[1]).toMatchObject({ email: 'ann@example.com', phoneNumber: '+254712345678', vehicleId: 'b' });
   });
 
-  it('does not let a failed lead stop checkout', async () => {
+  it('does not let a failed lead stop the sign-up', async () => {
     const user = userEvent.setup();
-    server.use(http.post(`${BASE}/booking-leads`, () => HttpResponse.json({ message: 'nope' }, { status: 500 })));
+    server.use(
+      http.post(`${BASE}/booking-leads`, () => HttpResponse.json({ message: 'nope' }, { status: 500 })),
+      http.post(`${BASE}/auth/register`, () => HttpResponse.json({ message: 'ok' }, { status: 201 }))
+    );
     seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
+    renderAt({ pathname: '/booking/checkout', state: { auth: 'register' } });
 
-    await user.type(screen.getByLabelText(/phone number/i), '0712 345 678');
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
+    await fillSignUp(user, await screen.findByRole('dialog', { name: /create account/i }));
 
-    expect(await screen.findByRole('heading', { name: 'Checkout' })).toBeInTheDocument();
-  });
-
-  it('switches to an email address and checks that it is one', async () => {
-    const user = userEvent.setup();
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
-
-    await user.click(screen.getByRole('radio', { name: /email address/i }));
-    await user.type(screen.getByLabelText(/email address/i), 'not-an-email');
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
-    expect(screen.getByText(/enter a valid email address/i)).toBeInTheDocument();
-
-    await user.clear(screen.getByLabelText(/email address/i));
-    await user.type(screen.getByLabelText(/email address/i), 'me@example.com');
-    await user.click(screen.getByRole('button', { name: /^continue$/i }));
-
-    expect(useCartStore.getState().contact).toEqual({ kind: 'email', value: 'me@example.com' });
-  });
-
-  it('says the contact is never shown to vehicle owners', () => {
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
-    expect(screen.getByText(/never shown to vehicle owners/i)).toBeInTheDocument();
-  });
-
-  it('offers the same log-in shortcut on the standalone contact page', async () => {
-    const user = userEvent.setup();
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking/contact');
-
-    await user.click(screen.getByRole('button', { name: /already have an account\? log in/i }));
-    expect(await screen.findByRole('dialog', { name: /log in/i })).toBeInTheDocument();
-  });
-
-  it('lets someone who already has an account skip it and log in right there, without sharing a contact', async () => {
-    const user = userEvent.setup();
-    seed([line('a', 'Prado', 15000)]);
-    renderAt('/booking');
-
-    await user.click(screen.getByRole('button', { name: /^book$/i }));
-    await user.click(await screen.findByRole('button', { name: /already have an account\? log in/i }));
-
-    expect(await screen.findByRole('dialog', { name: /log in/i })).toBeInTheDocument();
-    // Still on Your Booking: the Log In panel slid in over it, no page change.
-    expect(screen.getByRole('heading', { name: 'Your Booking' })).toBeInTheDocument();
-    expect(useCartStore.getState().contact).toBeNull();
-  });
-
-  it('goes back to the basket when it is empty, and on to checkout when already signed in', () => {
-    renderAt('/booking/contact');
-    expect(screen.getByText(/you haven't chosen a vehicle yet/i)).toBeInTheDocument();
+    expect(await screen.findByTestId('where')).toHaveTextContent('/auth/verify-email');
   });
 });
 
 describe('Checkout — a visitor', () => {
   it('shows what is booked, the estimated total and what happens next, then asks them to sign up', () => {
-    seed([line('a', 'Prado', 15000)], { kind: 'email', value: 'me@example.com' });
+    seed([line('a', 'Prado', 15000)]);
     renderAt('/booking/checkout');
 
     expect(screen.getByText('Prado')).toBeInTheDocument();
     // Synchronous assertion, before the live quote (async) can resolve — this is checking the client-side
     // fallback total (lineTotal), same as it always has; the live-quote path has its own test below.
-    expect(within(screen.getByLabelText('Booking total')).getByText('KES 45,000')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Total to pay')).getByText('KES 45,000')).toBeInTheDocument();
     expect(screen.getByText(/rental contract for your vehicle/i)).toBeInTheDocument();
-    expect(screen.getByText('me@example.com')).toBeInTheDocument();
     // Both "Sign up to continue" and "I have an account" open their modal in place now, rather than
     // navigating away — see the dedicated tests below for the modals themselves.
     expect(screen.getByRole('button', { name: /sign up to continue/i })).toBeInTheDocument();
@@ -310,12 +248,13 @@ describe('Checkout — a visitor', () => {
     await user.type(within(dialog).getByLabelText('First Name'), 'Ann');
     await user.type(within(dialog).getByLabelText('Last Name'), 'Lee');
     await user.type(within(dialog).getByLabelText('Email'), 'ann@example.com');
-    await user.type(within(dialog).getByLabelText('Password'), 'supersecret1');
-    await user.type(within(dialog).getByLabelText('Confirm Password'), 'supersecret1');
+    await user.type(within(dialog).getByLabelText(/phone number/i), '0712 345 678');
+    await user.type(within(dialog).getByLabelText('Password'), 'supersecret1!');
+    await user.type(within(dialog).getByLabelText('Confirm Password'), 'supersecret1!');
     await user.click(within(dialog).getByLabelText(/terms of service/i));
     await user.click(within(dialog).getByRole('button', { name: /create account/i }));
 
-    await waitFor(() => expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1' }));
+    await waitFor(() => expect(body).toEqual({ firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', password: 'supersecret1!' }));
     // Registration still can't avoid the real verify-email page (there's a code to type in) — only the
     // typing-in-your-details step was ever meant to stay in place.
     expect(await screen.findByTestId('where')).toHaveTextContent('/auth/verify-email');
@@ -333,7 +272,7 @@ describe('Checkout — a visitor', () => {
     expect(screen.queryByRole('dialog', { name: /create account/i })).not.toBeInTheDocument();
     const loginDialog = await screen.findByRole('dialog', { name: /log in/i });
 
-    await user.click(within(loginDialog).getByRole('button', { name: /create one/i }));
+    await user.click(within(loginDialog).getByRole('button', { name: /create an account/i }));
     expect(screen.queryByRole('dialog', { name: /log in/i })).not.toBeInTheDocument();
     expect(await screen.findByRole('dialog', { name: /create account/i })).toBeInTheDocument();
   });
@@ -567,7 +506,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     renderAt('/booking/checkout');
 
     expect(await screen.findByText(/daily price is now KES 20,000/i)).toBeInTheDocument();
-    expect(within(screen.getByLabelText('Booking total')).getByText('KES 60,000')).toBeInTheDocument();
+    expect(within(screen.getByLabelText('Total to pay')).getByText('KES 60,000')).toBeInTheDocument();
   });
 });
 

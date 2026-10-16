@@ -13,6 +13,22 @@ import ContractPage from './ContractPage';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
+// The contract is read part by part (Next…), and only on the last part can "I have read and understood" be
+// ticked — which is what makes the Accept & Continue button appear and work.
+async function readToEndAndConfirm() {
+  const user = userEvent.setup();
+  await screen.findByRole('article', { name: /rental contract/i });
+  while (screen.queryByRole('button', { name: /^next/i })) {
+    await user.click(screen.getByRole('button', { name: /^next/i }));
+  }
+  await user.click(await screen.findByLabelText(/i have read and understood this agreement/i));
+}
+
+async function acceptButton() {
+  await readToEndAndConfirm();
+  return screen.findByRole('button', { name: /accept & continue/i });
+}
+
 // A persistent sibling of whichever route matches — not a competing route — so a navigation from one
 // booking's contract to the *next* booking's contract (same route pattern, same ContractPage instance,
 // different `bookingId`) is still observable: no fallback route would ever win against ContractPage there.
@@ -47,7 +63,7 @@ describe('ContractPage — a booking that no longer holds', () => {
     serveBooking();
     renderAt();
 
-    expect(await screen.findByRole('button', { name: /accept & continue/i })).toBeInTheDocument();
+    expect(await acceptButton()).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -145,7 +161,7 @@ describe('ContractPage — the booking\'s own warnings (docs/backend-requests.md
     serveBooking();
     renderAt('b1', 'v1', []);
 
-    await screen.findByRole('button', { name: /accept & continue/i });
+    await acceptButton();
     expect(screen.queryByText(/before you pick up/i)).not.toBeInTheDocument();
   });
 
@@ -157,7 +173,7 @@ describe('ContractPage — the booking\'s own warnings (docs/backend-requests.md
     await user.click(await screen.findByRole('button', { name: /i'll do it later/i }));
 
     expect(screen.queryByText(/before you pick up/i)).not.toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /accept & continue/i })).toBeInTheDocument();
+    expect(await acceptButton()).toBeInTheDocument();
   });
 });
 
@@ -182,12 +198,12 @@ describe('ContractPage — accepting a contract that is part of a group (docs/ba
     serveBooking({ status: 'CONFIRMED' });
     renderAt('bk-1', 'a');
 
-    await user.click(await screen.findByRole('button', { name: /accept & continue/i }));
+    await user.click(await acceptButton());
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/bk-2/contract'));
     expect(useCartStore.getState().items.find((i) => i.bookingId === 'bk-1').contractAccepted).toBe(true);
     // Its own draft is requested afresh — the same page must not get stuck showing booking bk-1's contract.
-    expect(await screen.findByRole('button', { name: /accept & continue/i })).toBeInTheDocument();
+    expect(await acceptButton()).toBeInTheDocument();
   });
 
   it('goes on to the group’s combined payment once every booking’s contract is accepted', async () => {
@@ -200,7 +216,7 @@ describe('ContractPage — accepting a contract that is part of a group (docs/ba
     serveBooking({ status: 'CONFIRMED' });
     renderAt('bk-2', 'b');
 
-    await user.click(await screen.findByRole('button', { name: /accept & continue/i }));
+    await user.click(await acceptButton());
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/group/g1/payment'));
   });

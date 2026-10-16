@@ -8,8 +8,11 @@ import { RotateCcw } from 'lucide-react';
  * disables Submit while it's null.
  *
  * @param {function} onChange
+ * @param {'dark'|'paper'} [tone] — `paper` when it sits on the white contract page (dark label, light frame)
+ * @param {string} [label]
  */
-export default function SignaturePad({ onChange }) {
+export default function SignaturePad({ onChange, tone = 'dark', label = 'Your Signature' }) {
+  const paper = tone === 'paper';
   const sigRef = useRef(null);
   const [empty, setEmpty] = useState(true);
 
@@ -27,10 +30,10 @@ export default function SignaturePad({ onChange }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium text-brand-white" id="signature-label">
-        Your Signature
+      <span className={`text-sm font-medium ${paper ? 'text-slate-700' : 'text-brand-white'}`} id="signature-label">
+        {label}
       </span>
-      <div className="rounded-xl border border-white/10 bg-white overflow-hidden">
+      <div className={`rounded-xl border bg-white overflow-hidden ${paper ? 'border-slate-300 border-dashed' : 'border-white/10'}`}>
         <SignatureCanvas
           ref={sigRef}
           penColor="#1A1A2E"
@@ -46,7 +49,7 @@ export default function SignaturePad({ onChange }) {
         type="button"
         onClick={handleClear}
         disabled={empty}
-        className="self-start inline-flex items-center gap-1.5 text-xs text-brand-grey hover:text-brand-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md"
+        className={`self-start inline-flex items-center gap-1.5 text-xs ${paper ? 'text-slate-500 hover:text-slate-900' : 'text-brand-grey hover:text-brand-white'} disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md`}
       >
         <RotateCcw size={12} aria-hidden="true" />
         Clear

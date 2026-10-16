@@ -5,6 +5,7 @@ import { useQueries } from '@tanstack/react-query';
 import { PenLine, CreditCard } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
+import BackLink from '../components/ui/BackLink';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
 import CartTotals from '../components/booking/CartTotals';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
@@ -78,6 +79,7 @@ export default function GroupPaymentPage() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
+    let leaving = false;
     try {
       // The same last, deliberately fresh check as the single-vehicle Payment page, right before money moves —
       // now across every booking in the group, since any one of them could have been declined meanwhile.
@@ -93,10 +95,21 @@ export default function GroupPaymentPage() {
       // A retry generates a brand new combined Pesapal link — pause polling again until it's actually clicked,
       // same as the first attempt (see `pollingEnabled`'s own comment above).
       setContinuedToPesapal(false);
-      await checkout.mutateAsync(groupId).catch(() => {});
+      const data = await checkout.mutateAsync(groupId).catch(() => null);
+      // Straight to Pesapal — the renter just chose to pay, so no "ready to pay" countdown in between. The
+      // panel's own Continue to Payment link stays as the fallback if this navigation doesn't happen.
+      if (data?.redirectUrl) {
+        setContinuedToPesapal(true);
+        window.location.assign(data.redirectUrl);
+        leaving = true;
+      }
     } finally {
-      submittingRef.current = false;
-      setIsSubmitting(false);
+      // Leaving for Pesapal: keep the guard on, so a second click before the page unloads can't start
+      // another checkout (two checkouts could become two real charges).
+      if (!leaving) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -117,10 +130,13 @@ export default function GroupPaymentPage() {
     <PageWrapper className="max-w-5xl mx-auto">
       <PageTitle title="Payment" />
       <div className="flex flex-col gap-6">
+        <BackLink to="/booking/checkout" label="Back to checkout" />
         <div>
           <h1 className="font-heading text-brand-white text-2xl font-bold">Payment</h1>
           <p className="text-brand-grey text-sm mt-1">
-            {checkoutStarted
+            {allSuccessful
+              ? 'Your payment went through.'
+              : checkoutStarted
               ? "We're confirming your payment."
               : `One payment for all ${items.length} vehicles — you'll be redirected to complete it securely.`}
           </p>

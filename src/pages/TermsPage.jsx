@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import RentalTermsList from '../components/booking/RentalTermsList';
+import { useRentalTerms } from '../hooks/useRentalTerms';
 import LegalPage from '../components/layout/LegalPage';
 
 const SECTIONS = [
@@ -146,12 +148,26 @@ const SECTIONS = [
 ];
 
 /** See `LegalPage` — this content is a draft pending legal review, not final. */
+function RentalTermsSection() {
+  const { data: terms = [] } = useRentalTerms();
+  if (!terms.length) return null;
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="font-heading text-brand-white text-lg font-semibold">Rental terms</h2>
+      <RentalTermsList />
+    </section>
+  );
+}
+
 export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
       intro="How the Ramellian Executive Travels platform works, and where our responsibility ends and the rental agreement between owner and renter begins."
       sections={SECTIONS}
-    />
+    >
+      {/* The platform's own rental terms, managed by administrators (shown only when there are some). */}
+      <RentalTermsSection />
+    </LegalPage>
   );
 }

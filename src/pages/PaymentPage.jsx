@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PageBackdrop from '../components/layout/PageBackdrop';
+import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { PenLine, CreditCard } from 'lucide-react';
@@ -8,6 +10,8 @@ import PaymentSummary from '../components/payment/PaymentSummary';
 import PaymentStatusPanel from '../components/payment/PaymentStatusPanel';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
 import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import BackLink from '../components/ui/BackLink';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
@@ -96,6 +100,7 @@ export default function PaymentPage() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
+    let leaving = false;
     try {
       // One last, deliberately fresh check right before money moves — the highest-value moment to catch a
       // booking the owner has just declined, or whose hold has just run out, since the page loaded.
@@ -110,13 +115,23 @@ export default function PaymentPage() {
       // link — pause polling again until the renter actually clicks through to *that* one, same as the first
       // attempt; `resuming`/`existingPayment.status` still cover the cases where polling should stay on.
       setContinuedToPesapal(false);
-      // `usePesapalCheckout`'s own onSuccess/onError still handle the result (sessionStorage, toasts) —
-      // this is only awaited so `isSubmitting` stays true for the mutation's whole duration too, not just
-      // the pre-check above; its error is already surfaced via `onError`, so it's not re-thrown here.
-      await checkout.mutateAsync(bookingId).catch(() => {});
+      // `usePesapalCheckout`'s own onSuccess/onError still handle the result (sessionStorage, toasts); its
+      // error is already surfaced via `onError`, so it's not re-thrown here.
+      const data = await checkout.mutateAsync(bookingId).catch(() => null);
+      // Straight to Pesapal — the renter just chose to pay, so no "ready to pay" countdown in between. The
+      // panel's own Continue to Payment link stays as the fallback if this navigation doesn't happen.
+      if (data?.redirectUrl) {
+        setContinuedToPesapal(true);
+        window.location.assign(data.redirectUrl);
+        leaving = true;
+      }
     } finally {
-      submittingRef.current = false;
-      setIsSubmitting(false);
+      // Leaving for Pesapal: keep the guard on, so a second click before the page unloads can't start
+      // another checkout (two checkouts could become two real charges).
+      if (!leaving) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
     }
   }
 
@@ -147,20 +162,33 @@ export default function PaymentPage() {
   const status = paymentStatus.data?.status;
 
   return (
+    <PageBackdrop image={nairobiSkyline}>
     <PageWrapper className="max-w-md mx-auto">
       <PageTitle title="Payment" />
       <div className="flex flex-col gap-6">
+        {/* Paid: nothing to go back and change, so the way back is the booking itself. */}
+        {status === PAYMENT_STATUSES.SUCCESSFUL ? (
+          <BackLink to={`/dashboard/bookings/${bookingId}`} label="View booking" />
+        ) : (
+          <BackLink to={`/book/${bookingId}/contract`} state={{ bookingId }} label="Back to contract" />
+        )}
         <div>
           <h1 className="font-heading text-brand-white text-2xl font-bold">Payment</h1>
           <p className="text-brand-grey text-sm mt-1">
-            {checkoutStarted
-              ? "We're confirming your payment."
-              : "You'll be redirected to complete payment securely."}
+            {status === PAYMENT_STATUSES.SUCCESSFUL
+              ? 'Your payment went through.'
+              : checkoutStarted
+                ? "We're confirming your payment."
+                : "You'll be redirected to complete payment securely."}
           </p>
         </div>
 
-        <PaymentSummary booking={booking} vehicle={vehicle} />
+        {/* The booking on the left, the payment and its next step beside it (stacked on a phone). */}
+        {/* The booking on top, the payment and its next step in a matching card underneath, the same width. */}
+        <div className="flex flex-col gap-4">
+        <PaymentSummary booking={booking} vehicle={vehicle} paid={status === PAYMENT_STATUSES.SUCCESSFUL} />
 
+        <Card className="p-4 flex flex-col gap-3">
         {unfulfilled && <BookingUnavailableNotice booking={booking} />}
 
         {checkoutStarted ? (
@@ -179,7 +207,6 @@ export default function PaymentPage() {
             />
             {status === PAYMENT_STATUSES.SUCCESSFUL && (
               <Button
-                size="lg"
                 onClick={() => navigate(`/book/${vehicleId}/sign`, { state: { bookingId }, replace: true })}
               >
                 <PenLine size={16} aria-hidden="true" /> Continue to Sign Contract
@@ -187,11 +214,14 @@ export default function PaymentPage() {
             )}
           </>
         ) : !unfulfilled ? (
-          <Button size="lg" loading={isSubmitting} disabled={isSubmitting} onClick={handlePay}>
+          <Button loading={isSubmitting} disabled={isSubmitting} onClick={handlePay}>
             {!isSubmitting && <CreditCard size={16} aria-hidden="true" />} Proceed to Payment
           </Button>
         ) : null}
+        </Card>
+        </div>
       </div>
     </PageWrapper>
+    </PageBackdrop>
   );
 }

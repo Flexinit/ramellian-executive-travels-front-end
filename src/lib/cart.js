@@ -1,4 +1,5 @@
 import { BOOKING_MODES, DOCUMENT_STATUSES, DOCUMENT_TYPES } from './constants';
+import { isValidPhone, PHONE_HINT } from './phone';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -80,7 +81,8 @@ export function contactProblem(kind, value) {
     return EMAIL_PATTERN.test(text) ? null : 'Enter a valid email address';
   }
   if (!text) return 'Enter your phone number';
-  return text.length > 30 ? 'Phone number must be 30 characters or fewer' : null;
+  if (text.length > 30) return 'Phone number must be 30 characters or fewer';
+  return isValidPhone(text) ? null : PHONE_HINT;
 }
 
 /**

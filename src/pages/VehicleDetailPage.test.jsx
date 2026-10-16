@@ -53,7 +53,6 @@ function renderAt(route) {
             <Route path="/vehicles/:vehicleId" element={<VehicleDetailPage />} />
             <Route path="/booking" element={<p>the basket</p>} />
             <Route path="/booking/checkout" element={<p>checkout</p>} />
-            <Route path="/booking/contact" element={<p>how can we reach you</p>} />
           </Routes>
         </MemoryRouter>
       </QueryClientProvider>
@@ -109,33 +108,46 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     await waitFor(() => expect(useBookingStore.getState().draft.bookingMode).toBe('SELF_DRIVE'));
   });
 
-  it('opens the contact step for a visitor as a panel over the vehicle page — no new page', async () => {
-    const user = userEvent.setup();
-    serve();
+  it("trusts the dated list, not the single vehicle, on whether it's booked for the chosen dates", async () => {
+    // Live 2026-10-13: GET /vehicles/{id} says booked:true for ANY dates once the car has a booking anywhere;
+    // GET /vehicles?startTime&endTime answers for exactly that window.
+    serve({ ...VEHICLE, booked: true });
+    let freeForWindow = true;
+    server.use(
+      http.get(`${BASE}/vehicles`, ({ request }) => {
+        const url = new URL(request.url);
+        const dated = url.searchParams.get('startTime') === START && url.searchParams.get('endTime') === END;
+        return HttpResponse.json([{ ...VEHICLE, booked: dated ? !freeForWindow : true }]);
+      })
+    );
     search();
     renderAt('/vehicles/v1');
 
-    await user.click(await screen.findByRole('button', { name: /book now/i }));
-
-    expect(await screen.findByRole('dialog', { name: /how can we reach you/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Mercedes Benz' })).toBeInTheDocument(); // still on the vehicle
-    expect(screen.queryByText('how can we reach you')).not.toBeInTheDocument(); // not the standalone route
-    expect(useCartStore.getState().items).toHaveLength(1);
+    const bookNow = await screen.findByRole('button', { name: /book now/i });
+    await waitFor(() => expect(bookNow).toBeEnabled());
+    expect(screen.queryByText(/already booked for those dates/i)).not.toBeInTheDocument();
   });
 
-  it('opens Log In in place from that panel, and lets it switch to Create Account', async () => {
+  it('still says so when the list reports it booked for those dates', async () => {
+    serve();
+    server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json([{ ...VEHICLE, booked: true }])));
+    search();
+    renderAt('/vehicles/v1');
+
+    expect(await screen.findByText(/already booked for those dates/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /book now/i })).toBeDisabled();
+  });
+
+  it('takes a visitor straight to checkout to sign up — no separate contact step', async () => {
     const user = userEvent.setup();
     serve();
     search();
     renderAt('/vehicles/v1');
 
     await user.click(await screen.findByRole('button', { name: /book now/i }));
-    await user.click(await screen.findByRole('button', { name: /already have an account\? log in/i }));
 
-    const login = await screen.findByRole('dialog', { name: /log in/i });
-    expect(screen.getByRole('heading', { name: 'Mercedes Benz' })).toBeInTheDocument();
-    await user.click(within(login).getByRole('button', { name: /create one/i }));
-    expect(await screen.findByRole('dialog', { name: /create.*account|sign up|register/i })).toBeInTheDocument();
+    expect(await screen.findByText('checkout')).toBeInTheDocument();
+    expect(useCartStore.getState().items).toHaveLength(1);
   });
 
   it('collects by default with no fee; delivery needs an address and is kept with the booking', async () => {

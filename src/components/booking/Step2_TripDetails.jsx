@@ -6,6 +6,7 @@ import TripTypeSelect from './TripTypeSelect';
 import RenterNotesTextarea from './RenterNotesTextarea';
 import PickupLocationInput from './PickupLocationInput';
 import DeliveryChoice from './DeliveryChoice';
+import Input from '../ui/Input';
 import DropoffLocationInput from './DropoffLocationInput';
 import { useBookingStore } from '../../store/bookingStore';
 import { useMyBookings } from '../../hooks/useBookings';
@@ -59,7 +60,8 @@ export default function Step2_TripDetails({ vehicle }) {
   // Special instructions are optional, so the box stays folded away behind a link until wanted (or already
   // has text) — one of the ways this form is kept short enough that the Book button is on screen without
   // scrolling the page.
-  const [notesOpen, setNotesOpen] = useState(!!draft.renterNotes);
+  const [notesOpen, setNotesOpen] = useState(!!draft.renterNotes || !!draft.passengerCount);
+  const seats = Number(vehicle?.capacity) || undefined;
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -86,7 +88,23 @@ export default function Step2_TripDetails({ vehicle }) {
       <TripTypeSelect vehicle={vehicle} />
 
       {notesOpen ? (
-        <RenterNotesTextarea rows={2} />
+        <>
+          <Input
+            label="Passengers (optional)"
+            type="number"
+            inputMode="numeric"
+            min="1"
+            max={seats}
+            placeholder={seats ? `Up to ${seats}` : 'e.g. 3'}
+            value={draft.passengerCount ?? ''}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              setDraft({ passengerCount: Number.isFinite(n) && n > 0 ? Math.min(n, seats || n) : null });
+            }}
+            className="max-w-[12rem]"
+          />
+          <RenterNotesTextarea rows={2} />
+        </>
       ) : (
         <button
           type="button"
@@ -94,7 +112,7 @@ export default function Step2_TripDetails({ vehicle }) {
           className="inline-flex items-center gap-1.5 self-start text-brand-gold text-sm font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
         >
           <Plus size={14} aria-hidden="true" />
-          Add special instructions
+          Add passengers or special instructions
         </button>
       )}
     </div>

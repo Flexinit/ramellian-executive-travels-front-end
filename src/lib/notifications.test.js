@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { notificationLink, notificationText } from './notifications';
+import { notificationActionLabel, notificationLink, notificationText } from './notifications';
 import { PHONE_REMOVED_TEXT } from './contactGuard';
 
 describe('notificationLink', () => {
@@ -33,5 +33,13 @@ describe('notificationText', () => {
 
   it('copes with missing text', () => {
     expect(notificationText({})).toEqual({ title: '', message: '' });
+  });
+});
+
+describe('contract notifications (the owner is asked to sign)', () => {
+  it('open the contract signing page, with a Sign Contract button', () => {
+    const n = { type: 'CONTRACT_SIGNATURE_REQUIRED', referenceType: 'CONTRACT', referenceId: 'c-1' };
+    expect(notificationLink(n, { isOwner: true })).toBe('/contracts/c-1/sign');
+    expect(notificationActionLabel(n, { isOwner: true })).toBe('Sign Contract');
   });
 });

@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { phoneField } from '../../lib/phone';
+import PhoneVerification from './PhoneVerification';
 import toast from 'react-hot-toast';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
@@ -32,7 +34,7 @@ const schema = z.object({
   firstName: limited(100, 'First name'),
   middleName: limited(100, 'Middle name'),
   lastName: limited(100, 'Last name'),
-  phoneNumber: limited(30, 'Phone number').min(1, 'Enter your phone number'),
+  phoneNumber: phoneField,
   location: limited(255, 'Location'),
 });
 
@@ -101,8 +103,12 @@ export default function PersonalDetailsForm({ onSaved, submitLabel = 'Save Perso
       onSaved?.(currentUser);
       return;
     }
-    updateProfile.mutate(Object.fromEntries(changed.map((f) => [f, values[f].trim()])), {
-      onSuccess: (user) => onSaved?.(user),
+    updateProfile.mutate(Object.fromEntries(changed.map((f) => [f, String(values[f] ?? '').trim()])), {
+      onSuccess: (user) => {
+        // Show exactly what was saved (e.g. the phone in its standard +254… form), so nothing looks unsaved.
+        if (user) reset(baseValues(user));
+        onSaved?.(user);
+      },
     });
   }
 
@@ -121,6 +127,7 @@ export default function PersonalDetailsForm({ onSaved, submitLabel = 'Save Perso
       </div>
       <Input label="Email" type="email" value={currentUser?.email || ''} disabled readOnly hint="Contact support to change your email." />
       <Input label="Phone" required type="tel" autoComplete="tel" error={errors.phoneNumber?.message} register={register('phoneNumber')} />
+      <PhoneVerification phoneNumber={currentUser?.phoneNumber} verified={currentUser?.phoneVerified === true} />
       <Input label="Location" autoComplete="address-level2" error={errors.location?.message} register={register('location')} />
       <Input
         label="ID Number"

@@ -32,12 +32,46 @@ function userFromToken(token) {
  * tabs) rather than localStorage keeps most of the original memory-only intent — this trades a bit of
  * that XSS mitigation for a payment flow that actually completes.
  */
-const persistedToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+/**
+ * "Remember me" (the log-in and sign-up forms): the token is kept in localStorage instead, so the person stays
+ * signed in after closing the browser — until the token itself expires or they log out. Without it, sessionStorage
+ * as above. A remembered token that has already expired is dropped on load.
+ */
+let rememberMe = false;
+/** Set by the "Remember me" box before signing in; the next `setToken` stores the token accordingly. */
+export function setRememberMe(value) {
+  rememberMe = !!value;
+}
+/** The current "Remember me" choice — also sent with the log-in request (`LoginRequest.rememberMe`). */
+export function getRememberMe() {
+  return rememberMe;
+}
+
+function readLocal() {
+  try {
+    const t = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!t) return null;
+    const exp = decodeJwt(t)?.exp;
+    if (exp && exp * 1000 <= Date.now()) {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      return null;
+    }
+    return t;
+  } catch {
+    return null;
+  }
+}
+
+const sessionToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+const rememberedToken = sessionToken ? null : readLocal();
+const persistedToken = sessionToken || rememberedToken;
+if (rememberedToken) rememberMe = true; // a refreshed token stays remembered
 if (persistedToken) _setTokenGetter(() => persistedToken);
 
 /**
  * Authentication store. The access token is mirrored into sessionStorage (see `persistedToken` above)
- * so it survives the full-page reload Pesapal's own redirect causes; it still never touches localStorage.
+ * so it survives the full-page reload Pesapal's own redirect causes — and into localStorage too only when the
+ * person ticked "Remember me" (`setRememberMe`).
  *
  * `user` is assembled from two sources that land at different times:
  *  - Immediately on login/2FA, `setToken` decodes the access token's own
@@ -83,7 +117,14 @@ const useAuthStore = create((set, get) => ({
    */
   setToken: (token) => {
     _setTokenGetter(() => token);
+    // Always in sessionStorage (survives Pesapal's full-page redirect); also in localStorage with "Remember me".
     sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+    try {
+      if (rememberMe) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      else localStorage.removeItem(TOKEN_STORAGE_KEY);
+    } catch {
+      // storage blocked: the session copy still works
+    }
     const claimsUser = userFromToken(token);
     set((state) => ({ token, user: claimsUser ? { ...state.user, ...claimsUser } : state.user }));
   },
@@ -105,6 +146,12 @@ const useAuthStore = create((set, get) => ({
   clearAuth: () => {
     _setTokenGetter(null);
     sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    try {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    } catch {
+      // nothing to remove
+    }
+    rememberMe = false;
     set({ token: null, user: null, mode: null });
   },
 }));

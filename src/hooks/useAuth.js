@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { apiPost } from '../lib/api';
-import { useAuthStore } from '../store/authStore';
+import { apiPatch, apiPost } from '../lib/api';
+import { useAuthStore, getRememberMe } from '../store/authStore';
 import { markCodeSent } from '../lib/codeTimer';
 import { getLastSide, homeFor, sideAtLogin, takeOwnerIntent } from '../lib/landing';
 import { useCartStore } from '../store/cartStore';
@@ -49,7 +49,9 @@ export function useLogin() {
   const setMode = useAuthStore((s) => s.setMode);
 
   return useMutation({
-    mutationFn: (credentials) => apiPost('/auth/login', credentials),
+    // `rememberMe` (LoginRequest, local backend 2026-10-16) is always sent: that backend answers 400 "The request
+    // format or parameter values are invalid" when it's missing, although its spec marks it optional.
+    mutationFn: (credentials) => apiPost('/auth/login', { ...credentials, rememberMe: getRememberMe() }),
     onSuccess: (data) => {
       if (data?.twoFactorRequired) {
         navigate('/auth/verify-2fa', { state: { email: data.email } });
@@ -111,6 +113,43 @@ export function useGoogleLogin(intent = 'login') {
   });
 }
 
+/**
+ * The email and password someone just registered with, held **in memory only** (never stored, gone on a
+ * reload) so that, once they enter their verification code, they're signed in straight away instead of being
+ * sent to log in with the password they typed moments ago. `POST /auth/verify-email` returns no token, so
+ * this is the only way to skip that step. Cleared as soon as it's used. The phone number from the sign-up
+ * form rides along too and is saved to the profile right after signing in, so checkout doesn't ask for it.
+ */
+let justRegistered = null;
+
+/**
+ * After a successful verification: signs in with the just-registered credentials when they're for this
+ * email (landing like any login — back on checkout if a booking is waiting), else sends them to log in.
+ */
+async function finishVerification(email, label, setToken, setMode, navigate) {
+  const pending = justRegistered;
+  justRegistered = null;
+  if (pending && email && pending.email.toLowerCase() === email.toLowerCase()) {
+    try {
+      const data = await apiPost('/auth/login', { email: pending.email, password: pending.password, rememberMe: getRememberMe() });
+      if (data?.accessToken && !data.twoFactorRequired) {
+        if (pending.phoneNumber) {
+          setToken(data.accessToken);
+          // Best effort: if it doesn't save, checkout's own "Add your phone number" box still asks.
+          await apiPatch('/users/me', { phoneNumber: pending.phoneNumber }).catch(() => {});
+        }
+        toast.success(`${label} verified — you're signed in.`);
+        completeLogin(data.accessToken, setToken, setMode, navigate);
+        return;
+      }
+    } catch {
+      // fall through to the login page
+    }
+  }
+  toast.success(`${label} verified — you can now log in.`);
+  navigate('/auth/login');
+}
+
 /** The `verificationChannel` that asks for the registration code on WhatsApp instead of by email. */
 export const WHATSAPP_CHANNEL = 'WHATSAPP';
 
@@ -128,8 +167,14 @@ export function useRegister() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (payload) => apiPost('/auth/register', payload),
+    // `profilePhone` isn't part of `RegisterRequest` — it's kept for the profile (see `justRegistered`).
+    mutationFn: ({ profilePhone, ...payload }) => apiPost('/auth/register', payload),
     onSuccess: (_data, variables) => {
+      justRegistered = {
+        email: variables.email,
+        password: variables.password,
+        phoneNumber: (variables.profilePhone || variables.phoneNumber || '').trim(),
+      };
       // A verification code has just been sent — start the verify page's one-minute countdown from now.
       const whatsapp = variables.verificationChannel === WHATSAPP_CHANNEL;
       markCodeSent(variables.email);
@@ -151,17 +196,17 @@ export function useRegister() {
  * Confirmed live against the real backend: `POST /auth/verify-email` takes
  * `{ email, code }`, not `{ token }` — it rejects a bare token payload with
  * a 400 ("email must not be blank", "code must not be blank"). The emailed
- * message contains a short numeric code, not a clickable verification link.
+ * message contains a short numeric code, not a clickable verification link. Someone who registered in this
+ * page load is then signed in automatically (see `justRegistered`).
  */
 export function useVerifyEmail() {
   const navigate = useNavigate();
+  const setToken = useAuthStore((s) => s.setToken);
+  const setMode = useAuthStore((s) => s.setMode);
 
   return useMutation({
     mutationFn: ({ email, code }) => apiPost('/auth/verify-email', { email, code }),
-    onSuccess: () => {
-      toast.success('Email verified — you can now log in.');
-      navigate('/auth/login');
-    },
+    onSuccess: (_data, { email }) => finishVerification(email, 'Email', setToken, setMode, navigate),
   });
 }
 
@@ -169,17 +214,17 @@ export function useVerifyEmail() {
  * Verifies an account with the 6-digit code sent to its WhatsApp number:
  * `POST /auth/verify-whatsapp` takes `{ email, code }` (or `{ phoneNumber, code }` — but the backend
  * matches a phone number exactly as it was stored, with no normalising, so the email is always used
- * when it's known). Wrong or stale codes come back as 400 "Invalid or expired verification code".
+ * when it's known). Wrong or stale codes come back as 400 "Invalid or expired verification code". Signs in
+ * automatically after, like `useVerifyEmail`.
  */
 export function useVerifyWhatsApp() {
   const navigate = useNavigate();
+  const setToken = useAuthStore((s) => s.setToken);
+  const setMode = useAuthStore((s) => s.setMode);
 
   return useMutation({
     mutationFn: ({ email, code }) => apiPost('/auth/verify-whatsapp', { email, code }),
-    onSuccess: () => {
-      toast.success('WhatsApp verified — you can now log in.');
-      navigate('/auth/login');
-    },
+    onSuccess: (_data, { email }) => finishVerification(email, 'WhatsApp', setToken, setMode, navigate),
   });
 }
 

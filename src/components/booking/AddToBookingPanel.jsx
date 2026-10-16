@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ShoppingCart, RotateCcw, ArrowRight } from 'lucide-react';
@@ -6,7 +6,6 @@ import Button from '../ui/Button';
 import PriceDisplay from '../ui/PriceDisplay';
 import Step2_TripDetails from './Step2_TripDetails';
 import ContractPreviewLink from './ContractPreviewLink';
-import GuestBookingPanels from './GuestBookingPanels';
 import { useBookingStore } from '../../store/bookingStore';
 import { useCartStore } from '../../store/cartStore';
 import { useAuthStore } from '../../store/authStore';
@@ -55,7 +54,6 @@ export default function AddToBookingPanel({ vehicle }) {
   const inCart = useCartStore((s) => s.items.find((i) => i.vehicleId === vehicle.id));
   const addItem = useCartStore((s) => s.addItem);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
-  const [contactOpen, setContactOpen] = useState(false);
   // A real booking already exists for this vehicle (created on the backend, not just a local draft) —
   // choosing different dates below starts a separate, new booking rather than editing that one; see
   // cartStore's addItem for how the old booking id is kept or dropped depending on what actually changed.
@@ -78,6 +76,7 @@ export default function AddToBookingPanel({ vehicle }) {
             pickupLocation: inCart.pickupLocation || '',
             dropoffLocation: inCart.dropoffLocation || '',
             deliveryRequested: !!inCart.deliveryRequested,
+            passengerCount: inCart.passengerCount ?? null,
           }
         : fromSearch(useBookingStore.getState().search, vehicle)),
     });
@@ -87,7 +86,7 @@ export default function AddToBookingPanel({ vehicle }) {
   // The backend's own quote, once it's loaded, replaces the client-side guess (billableDays/lineTotal) with
   // the exact figure it will actually charge — falling straight back to that guess while it loads or if it
   // errors, so a slow or failed quote never blocks seeing a price.
-  const quote = useBookingQuote({ vehicleId: vehicle.id, startTime: draft.startTime, endTime: draft.endTime, deliveryRequested: draft.deliveryRequested });
+  const quote = useBookingQuote({ vehicleId: vehicle.id, startTime: draft.startTime, endTime: draft.endTime, deliveryRequested: draft.deliveryRequested, bookingMode: draft.bookingMode });
   const days = quote.data?.numberOfDays ?? billableDays(draft.startTime, draft.endTime);
   const total = quote.data?.totalAmount ?? lineTotal({ startTime: draft.startTime, endTime: draft.endTime, vehicle });
   // Someone else's CONFIRMED/ACTIVE booking already covers these exact dates — checked live (not just the
@@ -103,8 +102,8 @@ export default function AddToBookingPanel({ vehicle }) {
 
   /**
    * Puts the vehicle in the selection, then goes on: "Add to booking" to Your Booking (to add more vehicles),
-   * "Book now" straight past it — to checkout when signed in, or to the "How can we reach you?" step first
-   * when not (the same route Your Booking's own Book button takes).
+   * "Book now" straight past it to checkout — for a visitor, with Create Account already open there (the same
+   * route Your Booking's own Book button takes).
    * @param {boolean} [bookNow]
    */
   function handleAdd(bookNow = false) {
@@ -146,18 +145,14 @@ export default function AddToBookingPanel({ vehicle }) {
       pickupLocation: draft.pickupLocation || '',
       dropoffLocation: draft.dropoffLocation || '',
       deliveryRequested: !!draft.deliveryRequested,
+      passengerCount: draft.passengerCount ?? null,
       vehicle: vehicleSnapshot(vehicle),
     });
     const startedNew = alreadyBooked && !useCartStore.getState().items.find((i) => i.vehicleId === vehicle.id)?.bookingId;
     if (bookNow) {
-      // A visitor stays on this page: the contact step (and Log In / Create Account from it) slides in over it,
-      // so the form behind it keeps what they chose rather than going blank.
-      if (isAuthenticated) {
-        clearDraft();
-        navigate('/booking/checkout');
-      } else {
-        setContactOpen(true);
-      }
+      clearDraft();
+      // A visitor lands on checkout with Create Account already open over it (Log in is one tap away there).
+      navigate('/booking/checkout', isAuthenticated ? undefined : { state: { auth: 'register' } });
       return;
     }
     clearDraft();
@@ -174,7 +169,7 @@ export default function AddToBookingPanel({ vehicle }) {
   return (
     // See-through like Browse Vehicles' search and filters, and kept short enough that the Book button is on
     // screen without scrolling the page (the column sticks beside the vehicle's details).
-    <div className="p-5 flex flex-col gap-3.5 rounded-2xl border border-white/15 bg-brand-navy/40 backdrop-blur-md shadow-lg shadow-black/20">
+    <div className="p-5 flex flex-col gap-3.5 rounded-2xl border border-white/20 bg-white/[0.03] backdrop-blur-sm shadow-lg shadow-black/10">
       {alreadyBooked && (
         <p className="text-xs text-brand-grey bg-white/5 border border-white/10 rounded-lg px-3 py-2">
           You already have a booking for this vehicle (<span className="text-brand-white font-medium">My Bookings</span>) — new dates start a separate one.
@@ -225,7 +220,6 @@ export default function AddToBookingPanel({ vehicle }) {
         </div>
       </div>
 
-      <GuestBookingPanels contactOpen={contactOpen} setContactOpen={setContactOpen} />
     </div>
   );
 }

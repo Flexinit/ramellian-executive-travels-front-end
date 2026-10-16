@@ -22,12 +22,14 @@ import { apiErrorMessage } from '../lib/apiError';
  * `useQueries` for several vehicles at once (BookingCartPage, BookingCheckoutPage) — one shared shape keeps
  * their cache entries the same query.
  */
-export function bookingQuoteQuery({ vehicleId, startTime, endTime, deliveryRequested = false }) {
+export function bookingQuoteQuery({ vehicleId, startTime, endTime, deliveryRequested = false, bookingMode }) {
   // `deliveryRequested` (live spec 2026-10-09): the quote then includes the platform's flat delivery fee in
-  // `deliveryFee` and `totalAmount`. Public — no login needed.
+  // `deliveryFee` and `totalAmount`. `bookingMode` (live spec 2026-10-16): CHAUFFEURED can add a `driverCharge`.
+  // Public — no login needed.
   return {
-    queryKey: ['booking-quote', vehicleId, startTime, endTime, !!deliveryRequested],
-    queryFn: () => apiPost('/bookings/quote', { vehicleId, startTime, endTime, deliveryRequested: !!deliveryRequested }),
+    queryKey: ['booking-quote', vehicleId, startTime, endTime, !!deliveryRequested, bookingMode || null],
+    queryFn: () =>
+      apiPost('/bookings/quote', { vehicleId, startTime, endTime, deliveryRequested: !!deliveryRequested, ...(bookingMode ? { bookingMode } : {}) }),
     enabled: !!(vehicleId && startTime && endTime),
     staleTime: 60 * 1000,
     retry: false,
@@ -53,6 +55,8 @@ function bookingRequestFor(item) {
     dropoffLocation: item.dropoffLocation || undefined,
     // Delivered to the renter (a flat fee, set in Platform Settings) or collected by them (no fee).
     deliveryRequested: !!item.deliveryRequested,
+    // Optional (BookingRequest.passengerCount, live 2026-10-16) — shown on the contract.
+    passengerCount: item.passengerCount || undefined,
   };
 }
 

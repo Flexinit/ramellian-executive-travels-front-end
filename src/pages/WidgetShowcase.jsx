@@ -22,6 +22,21 @@ import Tooltip      from '../components/ui/Tooltip';
 import StepIndicator from '../components/ui/StepIndicator';
 import CountdownTimer from '../components/ui/CountdownTimer';
 import PriceDisplay from '../components/ui/PriceDisplay';
+import ContractDocument from '../components/contract/ContractDocument';
+import { withPlatformClause } from '../lib/contractBoilerplate';
+import contractTemplate from '../../docs/contract-templates/vehicle-rental-agreement.md?raw';
+import { contractValues, fillContractText } from '../lib/contractFields';
+
+// The real template, filled with sample details — what a renter sees on the contract page.
+const SAMPLE_CONTRACT = fillContractText(
+  withPlatformClause(contractTemplate),
+  contractValues({
+    booking: { id: 'bb5c5ab4-4365-4967-b5f0-8cbfa761c6fd', bookingMode: 'SELF_DRIVE', startTime: '2026-10-17T06:00:00Z', endTime: '2026-10-17T14:00:00Z', numberOfDays: 1, baseAmount: 15000, estimatedAmount: 15225, deliveryRequested: false },
+    vehicle: { id: 'v1', model: 'Mercedes Benz', color: 'Black', capacity: 5, fuelType: 'PETROL', transmissionType: 'AUTOMATIC', hasWorkingAC: true, location: 'Marurui', pricePerDay: 15000, registrationNumber: 'KDA 123A', vin: 'WDB123456789' },
+    renter: { firstName: 'Felix', lastName: 'Washioya', idNumber: '12345678', location: 'Nairobi' },
+    policy: { freeCancellationWindowHours: 24, cancellationDeadlineHours: 2, lateCancellationRefundPct: 50, postponementAllowed: true, postponementDeadlineHours: 48, maxPostponements: 2 },
+  })
+);
 
 const Section = ({ title, children }) => (
   <section className="mb-12">
@@ -64,6 +79,17 @@ export default function WidgetShowcase() {
       </div>
 
       {/* Buttons */}
+      <Section title="Contract document">
+        <ContractDocument
+          contractText={SAMPLE_CONTRACT}
+          reference="bb5c5ab4-4365-4967-b5f0-8cbfa761c6fd"
+          agreementDate="2026-10-16T09:30:00Z"
+          renter={{ name: 'Felix Washioya', signedAt: '2026-10-16T09:42:00Z' }}
+          owner={{}}
+          staged
+        />
+      </Section>
+
       <Section title="Buttons">
         <Button>Book Now</Button>
         <Button loading>Processing…</Button>

@@ -133,7 +133,7 @@ describe('SetupGuideModal', () => {
     // The account details are already saved, so it skips them and lands on the documents still to upload.
     expect(await screen.findByText('Your documents')).toBeInTheDocument();
     expect(screen.queryByText('Your account details')).not.toBeInTheDocument();
-    expect(calls.patch).toEqual({ phoneNumber: '0712 345 678' });
+    expect(calls.patch).toEqual({ phoneNumber: '+254712345678' });
     expect(calls.put).toBeNull();
   });
 
@@ -155,7 +155,7 @@ describe('SetupGuideModal', () => {
     await user.clear(screen.getByLabelText(/middle name/i));
     await user.type(screen.getByLabelText(/middle name/i), 'Wanjiru');
     await user.click(screen.getByRole('button', { name: /save & continue/i }));
-    await waitFor(() => expect(calls.patch).toEqual({ middleName: 'Wanjiru', phoneNumber: '0712345678' }));
+    await waitFor(() => expect(calls.patch).toEqual({ middleName: 'Wanjiru', phoneNumber: '+254712345678' }));
   });
 
   it('account step: calls only PUT /users/me/owner-profile (never PATCH), then moves on to documents', async () => {

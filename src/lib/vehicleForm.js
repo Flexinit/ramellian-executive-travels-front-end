@@ -60,6 +60,13 @@ export const vehicleSchema = z
     // Product rule (not in the spec): no vehicle without comprehensive insurance. The sticker photo
     // that proves it is a file picked outside the form (see `stickerFile`), also mandatory.
     comprehensiveInsurance: z.boolean().refine((v) => v === true, 'Every vehicle must have comprehensive insurance'),
+    // Optional in the spec (VehicleRequest.year / insurer / policyNumber, live 2026-10-16) — shown on the contract.
+    year: z.preprocess(
+      (v) => (v === '' || v === null || v === undefined ? undefined : v),
+      z.coerce.number({ invalid_type_error: 'Enter the year as a number' }).int('Enter a whole year, e.g. 2019').optional()
+    ),
+    insurer: z.string().trim().optional(),
+    policyNumber: z.string().trim().optional(),
     tripTypes: z.array(z.string()).optional(),
   })
   .superRefine((data, ctx) => {
@@ -87,6 +94,9 @@ export const VEHICLE_DEFAULTS = {
   availableTo: '',
   hasWorkingAC: false,
   comprehensiveInsurance: false,
+  year: '',
+  insurer: '',
+  policyNumber: '',
   tripTypes: [],
 };
 
@@ -122,6 +132,9 @@ export function vehicleToFormValues(vehicle = {}) {
     availableTo: toLocalInput(vehicle.availableTo),
     hasWorkingAC: !!vehicle.hasWorkingAC,
     comprehensiveInsurance: !!vehicle.comprehensiveInsurance,
+    year: vehicle.year ?? '',
+    insurer: vehicle.insurer || '',
+    policyNumber: vehicle.policyNumber || '',
     tripTypes: Array.isArray(vehicle.tripTypes) ? vehicle.tripTypes : [],
   };
 }

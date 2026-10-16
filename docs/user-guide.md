@@ -260,8 +260,8 @@ identity documents, and book a car for self-drive or chauffeured trips. The
 > them, so a car an owner has just switched on appears straight away.
 
 **You don't need an account to choose a vehicle.** The account comes at checkout: you find vehicles, put the ones
-you want in your booking, see the price, share a phone number or email, and only then sign up. Your booking is
-saved through registering, verifying your email and logging in, and picks up where you left off.
+you want in your booking, see the price, and only then sign up. Your booking is saved through registering and
+verifying your email (which signs you in), and picks up where you left off.
 
 1. **Browse vehicles** — open a vehicle to see everything about it: model, location,
    rating, fuel, transmission, seats, colour, self-drive / chauffeured, air conditioning,
@@ -295,9 +295,8 @@ saved through registering, verifying your email and logging in, and picks up whe
    vehicle that only offers one has it chosen for you), an optional trip type (tap one) and, if you need them,
    special instructions (**Add special instructions** opens the box), then either:
    The whole booking panel fits on screen beside the vehicle, so **Book now** is always visible without scrolling.
-   - **Book now** — goes straight on: to checkout if you're signed in; if you're not, "How can we reach you?"
-     slides in from the right over the vehicle's page (step 4), without leaving it. Anything else already in
-     your booking comes along too.
+   - **Book now** — goes straight to checkout. If you're not signed in, **Create Account** is already open there
+     (with **Log in** one tap away). Anything else already in your booking comes along too.
    - **Add to booking** — puts it in **Your Booking** (step 3) so you can add more vehicles first.
    **Getting the vehicle:** choose **I'll collect** (no fee — you pick it up yourself) or **Deliver** (a flat
    delivery fee, shown right there once your dates are chosen, is added to your total). For
@@ -322,37 +321,37 @@ saved through registering, verifying your email and logging in, and picks up whe
    that also means a trip's start time can lapse into the past if it sits there long enough (see step 5). Adding
    the same vehicle again with the same dates just leaves its entry as it was; with different dates (or after Book
    Again), it's a new booking alongside — or, before it's actually paid for, in place of — the old one.
-4. **Book** — for a visitor who isn't signed in, **Book** opens a panel on the right asking how to reach them: a
-   **phone number or an email address**, whichever you prefer, without leaving the basket behind it. It is used to
-   start your account and to follow up on your booking, and it is never shown to vehicle owners. (If you're already
-   signed in you skip this step and go straight to checkout.) **Already have an account but not logged in?** Press
-   **Already have an account? Log in** at the bottom of this step instead: the **Log In** panel takes its place,
-   on the same page (with **Create one** to switch to Create Account), and once you're in you land on checkout
-   — you don't have to share a contact at all, we reach you through your account. The same step is still its own page at
-   `/booking/contact` for a direct link; on checkout, **Change** next to your saved contact (or **Back**, before
-   you've signed up) reopens it the same way, as a panel, without leaving checkout either.
-   Dismissing any of these panels — clicking outside it, pressing Escape, or its **X** — doesn't throw away
+4. **Book** — **Book** on Your Booking goes straight to checkout, the same as **Book now**. There's no separate
+   "How can we reach you?" step any more: signing up asks for your phone number (see step 5), and the old
+   `/booking/contact` address now opens checkout.
+   Dismissing a sign-up or log-in panel — clicking outside it, pressing Escape, or its **X** — doesn't throw away
    what you were doing: a small **Continue: …** tab, named after the panel it reopens (e.g. **Continue: Log
    In**), stays docked to the right edge of the screen, and clicking it reopens the same panel (starting
    fresh, the same as opening it again normally — nothing you'd already typed is kept).
-5. **Checkout** (`/booking/checkout`) — one last look at what you're booking, the estimated total, and what happens
-   next. A visitor chooses **Sign up to continue** (or **I have an account**) — both open as a panel that slides
-   in from the right, rather than taking you to a separate page or covering the screen with a popup, so your
-   booking stays visible behind it and signing up or logging in doesn't feel like leaving it. Registering still
-   moves on to a real **Verify your email** page afterwards (there's a code to
-   type in), but once that's done you land back here (not on the dashboard) with your booking waiting. If you
-   shared an email it is already filled in on the sign-up form; a phone number is filled in on your profile's
-   **Phone** field. Logging in from the panel needs no extra step — it signs you in right there and the panel
-   just closes.
+5. **Checkout** (`/booking/checkout`) — one last look at what you're booking, the total, and what happens
+   next. A **Price breakdown** shows what you're paying for, from the backend's own quote: the rental (days × daily
+   price), and — when they apply — delivery, a driver, and the payment processing fee, adding up to the total
+   you'll pay. With several vehicles, each has its own breakdown and subtotal. Your Booking shows the same
+   breakdown. (The platform's commission is not a line: it comes out of the owner's earnings, not your price.) Arriving from **Book** or **Book now**, a visitor finds **Create Account** already open (**Sign up to
+   continue** and **I have an account** reopen either one) — as a panel that slides in from the right, so your
+   booking stays visible behind it. Sign-up asks for your name, email, **phone number** (required, never shown to
+   vehicle owners), and a password. As soon as you submit it, the business is told which vehicles you were
+   booking, with your email and phone, so it can follow up if you don't finish. Registering moves on to the
+   **Verify your email** page (there's a code to type in); once the code is accepted **you're signed in
+   automatically** — no logging in again — your phone number is saved to your profile, and you land back here
+   with your booking waiting. (If you reload the verify page first, you're asked to log in instead.) Logging in
+   from the panel needs no extra step — it signs you in right there and the panel just closes.
+   While you're booking (checkout, contract, payment, signing), the **Finish setting up your account** window and
+   banner stay out of the way; they come back once you leave the booking pages.
    Each vehicle is checked again against its live listing: if it's no longer available, is your own, isn't offered in
    the mode you chose or can't be booked on those dates, you're told and must remove it to go on; if its daily price
    changed you see the new price. If a vehicle's start time has passed since you added it (the selection is kept in
    this browser and can sit there a while), you're told that too — **Edit** it to choose new dates rather than
    starting over.
-   **Signed in, but no phone number on your profile yet?** Checkout asks for one in an **Add your phone number**
-   box, and **Continue to contract** stays unavailable until it's saved. It's saved straight to your profile, so
-   you're asked only once — later bookings go straight through. If you shared a phone number before signing up,
-   it's already filled in. It is never shown to vehicle owners.
+   **Signed in, but no phone number on your profile yet?** (An older account, or one created before sign-up asked
+   for it.) Checkout asks for one in an **Add your phone number** box, and **Continue to contract** stays
+   unavailable until it's saved. It's saved straight to your profile, so you're asked only once — later bookings
+   go straight through. It is never shown to vehicle owners.
 6. **Documents** — having your **approved** National ID or Passport (and, for self-drive, Driving Licence) on file no
    longer blocks checkout. If something's still missing, a notice next to **Continue to contract** says so and offers
    **Upload now** as a shortcut, but you can continue without it. Once the booking is made, if anything's still
@@ -363,6 +362,16 @@ saved through registering, verifying your email and logging in, and picks up whe
 7. **Review and accept the owner's contract** — the contract is the one for that vehicle's owner, so it can only be
    shown once the booking exists; it is read, and accepted, just before you pay. There is no contract to read before
    you sign up, because the portal can't fetch an owner's terms without a booking (see `docs/backend-requests.md`).
+   You read it **part by part** with **Next** (it stays at the bottom of the screen) and **Back**; on the last
+   part, tick **I have read and understood this agreement**, then **Accept & Continue**. Signing works the same
+   way, after payment: read to the end, tick the box, then **Sign** takes you to your place in the Signatures
+   section to sign and **Submit signature**.
+   The contract is shown as a proper document — a letterhead with the booking reference and the date the
+   agreement was made, numbered sections, the details in tables (anything not known yet says **Not provided**),
+   numbered clauses, and a **Signatures** section at the end with a place for the **renter** and the **owner**,
+   each showing the date and time they signed (the owner's says **Awaiting signature** until owners can sign —
+   `docs/backend-requests.md` item 40). **Print / Save as PDF** prints just the contract. Owners see the same layout
+   when they preview their template.
    The contract shows this booking's details: your name, ID number and location (from your profile), the vehicle
    (including its registration number and VIN), dates, places and amounts. If no pick-up or return place was given
    and the car isn't delivered, it says the vehicle's own location. The owner's name and business details stay
@@ -371,22 +380,28 @@ saved through registering, verifying your email and logging in, and picks up whe
    Going back to this step after already accepting that contract (the browser's Back button, or a stale link) no
    longer shows a dead-end error — it offers **Continue to payment** instead (or, if you'd cancelled the booking,
    says so and offers **Browse other vehicles**).
-8. **Pay** — once checkout starts, you're sent on to Pesapal automatically after a few seconds; a **Continue to
-   Payment** button is there too in case that doesn't happen (a popup/redirect blocker, or you just don't want to
-   wait). You're redirected back once it's confirmed. Then **sign** the
-   contract on screen. If confirmation is taking a while, the page says so directly ("Still waiting on Pesapal")
-   instead of spinning silently forever. If you hadn't actually finished paying yet (got distracted, closed the
-   tab), **Continue to Pesapal** is still there to pick up where you left off; a **Check again** button re-checks
-   without starting a new payment. Only once nothing is left to continue to does **Try Again** appear instead,
-   starting a fresh payment. Once it's confirmed, your **Receipt** is right there too — **Preview** opens it,
-   the download button next to it opens the same view and goes straight to your browser's print dialog, where
-   saving as PDF is the usual option. The same Receipt is also reachable later from the booking itself —
-   wherever you find it (its own row in My Bookings, or the booking's own page) — not just at the moment you pay.
-9. **More than one vehicle** — each vehicle is its own booking (the backend takes one vehicle per booking), so you go
-   through the contract, payment and signature **one vehicle at a time**: after each is confirmed, **Continue with the
-   next vehicle** appears. A booking is only created when it's that vehicle's turn, so a payment hold on a later
-   vehicle can't run out while you're paying for an earlier one. A single combined payment needs a backend change
-   (see `docs/backend-requests.md`).
+8. **Pay** — **Proceed to Payment** takes you straight to Pesapal (no waiting page in between). When Pesapal sends
+   you back, you land on the same Payment page, which shows the result:
+   - **Paid** — your **Receipt** is right there (**Preview** opens it; the download button opens the same view
+     and goes straight to your browser's print dialog, where saving as PDF is the usual option), and **Continue
+     to Sign Contract** takes you on to **sign** the contract on screen.
+   - **Failed** — **Try Again** starts a fresh payment and takes you straight to Pesapal.
+   - **Not confirmed yet** (for example you left Pesapal without paying) — **Continue to Payment** picks up where
+     you left off, and **Check again** re-checks without starting a new payment. After about 30 seconds without an
+     answer the page says so ("Still confirming your payment").
+   - **Couldn't check** (a problem on the server, such as it being unable to reach Pesapal) — the page says
+     **Couldn't check your payment** instead of spinning, with **Check again** and **Try Again**.
+   One click starts one payment, even if you double-click. The same Receipt is also reachable later from the
+   booking itself — its own row in My Bookings, or the booking's own page.
+   **Your saved signature:** under Profile → **My signature**, draw or upload your signature once (agreeing it can be
+   used to sign your contracts). When you sign a contract you can then choose **Sign with my saved signature**, or
+   **Draw a new one**; when drawing, you can tick **Save this signature for my next contracts**. The owner signs the
+   same contract from their side, and the Signatures section shows each signature's date.
+   Every step from here on has a back button at the top: the contract goes **Back to checkout**, payment goes
+   **Back to contract** (or **View booking** once paid), and signing goes **Back to payment**.
+9. **More than one vehicle** — each vehicle is its own booking (each has its own owner and contract), but they're
+   all created together and **paid for once**: you read and accept each owner's contract in turn, then make one
+   combined payment for all of them, then sign each contract.
 10. **Track your trip** — see every booking under **My Bookings**. Status is a row of quick tabs along the top
    (Confirmed, Pending Payment, Active, Completed, Cancelled, Rejected, Expired, All — Confirmed is where you
    land by default), each with its own icon and a count of how many bookings are currently in it (counting
@@ -412,6 +427,10 @@ saved through registering, verifying your email and logging in, and picks up whe
    until your trip's own start date actually arrives — you can't record it days ahead of when you're really
    collecting the vehicle — and shows the date it opens up until then. Past handovers show as a read-only
    **Vehicle Handover** record (visible to the owner too, on their side of the same booking).
+   **Moving your dates:** a Pending or Confirmed booking has **Move dates** next to **Cancel booking**. It checks the
+   owner's policy first (whether moving is allowed, and how close to pick-up), then you pick the new pick-up and return.
+   **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay**, which takes
+   you to Pesapal. The file icon next to **Receipt** downloads the official receipt as a PDF.
 11. **Cancel or review** — a booking that is still Pending or Confirmed has a **Cancel booking** button, both in
    its expanded row on My Bookings and on its own page. The confirmation checks the owner's cancellation
    policy first and tells you what to expect before you confirm: a full refund with enough notice, a reduced
@@ -438,8 +457,10 @@ Self-drive bookings need an *approved* ID and driving licence; chauffeured booki
 need only an approved ID. If a document is pending or was rejected, checkout
 tells you what's missing. (With several vehicles, the licence is needed when any of them is self-drive.)
 
-*Signing up:* go to Register and enter your name, email and password, then enter the 6-digit code sent to your
-inbox and log in. A one-minute countdown shows how long you have; when it runs out, **Resend code** sends a new one.
+*Signing up:* go to Register and enter your name, email, phone number and password (at least 8 characters, with a
+letter, a number and a symbol — a checklist shows what's still needed; the eye button shows what you typed), then enter the 6-digit code
+sent to your inbox — you're signed in straight away (no logging in again, unless you reloaded the page in
+between). A one-minute countdown shows how long you have; when it runs out, **Resend code** sends a new one.
 (Verifying with a code sent on WhatsApp is built but switched off for now.) Signing up from checkout is exactly
 this; the only difference is that after logging in you land back on checkout.
 
@@ -453,12 +474,9 @@ flowchart TD
     C --> D{Add another\nvehicle?}
     D -->|Yes| A
     D -->|No| E[Book]
-    E --> F{Signed in?}
-    F -->|No| G[Share phone number\nor email]
-    G --> H[Checkout]
-    F -->|Yes| H
+    E --> H[Checkout]
     H --> I{Signed in?}
-    I -->|No| J[Sign up, verify email,\nlog in]
+    I -->|No| J[Sign up with phone,\nverify email -\nsigned in automatically]
     J --> H
     I -->|Yes| K{Documents\napproved?}
     K -->|No| L[Upload ID / licence\nand wait for approval]
@@ -581,6 +599,15 @@ profile, so the checklist stays accurate even if a vehicle doesn't show in the l
   column once a booking's been paid for). The same status tabs and filter bar as Fleet Bookings — status,
   **When**, trip type, mode, a pickup-date range, and a vehicle name search — sit above the Revenue tab too, so
   narrowing to, say, one vehicle or one month updates the payout figures and chart there, not just the list.
+- **Booking Policy** (`/owner/policy`) — your own cancellation and date-moving rules: the free-cancellation window
+  (hours before pick-up), the last moment to cancel, the refund for a late cancellation (%), and whether renters can
+  move their dates (how close to pick-up, how many times). A plain-words summary shows what renters get. Until you
+  save your own, your bookings follow the platform's standard policy. It applies to bookings made from then on.
+- **Statements** (`/owner/statements`) — what your vehicles earned: paid bookings, gross, the commission and payment
+  fees taken out, and your payout; then by month, by vehicle, and each paid booking with its receipt number. Filter
+  by vehicle and dates; **Print / PDF** for a copy.
+- **Rate the renter** — on a Completed booking's own page: stars, whether you were happy with them, and optional
+  notes (e.g. damage or a late return).
 - **Contract Templates** (`/owner/contracts`) — your own contract wording: add a template, read it, or save a
   change as a new version (the backend has no edit or delete). Each one is reviewed by an administrator.
   Every template starts with a fixed **Platform Terms** clause (making clear the rental agreement is between
@@ -760,10 +787,19 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time
   (20 entries). Filter by **action** (`LOGIN` finds `AUTH_LOGIN`), the **person's email** and the **kind of
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
+- **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Paid** and
+  **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what went wrong.
+- **Rental Terms** (`/admin/rental-terms`) — the platform's rental rules: add, edit, delete, and switch each one on
+  or off, grouped by category and in your chosen order. Renters see the switched-on ones on the Terms page and from
+  **Read the rental terms** at checkout.
+- **Add a renter** (Users page) — creates a renter account for someone booking through staff (name, email, optional
+  phone) and shows a temporary password once to hand over. **Upload a document for this user** (a user's page) adds a
+  document handed in to staff; it's reviewed like any other.
 - **Platform Settings** (`/admin/settings`) — the commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
   charged on a booking that already exists.
+  It also holds the **Standard booking policy**: the cancellation and date-moving rules for owners who haven't set their own.
 - **Insurance and vehicle papers.** **All Vehicles** has an **Insurance** column — *No insurance*, *Insured · no
   sticker* or *Insured · sticker* — and **View sticker** opens the sticker photo with an automatic **QR code
   check**: the portal reads the QR code from the photo by itself and shows what it says, whether the vehicle's

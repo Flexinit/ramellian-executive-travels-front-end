@@ -19,6 +19,7 @@ import { useOwnerReviews } from '../hooks/useReviews';
 import { useAdminUser, useDeleteUser, useSetUserEnabled } from '../hooks/useAdminUsers';
 import { useAuthStore } from '../store/authStore';
 import { roleBadges, userDisplayName } from '../lib/adminUsers';
+import AdminUploadDocumentCard from '../components/admin/AdminUploadDocumentCard';
 import { ratingOrDefault } from '../lib/ratings';
 
 /** `PENDING_VERIFICATION` → `Pending verification`. */
@@ -299,6 +300,7 @@ export default function AdminUserDetailPage() {
           />
           <PermissionsCard user={user} />
           <IdentityCard user={user} />
+          <AdminUploadDocumentCard userId={user.id || userId} />
           {user.isCarOwner && (
             <Card className="p-5 flex flex-col gap-4 lg:col-span-2">
               <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">

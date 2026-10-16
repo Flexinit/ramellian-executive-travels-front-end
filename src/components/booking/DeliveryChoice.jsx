@@ -21,6 +21,7 @@ export default function DeliveryChoice({ vehicle }) {
     startTime: draft.startTime,
     endTime: draft.endTime,
     deliveryRequested: true,
+    bookingMode: draft.bookingMode,
   });
   const fee = quote.data?.deliveryFee;
   const feeText = fee == null ? 'Delivery fee applies' : fee > 0 ? `${formatCurrency(fee)} delivery fee` : 'Free delivery';

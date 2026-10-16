@@ -9,10 +9,11 @@ import Button from './Button';
  *
  * @param {string} to — where it goes (a route, not browser history — see Button's `to`)
  * @param {string} [label] — defaults to "Back"
+ * @param {object} [state] — router state for the page it opens (e.g. `{ bookingId }` for a booking step)
  */
-export default function BackLink({ to, label = 'Back', className = '' }) {
+export default function BackLink({ to, label = 'Back', state, className = '' }) {
   return (
-    <Button to={to} size="sm" className={`self-start ${className}`}>
+    <Button to={to} state={state} size="sm" className={`self-start ${className}`}>
       <ArrowLeft size={14} aria-hidden="true" />
       {label}
     </Button>

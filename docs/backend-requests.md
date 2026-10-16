@@ -55,6 +55,8 @@ this was actually built and shipped some time ago: `BookingContactPage.jsx`'s "H
 (the one a visitor fills in before signing up) calls `POST /booking-leads` for every vehicle in their
 selection (`useCreateBookingLead`/`bookingLeadsFor`, `src/hooks/useBookingLeads.js`) — confirmed live, public,
 201, no auth needed. That part of this item is done; only the status line here was never updated to say so.
+(Update 2026-10-12: the separate contact step is gone; the same leads, now with both email and phone, are
+sent when a visitor submits the Create Account form at checkout, `RegisterModal.jsx`.)
 
 **Why this is being reopened.** The product owner now wants that captured contact actually usable: visible
 to admin/super-admin so staff can follow up with the renter, and explicitly **not** visible to the vehicle
@@ -1182,3 +1184,79 @@ uploaded as `NATIONAL_ID` / `PASSPORT`. The number is read in the browser (Tesse
    store it as the user's `idNumber`, or at least refuse a `PATCH /users/me` `idNumber` that differs from it, so
    the number can't be changed through the API.
 
+
+## 39. `GET /vehicles/{id}?startTime&endTime` ignores the dates — says `booked: true` for any window — confirmed live 2026-10-13
+
+**Why.** On the local backend (192.168.8.9:8090), the Mercedes AMG (`385988d3-534c-4794-b9c6-a32857d33556`) has
+one booking around 14–15 Oct 2026. `GET /vehicles?startTime=…&endTime=…` answers correctly for each window
+(`booked: true` for 14–15 Oct, `false` for 20–21 Oct, March 2027 and January 2030). But
+`GET /vehicles/{id}?startTime=…&endTime=…` returns `booked: true` for every one of those windows: it ignores
+`startTime`/`endTime` and reports whether the vehicle has a booking anywhere. The vehicle page used this to say
+"already booked for those dates", so a renter couldn't book the car on any date.
+
+**Frontend workaround (in place).** The vehicle page now reads `booked` from the dated list and finds the vehicle
+in it (`useVehicleWindowBooked`, `src/hooks/useVehicles.js`). That fetches every vehicle to check one.
+
+**Ask.** Make `GET /vehicles/{id}` honour `startTime`/`endTime` the same way the list does, so `booked` means
+"booked in this window" when a window is given.
+
+## 40. Only the renter can sign a contract — the owner needs to sign too, each signature dated — requested 2026-10-16
+
+**Why.** The product requires **both** the renter and the owner to sign every rental contract, with the date each
+signed. The contract page now shows a signature section with a place for each (`ContractDocument`). But the
+backend has only one signature: `POST /payments/contracts/{contractId}/sign` (the renter's signature image) and one
+`ContractResponse.signedAt`. There's no way for an owner to sign, and nothing says who `signedAt` belongs to, so the
+owner's place always shows "Awaiting signature".
+
+**Ask.**
+1. Let the vehicle's owner (or their fleet manager) sign the same contract, e.g.
+   `POST /payments/contracts/{contractId}/owner-sign` with the same multipart `signature`, allowed only for the
+   booking's owner.
+2. Add `renterSignedAt` and `ownerSignedAt` to `ContractResponse` (keep `signedAt` = the renter's, for now), plus
+   the owner's display name (`ownerName`), so the contract can show who signed and when.
+3. Mark the contract fully signed (and the signed PDF final) only once both have signed, and put both signatures
+   with their dates on the signed PDF (`GET /payments/contracts/{contractId}/document?signed=true`).
+4. Optionally, a list for owners of contracts waiting for their signature (e.g. on `GET /bookings/owner` rows),
+   so the owner side can offer a **Sign contract** button.
+
+## 41. A renter's reviews can't be looked up from a booking — `BookingResponse` has no renter id — found 2026-10-16
+
+**Why.** `GET /reviews/renters/{renterId}` (new) lists what owners have said about a renter, which is useful to an
+owner deciding on a booking. But the owner's view of a booking (`BookingResponse`) carries only `renterEmail` /
+`renterName`, no renter id, so the portal can't call it. Owners can rate renters (`POST /reviews/bookings/{id}/renter`,
+now on the owner's booking page once it's Completed), but can't see a renter's history.
+
+**Ask.** Add `renterId` to `BookingResponse`, or accept the booking id: `GET /reviews/bookings/{bookingId}/renter-history`.
+The portal will show the renter's average rating and recent reviews on the owner's booking page.
+
+## 42. Phone verification by SMS (Firebase) — portal side built, switched off; endpoint not on the VPS yet — 2026-10-16
+
+The backend team described `POST /auth/verify-firebase-phone { firebaseIdToken, email? }`, which sets `phoneNumber`
+and `phoneVerified`. The portal side is built (Profile → phone → **Verify by SMS**, `usePhoneVerification`), switched
+off with `VITE_ENABLE_PHONE_VERIFICATION=false` as the product owner asked. To switch it on later: deploy the endpoint
+to the VPS (it's not in the live spec yet), add `phoneVerified` to `UserResponse`, then set the four `VITE_FIREBASE_*`
+values and `VITE_ENABLE_PHONE_VERIFICATION=true`.
+
+## 40 (update, 2026-10-16). Owner signing and saved signatures — built (local backend 192.168.8.31), wired in the portal
+
+Built by the backend and consumed: saved signatures (`GET`/`POST`/`DELETE /profile/signature`,
+`GET /profile/signature/image`), renter signing with `useSavedSignature` / `saveAsProfile`, owner signing
+(`POST /payments/contracts/{id}/owner-sign`), and `renterSignedAt`/`renterSignedBy`/`ownerSignedAt`/`ownerSignedBy`/
+`fullySignedDocumentAvailable` on `ContractResponse` (`signedAt` was removed — the portal falls back to it for an
+older server). Checked live: save → read → image → delete of a saved signature works.
+
+**Still blocking owner signing in practice: item 13.** An owner can only open a booking's contract when the portal
+knows its id, and `BookingResponse` still has no `contractId` (nor is there `GET /payments/bookings/{bookingId}/contract`).
+The owner's booking page has the **Read & sign** step ready, but it only appears when that id is known (today, only in
+the browser session that drafted the contract — i.e. never for the owner). **Ask:** add `contractId` to
+`BookingResponse` (or that GET), allowed for the booking's owner.
+
+**Also:** deploy all of this to the VPS (`102.68.87.231`) — it's still on the old backend. And `UserResponse` has no
+`phoneVerified` yet (item 42).
+
+**Owner's "please sign" notification (2026-10-16).** The backend sends the owner a notification to accept / sign. The
+portal now opens a notification whose `referenceType` contains `CONTRACT` at `/contracts/{referenceId}/sign`, which
+loads the contract, finds its booking, remembers the pair and shows the owner's **Read & sign** (and **Sign Contract**
+as the notification's button). **Please make sure** that notification has `referenceType: "CONTRACT"` and
+`referenceId` = the **contract id** — if it carries the booking id instead, the owner still can't reach the contract
+(item 13). Not checked live: the test account isn't an owner.

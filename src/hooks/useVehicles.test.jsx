@@ -146,10 +146,27 @@ describe('useVehicleAvailability', () => {
 });
 
 describe('useVehicleWindowBooked', () => {
-  it('reads the booked flag for one vehicle and window from GET /vehicles/{id}', async () => {
-    server.use(http.get(`${BASE}/vehicles/v1`, () => HttpResponse.json({ ...VEHICLE, booked: true })));
+  it('reads the booked flag for one vehicle and window from the dated list, GET /vehicles?startTime&endTime', async () => {
+    let asked;
+    server.use(
+      http.get(`${BASE}/vehicles`, ({ request }) => {
+        asked = Object.fromEntries(new URL(request.url).searchParams);
+        return HttpResponse.json([{ ...VEHICLE, id: 'other', booked: false }, { ...VEHICLE, booked: true }]);
+      })
+    );
     const { result } = renderHook(() => useVehicleWindowBooked('v1', '2026-10-01T09:00:00Z', '2026-10-02T09:00:00Z'), { wrapper });
     await waitFor(() => expect(result.current.isBooked).toBe(true));
+    expect(asked).toMatchObject({ startTime: '2026-10-01T09:00:00Z', endTime: '2026-10-02T09:00:00Z' });
+  });
+
+  it("ignores GET /vehicles/{id}'s booked flag, which disregards the dates (backend-requests item 39)", async () => {
+    server.use(
+      http.get(`${BASE}/vehicles/v1`, () => HttpResponse.json({ ...VEHICLE, booked: true })),
+      http.get(`${BASE}/vehicles`, () => HttpResponse.json([{ ...VEHICLE, booked: false }]))
+    );
+    const { result } = renderHook(() => useVehicleWindowBooked('v1', '2026-10-01T09:00:00Z', '2026-10-02T09:00:00Z'), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isBooked).toBe(false);
   });
 
   it('stays disabled until a vehicle id and both dates are given', () => {

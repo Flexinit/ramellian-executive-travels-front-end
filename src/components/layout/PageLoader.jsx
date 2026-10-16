@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FONTS, fontStack } from '../../theme/fonts';
 
 // Shown at least this long so the animation isn't just a flash on fast
 // connections, but never longer than this even if a resource stalls —
@@ -122,7 +123,7 @@ export default function PageLoader() {
           fontSize="14"
           fontWeight="700"
           letterSpacing="1.5"
-          style={{ fontFamily: '"Playfair Display", serif' }}
+          style={{ fontFamily: fontStack(FONTS.heading).join(', ') }}
         >
           RAMELLIAN
         </text>
@@ -138,7 +139,7 @@ export default function PageLoader() {
           fontSize="11"
           fontWeight="600"
           letterSpacing="3"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: fontStack(FONTS.body).join(', ') }}
         >
           EXECUTIVE TRAVELS
         </text>

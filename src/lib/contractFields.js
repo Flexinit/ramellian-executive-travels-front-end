@@ -17,7 +17,8 @@ import { TRIP_TYPE_LABELS, BOOKING_MODES } from './constants';
  *
  * Left blank (`BLANK`): anything the renter's own view doesn't have — the owner's name and business details
  * (no endpoint gives a renter the owner's profile; backend-requests item 37) — and anything not stored at all
- * yet (vehicle year, insurer, policy number, licence number, destination, passengers, booking created time).
+ * yet (licence number, destination, booking created time). Vehicle year, insurer, policy number (VehicleResponse) and
+ * passengers (BookingResponse.passengerCount) are filled in when the owner / renter gave them.
  */
 
 export const BLANK = '__________';
@@ -56,6 +57,9 @@ export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy
     renter_location: renter.location,
 
     vehicle_model: vehicle.model,
+    vehicle_year: vehicle.year != null ? String(vehicle.year) : undefined,
+    insurer_name: vehicle.insurer || undefined,
+    insurance_policy_number: vehicle.policyNumber || undefined,
     vehicle_registration: vehicle.registrationNumber,
     vehicle_vin: vehicle.vin,
     vehicle_colour: vehicle.color,
@@ -73,6 +77,7 @@ export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy
     pickup_location: booking.pickupLocation || baseLocation,
     dropoff_location: booking.dropoffLocation || baseLocation,
     number_of_days: booking.numberOfDays != null ? String(booking.numberOfDays) : undefined,
+    passenger_count: booking.passengerCount != null ? String(booking.passengerCount) : undefined,
     delivery_requested: yesNo(booking.deliveryRequested),
     chauffeur_name: booking.chauffeurName || booking.chauffeurEmail || (mode === BOOKING_MODES.CHAUFFEURED ? 'To be assigned' : 'Not applicable'),
     renter_notes: booking.renterNotes || 'None',

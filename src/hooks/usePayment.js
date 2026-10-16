@@ -199,3 +199,23 @@ export function useGroupPollExhausted(bookingIds, statuses, enabled) {
   if (!enabled || bookingIds.length === 0) return false;
   return bookingIds.every((id, i) => pollExhausted(queryClient, id, statuses[i]));
 }
+
+/**
+ * Pays a booking's overstay charge (a late return, `BookingResponse.overstayAmount`) through Pesapal —
+ * `POST /payments/pesapal/bookings/{bookingId}/overstay-checkout` → `PaymentCheckoutResponse` (live spec 2026-10-16),
+ * then straight to its `redirectUrl`. Pass the `bookingId`.
+ */
+export function useOverstayCheckout() {
+  return useMutation({
+    mutationFn: (bookingId) => apiPost(`/payments/pesapal/bookings/${bookingId}/overstay-checkout`),
+    onSuccess: (data, bookingId) => {
+      if (!data?.redirectUrl) {
+        toast.error('The overstay payment could not be started. Please try again.');
+        return;
+      }
+      sessionStorage.setItem('lastCheckoutBookingId', bookingId);
+      window.location.assign(data.redirectUrl);
+    },
+    onError: (error) => toast.error(error?.response?.data?.message || 'Could not start the overstay payment. Please try again.'),
+  });
+}

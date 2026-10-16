@@ -13,9 +13,9 @@ import { actionLabel, auditStatusVariant } from '../../lib/auditLog';
 import { isWhatsAppVerificationEnabled } from '../../lib/features';
 import { apiErrorMessage } from '../../lib/apiError';
 import { formatDateTime } from '../../lib/utils';
+import { passwordProblem } from '../../lib/password';
+import PasswordChecklist from '../auth/PasswordChecklist';
 
-const MIN = 8;
-const MAX = 72; // the spec's limits for a new password
 
 function ChangePassword() {
   const change = useChangePassword();
@@ -28,8 +28,8 @@ function ChangePassword() {
     e.preventDefault();
     const found = {};
     if (!current) found.current = 'Enter your current password';
-    if (next.length < MIN) found.next = `At least ${MIN} characters`;
-    else if (next.length > MAX) found.next = `At most ${MAX} characters`;
+    const problem = passwordProblem(next);
+    if (problem) found.next = problem;
     if (confirm !== next) found.confirm = 'Passwords do not match';
     setErrors(found);
     if (Object.keys(found).length) return;
@@ -50,7 +50,8 @@ function ChangePassword() {
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
       <Input label="Current password" name="currentPassword" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} error={errors.current} />
-      <Input label="New password" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} error={errors.next} hint={`${MIN}–${MAX} characters`} />
+      <Input label="New password" name="newPassword" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} error={errors.next} />
+      <PasswordChecklist password={next} />
       <Input label="Confirm new password" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} error={errors.confirm} />
       <Button type="submit" className="self-start" loading={change.isPending}>
         Change password

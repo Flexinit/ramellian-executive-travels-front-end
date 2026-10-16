@@ -64,7 +64,7 @@ All routes are declared in `src/App.jsx` using React Router v6 `<Routes>`.
 /dashboard/profile          → ProfilePage       (renter)
 
 /booking                    → BookingCartPage       (public — the selection: vehicles, days x price, total)
-/booking/contact            → BookingContactPage    (visitors — phone number or email)
+/booking/contact            → redirects to /booking/checkout (old contact step; sign-up asks for the phone now)
 /booking/checkout           → BookingCheckoutPage   (public; signed in → creates the next booking)
 /book/:vehicleId            → redirect to /vehicles/:vehicleId (the old wizard address)
 /book/:vehicleId/contract   → ContractPage      (renter)
@@ -197,7 +197,7 @@ App
 │   │           ├── TripTypeSelect
 │   │           └── RenterNotesTextarea
 │   │
-│   ├── BookingCartPage / BookingContactPage / BookingCheckoutPage
+│   ├── BookingCartPage / BookingCheckoutPage
 │   │   ├── BookingProgress (StepIndicator)
 │   │   ├── BookingSummaryCard
 │   │   └── CartTotals
@@ -294,6 +294,13 @@ App
 
 ## 7. Theme Configuration
 
+### Fonts: `src/theme/fonts.js`
+
+The one place the fonts are chosen — **Plus Jakarta Sans** for headings and text. `tailwind.config.js` builds the
+`font-heading` / `font-body` classes from it, `vite.config.js` puts the matching Google Fonts link into
+`index.html` (where `<!-- app-fonts -->` stands), and `PageLoader` reads it for its lettering. To switch, change
+`heading` / `body` there to any Google Fonts family name and restart `npm run dev`.
+
 ### `tailwind.config.js`
 
 ```js
@@ -310,8 +317,8 @@ export default {
         'brand-grey':       '#8A8A9A',
       },
       fontFamily: {
-        heading: ['"Playfair Display"', 'serif'],
-        body:    ['Inter', 'sans-serif'],
+        heading: fontStack(FONTS.heading),   // fonts are set in src/theme/fonts.js
+        body:    fontStack(FONTS.body),
       },
       boxShadow: {
         card: '0 4px 24px 0 rgba(0,0,0,0.18)',

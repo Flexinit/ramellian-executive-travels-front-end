@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot } from 'lucide-react';
+import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet } from 'lucide-react';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -43,7 +43,6 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const DocumentsPage = lazy(() => import('./pages/DocumentsPage'));
 const BookingCartPage = lazy(() => import('./pages/BookingCartPage'));
-const BookingContactPage = lazy(() => import('./pages/BookingContactPage'));
 const BookingCheckoutPage = lazy(() => import('./pages/BookingCheckoutPage'));
 const GroupPaymentPage = lazy(() => import('./pages/GroupPaymentPage'));
 const ContractPage = lazy(() => import('./pages/ContractPage'));
@@ -51,6 +50,7 @@ const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const PaymentSuccessPage = lazy(() => import('./pages/PaymentSuccessPage'));
 const SignaturePage = lazy(() => import('./pages/SignaturePage'));
 const BookingConfirmPage = lazy(() => import('./pages/BookingConfirmPage'));
+const ContractSignPage = lazy(() => import('./pages/ContractSignPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const MyBookingsPage = lazy(() => import('./pages/MyBookingsPage'));
 const BookingDetailPage = lazy(() => import('./pages/BookingDetailPage'));
@@ -71,9 +71,13 @@ const AdminAuditLogPage = lazy(() => import('./pages/AdminAuditLogPage'));
 const AdminAnnouncementsPage = lazy(() => import('./pages/AdminAnnouncementsPage'));
 const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage'));
 const AdminPlatformSettingsPage = lazy(() => import('./pages/AdminPlatformSettingsPage'));
+const AdminRentalTermsPage = lazy(() => import('./pages/AdminRentalTermsPage'));
+const AdminPayoutsPage = lazy(() => import('./pages/AdminPayoutsPage'));
 const AdminVehicleApprovalsPage = lazy(() => import('./pages/AdminVehicleApprovalsPage'));
 const EditVehiclePage = lazy(() => import('./pages/EditVehiclePage'));
 const OwnerContractTemplatesPage = lazy(() => import('./pages/OwnerContractTemplatesPage'));
+const OwnerBookingPolicyPage = lazy(() => import('./pages/OwnerBookingPolicyPage'));
+const OwnerStatementsPage = lazy(() => import('./pages/OwnerStatementsPage'));
 const ContractTemplatesPage = lazy(() => import('./pages/ContractTemplatesPage'));
 const AddVehiclePage = lazy(() => import('./pages/AddVehiclePage'));
 const OwnerDashboardPage = lazy(() => import('./pages/OwnerDashboardPage'));
@@ -173,6 +177,8 @@ const OWNER_SIDEBAR_ITEMS = [
   { label: 'Add Vehicle', to: '/owner/vehicles/new', icon: Plus, permissions: ADD_VEHICLE },
   { label: 'Reports', to: '/owner/reports', icon: BarChart3, permissions: FLEET_BOOKINGS },
   { label: 'Contract Templates', to: '/owner/contracts', icon: FileText },
+  { label: 'Booking Policy', to: '/owner/policy', icon: CalendarClock },
+  { label: 'Statements', to: '/owner/statements', icon: Wallet, permissions: FLEET_BOOKINGS },
   { label: 'Documents', to: '/dashboard/documents', icon: IdCard, permissions: [P.DOCUMENT_READ, P.DOCUMENT_UPLOAD] },
   { label: 'Browse Vehicles', to: '/vehicles', icon: Search },
   { label: 'Back to Main Site', to: '/', icon: Home },
@@ -192,6 +198,8 @@ const ADMIN_TOOLS = [
   { label: 'Audit Log', to: '/admin/audit-log', icon: ScrollText },
   { label: 'Announcements', to: '/admin/announcements', icon: Megaphone },
   { label: 'Platform Settings', to: '/admin/settings', icon: Percent },
+  { label: 'Rental Terms', to: '/admin/rental-terms', icon: ScrollText },
+  { label: 'Owner Payouts', to: '/admin/payouts', icon: Wallet, permissions: [P.BOOKING_MANAGE] },
 ];
 
 /** Vehicles, kept together: the whole fleet, adding one, and approval — what's waiting, what was approved, what was rejected. */
@@ -283,7 +291,7 @@ function menuForRoles(roles, mode) {
       INBOX_ITEM,
       ASSISTANT_ITEM,
       byTo('/dashboard/documents'),
-      ...inGroup('My Fleet', CarFront, [byTo('/owner/vehicles'), byTo('/owner/bookings'), byTo('/owner/vehicles/new'), byTo('/owner/reports'), byTo('/owner/contracts')]),
+      ...inGroup('My Fleet', CarFront, [byTo('/owner/vehicles'), byTo('/owner/bookings'), byTo('/owner/vehicles/new'), byTo('/owner/reports'), byTo('/owner/statements'), byTo('/owner/contracts'), byTo('/owner/policy')]),
       ...inGroup('My Rentals', KeyRound, [MY_BOOKINGS_ITEM, byTo('/vehicles')]),
       SWITCH_TO_RENTER,
       HOME_ITEM,
@@ -349,7 +357,8 @@ export default function App() {
               <Route path="/vehicles/:vehicleId" element={page(<VehicleDetailPage />)} />
               {/* Choosing vehicles, sharing a contact and checking out need no account — the account comes at checkout */}
               <Route path="/booking" element={page(<BookingCartPage />)} />
-              <Route path="/booking/contact" element={page(<BookingContactPage />)} />
+              {/* The old "How can we reach you?" step — sign-up at checkout asks for it now. */}
+              <Route path="/booking/contact" element={<Navigate to="/booking/checkout" replace />} />
               <Route path="/booking/checkout" element={page(<BookingCheckoutPage />)} />
               <Route path="/book/:vehicleId" element={<VehicleRedirect />} />
               <Route path="/services" element={page(<ServicesPage />)} />
@@ -373,6 +382,7 @@ export default function App() {
               <Route path="/payment/success" element={page(<PaymentSuccessPage />)} />
               <Route path="/book/:vehicleId/sign" element={page(<SignaturePage />)} />
               <Route path="/book/:vehicleId/confirm" element={page(<BookingConfirmPage />)} />
+              <Route path="/contracts/:contractId/sign" element={page(<ContractSignPage />)} />
               <Route path="/inbox" element={page(<InboxPage />)} />
               <Route path="/messages" element={page(<MessagesPage />)} />
               <Route path="/messages/booking/:bookingId" element={page(<ChatPage />)} />
@@ -431,6 +441,8 @@ export default function App() {
               <Route path="/owner/vehicles/:vehicleId/edit" element={page(<EditVehiclePage />)} />
               <Route path="/owner/reports" element={page(<OwnerReportsPage />)} />
               <Route path="/owner/contracts" element={page(<OwnerContractTemplatesPage />)} />
+              <Route path="/owner/policy" element={page(<OwnerBookingPolicyPage />)} />
+              <Route path="/owner/statements" element={page(<OwnerStatementsPage />)} />
             </Route>
           </Route>
 
@@ -456,6 +468,8 @@ export default function App() {
               <Route path="/admin/announcements" element={page(<AdminAnnouncementsPage />)} />
               <Route path="/admin/roles" element={page(<AdminRolesPage />)} />
               <Route path="/admin/settings" element={page(<AdminPlatformSettingsPage />)} />
+              <Route path="/admin/rental-terms" element={page(<AdminRentalTermsPage />)} />
+              <Route path="/admin/payouts" element={page(<AdminPayoutsPage />)} />
             </Route>
           </Route>
         </Route>

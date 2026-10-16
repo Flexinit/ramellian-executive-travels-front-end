@@ -12,7 +12,7 @@ import PageTitle from './PageTitle';
  * @param {string} [intro]
  * @param {Array<{heading: string, body: React.ReactNode}>} sections
  */
-export default function LegalPage({ title, intro, sections }) {
+export default function LegalPage({ title, intro, sections, children }) {
   return (
     <PageWrapper className="max-w-3xl">
       <PageTitle title={title} />
@@ -39,6 +39,8 @@ export default function LegalPage({ title, intro, sections }) {
             </section>
           ))}
         </div>
+
+        {children}
       </div>
     </PageWrapper>
   );

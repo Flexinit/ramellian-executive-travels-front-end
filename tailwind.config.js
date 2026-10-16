@@ -1,3 +1,5 @@
+import { FONTS, fontStack } from './src/theme/fonts.js';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
@@ -12,8 +14,9 @@ export default {
         'brand-grey':       '#8A8A9A',
       },
       fontFamily: {
-        heading: ['"Playfair Display"', 'serif'],
-        body:    ['Inter', 'sans-serif'],
+        // Set in src/theme/fonts.js — change the fonts there, not here.
+        heading: fontStack(FONTS.heading),
+        body:    fontStack(FONTS.body),
       },
       boxShadow: {
         card: '0 4px 24px 0 rgba(0,0,0,0.18)',

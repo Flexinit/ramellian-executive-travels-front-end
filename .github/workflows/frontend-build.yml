@@ -51,15 +51,17 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # VITE_* values are baked into the bundle here (they override the committed .env). VITE_API_BASE_URL stays
-      # empty: the site calls the API on its own address and the host Nginx forwards /api and /uploads to the backend.
+      # VITE_* values are baked into the bundle here (they override the committed .env files; keep them in step with
+      # .env.production). The API is the site's own https address: the host Nginx forwards /api and /uploads to the
+      # backend and redirects http and www there (deploy/nginx/host-site-https.conf).
       - run: npm run build
         env:
-          VITE_API_BASE_URL: ''
+          VITE_API_BASE_URL: https://ramellianexecutivetravels.co.ke
           VITE_SWAGGER_URL: http://102.68.87.231:8090/swagger-ui/index.html
           VITE_PESAPAL_ENV: live
           VITE_GOOGLE_CLIENT_ID: 353452894856-d9tudsttmmma590akjuetpap5na22vs9.apps.googleusercontent.com
           VITE_ENABLE_WHATSAPP_VERIFICATION: 'false'
+          VITE_ENABLE_PHONE_VERIFICATION: 'false'
 
       - run: tar -czf "$ARCHIVE" -C dist .
 

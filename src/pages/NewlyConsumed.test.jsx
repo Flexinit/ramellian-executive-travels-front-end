@@ -143,7 +143,7 @@ describe('SecuritySection', () => {
     server.use(http.get(`${BASE}/users/me`, () => HttpResponse.json({ id: 'me-1', email: 'felix@example.com', twoFactorEnabled: false })));
   });
 
-  async function fillPasswords(user, { current = 'oldpassword', next = 'newpassword1', confirm = 'newpassword1' } = {}) {
+  async function fillPasswords(user, { current = 'oldpassword', next = 'newpassword1!', confirm = 'newpassword1!' } = {}) {
     await user.type(screen.getByLabelText('Current password'), current);
     await user.type(screen.getByLabelText('New password'), next);
     await user.type(screen.getByLabelText('Confirm new password'), confirm);
@@ -161,7 +161,7 @@ describe('SecuritySection', () => {
     renderUi(<SecuritySection />);
     await fillPasswords(user);
     await user.click(screen.getByRole('button', { name: 'Change password' }));
-    await waitFor(() => expect(body).toEqual({ currentPassword: 'oldpassword', newPassword: 'newpassword1' }));
+    await waitFor(() => expect(body).toEqual({ currentPassword: 'oldpassword', newPassword: 'newpassword1!' }));
     await waitFor(() => expect(screen.getByLabelText('Current password')).toHaveValue(''));
   });
 

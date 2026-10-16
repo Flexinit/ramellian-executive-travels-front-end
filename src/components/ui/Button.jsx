@@ -11,10 +11,12 @@ import Spinner from './Spinner';
  * Pass `to` to render a router link (same look, real `<a>`), or `href` for an
  * external link; otherwise it's a `<button>`.
  *
- * @param {'default'|'danger'|'dark'} variant
+ * @param {'default'|'danger'|'dark'|'navy'} variant
  *   default — the "Rent a Car" look: a gold outline pill, used for EVERY button
- *   (there is no filled or text-only version); danger — the same pill in red, for
- *   destructive actions; dark — the same pill in dark ink, only for a gold surface.
+ *   (there is no text-only version); danger — the same pill in red, for
+ *   destructive actions; dark — the same pill in dark ink, only for a gold or white surface;
+ *   navy — the same pill filled in the brand's navy with gold text, the one filled button, for the main
+ *   "go on" step on a white surface (the contract's Next, as asked by the product owner 2026-10-16).
  * @param {'sm'|'md'|'lg'|'icon'} size — md is the navbar button size; icon is a round icon-only button
  * @param {boolean} loading
  * @param {boolean} disabled
@@ -47,6 +49,7 @@ export default function Button({
     default: `border border-brand-gold text-brand-gold bg-transparent hover:bg-brand-gold/10 ${off}`,
     danger: `border border-red-500 text-red-400 bg-transparent hover:bg-red-500/10 ${off}`,
     dark: `border border-brand-dark text-brand-dark bg-transparent hover:bg-brand-dark/10 ${off}`,
+    navy: `border border-brand-navy bg-brand-navy text-brand-gold hover:bg-brand-dark ${off}`,
   };
 
   const sizes = {

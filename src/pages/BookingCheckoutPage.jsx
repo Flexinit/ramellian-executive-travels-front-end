@@ -7,10 +7,11 @@ import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import BookingProgress from '../components/booking/BookingProgress';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
-import BookingContactDrawer from '../components/booking/BookingContactDrawer';
 import CheckoutPhonePrompt from '../components/booking/CheckoutPhonePrompt';
 import CartTotals from '../components/booking/CartTotals';
 import DocumentGateModal from '../components/documents/DocumentGateModal';
+import RentalTermsList from '../components/booking/RentalTermsList';
+import { useRentalTerms } from '../hooks/useRentalTerms';
 import LoginModal from '../components/auth/LoginModal';
 import RegisterModal from '../components/auth/RegisterModal';
 import Button from '../components/ui/Button';
@@ -24,7 +25,7 @@ import { useSetupPrompts } from '../hooks/useProfile';
 import { normalizeVehicle } from '../hooks/useVehicles';
 import { apiGet } from '../lib/api';
 import { bookingWindowProblem, isOwnVehicle, tripTypeProblem } from '../lib/vehicleOptions';
-import { CONTACT_KINDS, missingBookingDocuments, modeProblem } from '../lib/cart';
+import { missingBookingDocuments, modeProblem } from '../lib/cart';
 import { BOOKING_MODES } from '../lib/constants';
 import { formatCurrency } from '../lib/utils';
 import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
@@ -53,8 +54,9 @@ function itemProblem(item, vehicle, isError, user) {
 /**
  * The last step before the account and the money: what is being booked, what it will cost, and what happens
  * next.
- *  - A visitor is asked to sign up (or log in); their selection and contact are kept through registering, verifying
- *    their email and logging in, and this page is where they land afterwards.
+ *  - A visitor is asked to sign up (or log in) — arriving from Book, Create Account is already open; their
+ *    selection is kept through registering and verifying their email (which signs them in), and this page is
+ *    where they land afterwards.
  *  - Someone signed in has each vehicle re-checked against the live listing (still available, still bookable on
  *    those dates, current price), then the first vehicle's booking is created and they go on to its contract.
  *    The owner's contract is only readable once a booking exists, so it is reviewed — and accepted — just
@@ -66,7 +68,6 @@ function itemProblem(item, vehicle, isError, user) {
  */
 export default function BookingCheckoutPage() {
   const items = useCartStore((s) => s.items);
-  const contact = useCartStore((s) => s.contact);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
@@ -77,7 +78,8 @@ export default function BookingCheckoutPage() {
   // first — it only forgets the cart entry, the booking itself stays in My Bookings to cancel from there.
   const [pendingRemove, setPendingRemove] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const { data: rentalTerms = [] } = useRentalTerms();
   // null | 'login' | 'register' — one piece of state for both, so "Create one"/"Log in" inside either modal
   // can switch straight to the other without a moment where neither is open.
   const [authModal, setAuthModal] = useState(null);
@@ -92,20 +94,19 @@ export default function BookingCheckoutPage() {
     if (isAuthenticated) setAuthModal(null);
   }, [isAuthenticated]);
 
-  // "Already have an account? Log in" on the contact step lands here with `state.auth`: skip that step and open
-  // the Log In panel straight away. The state is cleared at once so a reload or Back doesn't reopen it.
+  // A visitor's Book / Book now lands here with `state.auth` ('register'): Create Account opens straight away
+  // over the booking. The state is cleared at once so a reload or Back doesn't reopen it.
   const location = useLocation();
   const navigate = useNavigate();
   const requestedAuth = location.state?.auth;
   useEffect(() => {
     if (!requestedAuth) return;
-    setContactOpen(false);
     if (!isAuthenticated && (requestedAuth === 'login' || requestedAuth === 'register')) setAuthModal(requestedAuth);
     navigate(location.pathname, { replace: true, state: null });
   }, [requestedAuth, isAuthenticated, navigate, location.pathname]);
 
-  // A signed-in renter never sees the "How can we reach you?" step, so a profile with no phone number is
-  // caught here instead — asked once, saved to the profile, never asked again (CheckoutPhonePrompt).
+  // Sign-up asks for the phone number and saves it; a profile still without one (an older account, or the
+  // save after sign-up failed) is caught here — asked once, saved to the profile (CheckoutPhonePrompt).
   const { needsPhone } = useSetupPrompts();
 
   const { data: documents } = useDocuments({ enabled: isAuthenticated });
@@ -121,7 +122,7 @@ export default function BookingCheckoutPage() {
   });
   // The backend's own price for each vehicle not yet booked (docs/backend-requests.md item 3).
   const quoteResults = useQueries({
-    queries: items.filter((i) => !i.bookingId).map((i) => bookingQuoteQuery({ vehicleId: i.vehicleId, startTime: i.startTime, endTime: i.endTime, deliveryRequested: i.deliveryRequested })),
+    queries: items.filter((i) => !i.bookingId).map((i) => bookingQuoteQuery({ vehicleId: i.vehicleId, startTime: i.startTime, endTime: i.endTime, deliveryRequested: i.deliveryRequested, bookingMode: i.bookingMode })),
   });
   const quotes = Object.fromEntries(
     items.filter((i) => !i.bookingId).map((i, idx) => [i.vehicleId, quoteResults[idx]?.data]).filter(([, data]) => !!data)
@@ -239,21 +240,13 @@ export default function BookingCheckoutPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {contact && (
-                  <p className="text-brand-grey text-xs">
-                    We&apos;ll reach you on {contact.kind === CONTACT_KINDS.EMAIL ? 'email' : 'phone'}: <span className="text-brand-white">{contact.value}</span>{' '}
-                    <Button size="sm" onClick={() => setContactOpen(true)} className="ml-2">
-                      <Pencil size={12} aria-hidden="true" /> Change
-                    </Button>
-                  </p>
-                )}
                 <Button size="lg" onClick={() => setAuthModal('register')}>
                   <UserPlus size={16} aria-hidden="true" /> Sign up to continue
                 </Button>
                 <Button size="lg" onClick={() => setAuthModal('login')}>
                   <LogIn size={16} aria-hidden="true" /> I have an account
                 </Button>
-                <Button onClick={() => setContactOpen(true)} className="self-start">
+                <Button to="/booking" className="self-start">
                   <ArrowLeft size={14} aria-hidden="true" /> Back
                 </Button>
               </div>
@@ -275,6 +268,11 @@ export default function BookingCheckoutPage() {
                   {items.length > 1 ? 'each contract' : 'the contract'}.
                 </li>
               </ol>
+              {rentalTerms.length > 0 && (
+                <button type="button" onClick={() => setTermsOpen(true)} className="self-start text-brand-gold text-xs font-semibold hover:text-brand-gold-light focus-ring rounded-md">
+                  Read the rental terms
+                </button>
+              )}
             </Card>
             <Button size="sm" variant="danger" className="self-start" onClick={() => setConfirmClear(true)}>
               <Trash2 size={14} aria-hidden="true" /> Clear booking
@@ -283,16 +281,9 @@ export default function BookingCheckoutPage() {
         </div>
       </div>
 
-      <BookingContactDrawer
-        isOpen={contactOpen}
-        onClose={() => setContactOpen(false)}
-        onReopen={() => setContactOpen(true)}
-        onSubmitted={() => setContactOpen(false)}
-        onLogin={() => {
-          setContactOpen(false);
-          setAuthModal('login');
-        }}
-      />
+      <Modal isOpen={termsOpen} onClose={() => setTermsOpen(false)} title="Rental terms" size="lg">
+        <RentalTermsList />
+      </Modal>
 
       <LoginModal
         isOpen={authModal === 'login'}

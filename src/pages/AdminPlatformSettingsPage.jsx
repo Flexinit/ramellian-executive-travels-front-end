@@ -7,6 +7,8 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
+import BookingPolicyForm from '../components/booking/BookingPolicyForm';
+import { usePlatformPolicy, useSavePlatformPolicy } from '../hooks/useBookingPolicies';
 import { usePlatformSettings, useSavePlatformSettings } from '../hooks/usePlatformSettings';
 
 const FIELDS = ['commissionRatePct', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee'];
@@ -58,7 +60,7 @@ export default function AdminPlatformSettingsPage() {
   }
 
   return (
-    <PageWrapper className="max-w-lg">
+    <PageWrapper className="max-w-3xl">
       <PageTitle title="Platform Settings" />
       <div className="flex flex-col gap-6">
         <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Platform Settings</h1>
@@ -132,7 +134,36 @@ export default function AdminPlatformSettingsPage() {
             </form>
           )}
         </Card>
+
+        <PlatformPolicyCard />
       </div>
     </PageWrapper>
+  );
+}
+
+/**
+ * The platform's standard booking policy (`GET`/`PUT /booking-policies/platform`) — what bookings follow when
+ * their owner hasn't set one of their own (Owner Panel → Booking Policy).
+ */
+function PlatformPolicyCard() {
+  const policy = usePlatformPolicy();
+  const save = useSavePlatformPolicy();
+  return (
+    <Card className="p-5 flex flex-col gap-4">
+      <div>
+        <h2 className="font-heading text-brand-white text-base font-semibold">Standard booking policy</h2>
+        <p className="text-brand-grey text-sm mt-1">
+          Cancellation and date-moving rules for owners who haven't set their own. It applies to bookings made from
+          now on.
+        </p>
+      </div>
+      {policy.isLoading ? (
+        <div className="flex justify-center py-6"><Spinner label="Loading the booking policy" /></div>
+      ) : policy.isError && policy.error?.response?.status !== 404 ? (
+        <ErrorBanner message="Could not load the booking policy." onRetry={policy.refetch} />
+      ) : (
+        <BookingPolicyForm policy={policy.data} onSave={(p) => save.mutate(p)} saving={save.isPending} />
+      )}
+    </Card>
   );
 }

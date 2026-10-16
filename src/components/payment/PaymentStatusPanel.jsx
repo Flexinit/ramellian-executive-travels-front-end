@@ -82,9 +82,9 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
 
   if (status === PAYMENT_STATUSES.SUCCESSFUL) {
     return (
-      <div className="flex flex-col items-center gap-3 text-center py-6">
-        <div className="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center">
-          <CheckCircle2 size={26} className="text-emerald-400" aria-hidden="true" />
+      <div className="flex flex-col items-center gap-3 text-center py-2">
+        <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+          <CheckCircle2 size={20} className="text-emerald-400" aria-hidden="true" />
         </div>
         <div>
           <p className="text-brand-white font-semibold">Payment successful</p>
@@ -97,9 +97,9 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
 
   if (status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID) {
     return (
-      <div className="flex flex-col items-center gap-3 text-center py-6">
-        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-          <XCircle size={26} className="text-red-400" aria-hidden="true" />
+      <div className="flex flex-col items-center gap-3 text-center py-2">
+        <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+          <XCircle size={20} className="text-red-400" aria-hidden="true" />
         </div>
         <div>
           <p className="text-brand-white font-semibold">Payment failed</p>
@@ -116,9 +116,9 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
 
   if (exhausted) {
     return (
-      <div className="flex flex-col items-center gap-3 text-center py-6">
-        <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center">
-          <Clock size={26} className="text-amber-400" aria-hidden="true" />
+      <div className="flex flex-col items-center gap-3 text-center py-2">
+        <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+          <Clock size={20} className="text-amber-400" aria-hidden="true" />
         </div>
         <div>
           <p className="text-brand-white font-semibold">{errorMessage ? "Couldn't check your payment" : 'Still confirming your payment'}</p>
@@ -154,7 +154,7 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
 
   if (redirectUrl) {
     return (
-      <div className="flex flex-col items-center gap-3 text-center py-6">
+      <div className="flex flex-col items-center gap-3 text-center py-2">
         <div>
           <p className="text-brand-white font-semibold">You're ready to pay</p>
           <p className="text-brand-grey text-sm mt-1">
@@ -171,7 +171,7 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 text-center py-6">
+    <div className="flex flex-col items-center gap-3 text-center py-2">
       <Spinner size="lg" label="Checking payment status" />
       <p className="text-brand-grey text-sm">Waiting for your payment to be confirmed…</p>
       {/* No cached redirectUrl for this browser to offer above (a resumed session, a different device, or

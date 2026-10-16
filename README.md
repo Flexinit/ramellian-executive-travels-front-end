@@ -32,7 +32,7 @@ Set these in a local `.env` file (see `.env.example`):
 | Variable | Description |
 |---|---|
 | `VITE_API_BASE_URL` | Leave **empty** (local and production): the app calls the API on its own address, and the dev server / host Nginx forwards it to the backend. A full address makes the browser call that backend directly, which then has to allow the page's origin in its CORS settings |
-| `DEV_API_PROXY_TARGET` | Backend that `npm run dev` forwards `/api` and `/uploads` to, e.g. `http://102.68.87.231:8090` (see `vite.config.js`) |
+| `DEV_API_PROXY_TARGET` | Backend that `npm run dev` forwards `/api` and `/uploads` to — `http://192.168.8.9:8090` (local network), set in `.env.development` (see `vite.config.js`). The VPS build's values are in `.env.production`. |
 | `VITE_SWAGGER_URL` | Swagger UI URL for the backend, used only as a developer reference |
 | `VITE_PESAPAL_ENV` | `sandbox` or `live` — which Pesapal environment to initiate checkout against |
 

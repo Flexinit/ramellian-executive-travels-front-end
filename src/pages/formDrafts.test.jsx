@@ -40,11 +40,11 @@ describe('Register form draft', () => {
     await user.type(screen.getByLabelText('First Name'), 'Ann');
     await user.type(screen.getByLabelText('Last Name'), 'Lee');
     await user.type(screen.getByLabelText('Email'), 'ann@example.com');
-    await user.type(screen.getByLabelText('Password'), 'supersecret1');
-    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1');
+    await user.type(screen.getByLabelText('Password'), 'supersecret1!');
+    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1!');
     await draftSaved('register');
 
-    expect(JSON.stringify(loadDraft('register'))).not.toContain('supersecret1');
+    expect(JSON.stringify(loadDraft('register'))).not.toContain('supersecret1!');
     first.unmount();
 
     renderWith(<RegisterPage />);
@@ -76,8 +76,9 @@ describe('Register form draft', () => {
     await user.type(screen.getByLabelText('First Name'), 'Ann');
     await user.type(screen.getByLabelText('Last Name'), 'Lee');
     await user.type(screen.getByLabelText('Email'), 'ann@example.com');
-    await user.type(screen.getByLabelText('Password'), 'supersecret1');
-    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1');
+    await user.type(screen.getByLabelText(/phone number/i), '0712 345 678');
+    await user.type(screen.getByLabelText('Password'), 'supersecret1!');
+    await user.type(screen.getByLabelText('Confirm Password'), 'supersecret1!');
     await draftSaved('register');
     await user.click(screen.getByLabelText(/terms of service/i));
     await user.click(screen.getByRole('button', { name: /create account/i }));
@@ -130,7 +131,7 @@ describe('Personal details draft', () => {
     expect(screen.getByLabelText(/first name/i)).toHaveValue('Ann');
 
     await user.click(screen.getByRole('button', { name: /save personal details/i }));
-    await waitFor(() => expect(patch).toEqual({ phoneNumber: '0712345678' }));
+    await waitFor(() => expect(patch).toEqual({ phoneNumber: '+254712345678' }));
   });
 
   it('drops the draft once the details are saved', async () => {

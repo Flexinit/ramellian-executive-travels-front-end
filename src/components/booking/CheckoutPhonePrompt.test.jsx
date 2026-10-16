@@ -68,7 +68,7 @@ describe('CheckoutPhonePrompt — a signed-in renter is asked for a phone once',
     await user.type(screen.getByLabelText(/phone number/i), ' 0712345678 ');
     await user.click(screen.getByRole('button', { name: /save phone number/i }));
 
-    await waitFor(() => expect(useAuthStore.getState().user.phoneNumber).toBe('0712345678'));
-    expect(body).toEqual({ phoneNumber: '0712345678' });
+    // Saved in the standard form, whichever way it was typed.
+    await waitFor(() => expect(body).toEqual({ phoneNumber: '+254712345678' }));
   });
 });

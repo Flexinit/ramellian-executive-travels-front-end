@@ -118,7 +118,7 @@ export default function VerifyEmailPage() {
           </div>
 
           {verify.isSuccess && (
-            <p className="text-emerald-400 text-sm font-medium">{whatsapp ? 'WhatsApp verified' : 'Email verified'} — redirecting to login…</p>
+            <p className="text-emerald-400 text-sm font-medium">{whatsapp ? 'WhatsApp verified' : 'Email verified'} — taking you on…</p>
           )}
 
           {verify.isError && (

@@ -3,6 +3,164 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-16 (log-in and sign-up: remember me, show password, password rules)
+
+- **Added:** **Remember me on this device** on the log-in and sign-up forms. Ticked, you stay signed in after closing
+  the browser (until the sign-in expires or you log out); unticked, it ends when the browser closes. The choice is
+  sent to the backend with the log-in (`rememberMe`).
+- **Added:** an eye button on every password field to show or hide what you typed.
+- **Changed:** a new password (sign-up, change password) needs at least 8 characters with a letter, a number and a
+  symbol. A checklist under the field ticks off each rule as you type.
+- **Changed:** **Create an account** on the log-in page and panel is now a full-width button.
+- **Fixed:** logging in against the newer backend failed with "The request format or parameter values are invalid":
+  it refuses a log-in without `rememberMe`, which is now always sent.
+
+## 2026-10-16 (signing from the owner's notification)
+
+- **Added:** the owner's "please sign the contract" notification has a **Sign Contract** button. It opens the
+  contract, with the renter and dates, and **Read & sign**. The booking's own page then offers signing too. A renter
+  opening it is taken to their own signing page.
+
+## 2026-10-16 (saved signature, owner signing, owner payouts)
+
+- **Added:** **My signature** on Profile: draw or upload your signature once, agreeing it can be used to sign your
+  rental contracts. Replace or remove it any time.
+- **Changed:** signing a contract offers **Sign with my saved signature** (one click, still your own action on each
+  contract), or **Draw a new one**. A renter without a saved one can tick **Save this signature for my next
+  contracts**.
+- **Added (owners):** the owner's booking page shows who has signed the contract and when, with **Read & sign** to
+  sign as the owner (drawn or saved signature). It appears only once the portal can find the booking's contract
+  (`docs/backend-requests.md` item 13 / 40).
+- **Changed:** the contract's Signatures section shows each party's own signing date and name.
+- **Added (admins):** **Owner Payouts**: what each owner is owed per paid booking (To pay / Paid / Failed), with
+  **Mark paid** (with the payment reference) and **Failed** (with a reason).
+
+## 2026-10-16 (pages centred again)
+
+- **Changed back:** pages beside the left menu are centred again, as before (the earlier change that started them
+  right next to the menu is undone). The menu still stays in place while the page scrolls.
+
+## 2026-10-16 (payment page tidied)
+
+- **Changed:** the payment page is a compact, centred column: the booking ("Total Paid" once paid) on top, the
+  payment and **Continue to Sign Contract** in a matching card underneath, over the same Nairobi skyline as
+  checkout, so the booking steps look like one journey. **Booking Confirmed** shows a coastal lodge, for the trip
+  ahead, and is centred too.
+
+## 2026-10-16 (new backend features in the portal)
+
+- **Added (owners):** **Booking Policy** (Owner Panel): your own cancellation and date-moving rules (free-cancellation
+  window, last cancellation, late refund %, whether and how often renters can move their dates), with a plain-words
+  summary of what renters get. Until you save one, your bookings follow the platform's standard policy.
+- **Added (owners):** **Statements**: what your vehicles earned (gross, commission and payment fees taken out, your
+  payout) by month, by vehicle and per paid booking with its receipt number; filter by vehicle and dates; printable.
+- **Added (owners):** **Rate the renter** on a Completed booking's page.
+- **Added (renters):** **Move dates** next to **Cancel booking**, checked against the owner's policy first.
+- **Added (renters):** **Pay overstay** when a car was returned late and an overstay charge is due.
+- **Added (renters):** the official receipt as a PDF (the file icon next to **Receipt**).
+- **Fixed:** reviews now send whether you were satisfied (**Yes / No**, set from the stars), which the backend
+  requires.
+- **Added (admins):** **Rental Terms**: add, edit, delete and switch on/off the platform's rental terms, grouped by
+  category. Renters see the switched-on ones on the Terms page and from **Read the rental terms** at checkout.
+- **Added (admins):** **Standard booking policy** in Platform Settings; **Add a renter** on Users (shows the
+  temporary password once); **Upload a document for this user** on a user's page.
+- **Added:** vehicles can have a **year**, **insurer** and **policy number**, and a booking can say how many
+  **passengers**. All four now appear on the contract.
+- **Changed:** the payment page is wider, with the booking and the payment side by side, and says "Your payment went
+  through" once paid. Pages no longer shift sideways.
+- **Built, switched off:** verifying your phone number by SMS code (Google Firebase), waiting on the backend.
+
+## 2026-10-16 (phone numbers are checked)
+
+- **Changed:** phone numbers are checked wherever they're typed (sign-up, profile, checkout). Kenyan numbers can be
+  written any usual way (`0712 345 678`, `712345678`, `+254 712 345 678`) and are saved as `+254712345678`; other
+  countries' numbers need `+` and the country code. Anything else gets "Enter a valid phone number, e.g. 0712 345
+  678 or +254 712 345 678." (`lib/phone`).
+
+## 2026-10-16 (contract read in parts; confirm, then sign; layout beside the menu)
+
+- **Changed:** the contract is read **part by part** (The Parties & The Vehicle, Trip Details, …) with **Back** and
+  a blue **Next** that stays at the bottom of the screen, and a progress bar ("Part 2 of 7"). It no longer sits in
+  its own scrolling box; it's wider, with larger text, and shows **only the information that's available** (empty
+  details and sections are left out). The letterhead keeps the dark band with the logo and the company's full name,
+  **Ramellian Executive Travels**. Print / PDF is on the contract's own top bar and still prints all of it.
+- **Added:** on the last part, **I have read and understood this agreement** must be ticked before **Accept &
+  Continue** (contract page) or **Sign** (signing page) works. **Sign** jumps straight to the renter's place in the
+  Signatures section, where the signature pad and **Submit signature** are. Each contract in a group is read and
+  confirmed on its own.
+- **Changed:** the renter's name under the signature comes from their profile (full name as on their ID).
+- **Fixed:** a contract that's already signed now says so and offers **Continue** to the next step, instead of a
+  page with nowhere to go. If a signature is refused (e.g. payment not confirmed yet), the reason shows under the
+  button.
+- **Changed:** on the contract pages, the way back, the title and the instructions float in a column on the left
+  while the contract scrolls.
+- **Changed:** on every signed-in page, the left menu stays in place while the page scrolls, and pages start right
+  next to the menu instead of centring in the space beside it.
+
+## 2026-10-16 (the contract as a proper document, with signatures)
+
+- **Changed:** the rental contract no longer shows as raw text. It's laid out as a document: letterhead with the
+  reference and agreement date, the platform notice in its own box, numbered sections, details as tables, numbered
+  clauses, and **Not provided** for anything not filled in. It follows each owner's own template
+  (`ContractDocument`, `lib/contractDocument`).
+- **Added:** a **Signatures** section on every contract, with a place for the renter and for the owner, each dated
+  when signed. The renter's shows **Signed electronically** with the date once signed (or **Sign in the box below**
+  on the signing page). The owner's shows **Awaiting signature**: the backend can't take an owner's signature yet
+  (`docs/backend-requests.md` item 40).
+- **Changed:** the agreement date is the date the contract was accepted, not the day you happen to view it.
+- **Added:** **Print / Save as PDF** under the contract, printing only the contract.
+- **Changed:** owners previewing their contract template see it in the same document layout.
+
+## 2026-10-16 (price breakdown at checkout)
+
+- **Added:** a **Price breakdown** on Checkout and Your Booking, from the backend's quote: the rental (days × daily
+  price) plus any delivery, driver and payment processing fee, adding up to the total charged. Several vehicles get
+  a breakdown and subtotal each. The platform's commission is never shown as a renter charge (`CartTotals`,
+  `lib/quoteBreakdown`).
+- **Changed:** the quote now also sends Self-Drive / Chauffeured, so a driver charge is included when the backend
+  sets one.
+
+## 2026-10-16 (a clear way back on every booking step)
+
+- **Added:** a back button at the top of each booking step: **Back to checkout** on the contract and the combined
+  payment, **Back to contract** on the payment page (or **View booking** once it's paid), **Back to payment** on
+  the signature page, and **Back to My Bookings** on a booking's own page.
+- **Fixed:** the step indicator above Your Booking and Checkout no longer shows the removed "Your Contact" step.
+
+## 2026-10-16 (new font)
+
+- **Changed:** the whole portal now uses one font, **Plus Jakarta Sans**: bold for headings and prices, regular for
+  text. It replaces Playfair Display (headings) and Inter (text). The font is set in one place,
+  `src/theme/fonts.js`.
+
+## 2026-10-16 (see-through booking panel)
+
+- **Changed:** the booking panel on a vehicle's page is now see-through glass, so the background shows through
+  it (`AddToBookingPanel`).
+
+## 2026-10-13 (a car with one booking no longer looks booked on every date)
+
+- **Fixed:** a vehicle with a booking on some dates showed "This vehicle is already booked for those dates" for
+  **any** dates chosen, so it couldn't be booked at all. The backend's single-vehicle check ignores the dates
+  (`docs/backend-requests.md` item 39); the vehicle page now asks the dated vehicle list instead, so only the
+  dates that really clash are refused (`useVehicleWindowBooked`).
+
+## 2026-10-12 (simpler booking: fewer steps from Book to paid)
+
+- **Removed:** the separate "How can we reach you?" step. **Book now** and **Book** go straight to checkout, with
+  **Create Account** already open for a visitor. The old `/booking/contact` address opens checkout.
+- **Changed:** sign-up asks for a **phone number** (required). It's saved to your profile once you're signed in,
+  so checkout no longer asks for it again. A booking lead (vehicles chosen, email and phone) is still sent to the
+  business, now when the sign-up form is submitted.
+- **Changed:** entering the email verification code **signs you in automatically** and takes you back to your
+  booking — no logging in again (unless the page was reloaded in between).
+- **Changed:** **Proceed to Payment** goes straight to Pesapal — the "You're ready to pay" countdown page is gone.
+- **Changed:** coming back from Pesapal now lands on the booking's own Payment page, so paid / failed / still
+  checking always look and work the same. A double-click on **Try Again** starts only one payment.
+- **Changed:** the **Finish setting up your account** window and banner no longer pop up during checkout,
+  contract, payment or signing.
+- **Fixed in the guide:** several vehicles are paid for in **one** combined payment (the guide said one at a time).
+
 ## 2026-10-12 (contract: registration, VIN and pick-up place filled in)
 
 - **Changed:** the contract a renter reads and signs now shows the vehicle's **registration number** and

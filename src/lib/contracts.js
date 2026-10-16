@@ -56,3 +56,24 @@ export function stashContractId(bookingId, contractId) {
 export function sessionContractId(bookingId) {
   return (bookingId && sessionStorage.getItem(`contract:${bookingId}`)) || null;
 }
+
+/**
+ * Downloads a booking's official receipt as the backend makes it — `GET /payments/bookings/{bookingId}/receipt`
+ * (a PDF, live spec 2026-10-16), fetched with the signed-in person's token.
+ * @param {string} bookingId
+ */
+export async function downloadBookingReceipt(bookingId) {
+  try {
+    const res = await api.get(`/payments/bookings/${bookingId}/receipt`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `receipt-${bookingId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    toast.error('Could not download the receipt.');
+  }
+}

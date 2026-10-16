@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -39,9 +39,25 @@ function serveBooking(statusOrFn) {
   );
 }
 
+const realLocation = window.location;
+let assign;
 beforeEach(() => {
   sessionStorage.clear();
+  assign = vi.fn();
+  Object.defineProperty(window, 'location', { configurable: true, value: { ...realLocation, assign } });
 });
+afterEach(() => {
+  Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
+});
+
+function serveCheckout(onCall = () => {}) {
+  server.use(
+    http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, ({ params }) => {
+      onCall(params.bookingId);
+      return HttpResponse.json({ redirectUrl: `https://pay.pesapal.com/checkout?booking=${params.bookingId}` });
+    })
+  );
+}
 
 describe('PaymentPage — a booking that no longer holds', () => {
   it('lets a bookable booking start Pesapal checkout', async () => {
@@ -60,6 +76,8 @@ describe('PaymentPage — a booking that no longer holds', () => {
 
     await waitFor(() => expect(checkedOut).toBe(true));
     await waitFor(() => expect(sessionStorage.getItem('checkout:b1')).toBe('1'));
+    // Straight to Pesapal — no "ready to pay" countdown in between.
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
   });
 
   it("doesn't poll payment status until the renter actually clicks through to Pesapal", async () => {
@@ -171,5 +189,66 @@ describe('PaymentPage — resuming a payment the local "checkout started" flag l
     renderAt();
 
     expect(await screen.findByRole('button', { name: /proceed to payment/i })).toBeInTheDocument();
+  });
+});
+
+describe('PaymentPage — back from Pesapal (PaymentSuccessPage sets the checkout flag and hands over here)', () => {
+  beforeEach(() => sessionStorage.setItem('checkout:b1', '1'));
+
+  it('a failed payment offers Try Again, which goes straight to a fresh Pesapal checkout', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    serveBooking('PENDING');
+    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'FAILED' })));
+    serveCheckout(() => { calls += 1; });
+    renderAt();
+
+    expect(await screen.findByText(/payment failed/i)).toBeInTheDocument();
+    await user.dblClick(screen.getByRole('button', { name: /try again/i }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+    expect(calls).toBe(1);
+  });
+
+  it('someone who backed out of Pesapal (status never settles) can pay again or check again right away', async () => {
+    const user = userEvent.setup();
+    serveBooking('PENDING');
+    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'PENDING' })));
+    serveCheckout();
+    renderAt();
+
+    expect(await screen.findByRole('button', { name: /check again/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /continue to payment/i }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+  });
+
+  it("stops waiting and says why when the status check itself fails (e.g. the backend can't reach Pesapal)", async () => {
+    serveBooking('PENDING');
+    server.use(
+      http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () =>
+        HttpResponse.json({ message: 'Pesapal response missing token' }, { status: 500 })
+      )
+    );
+    renderAt();
+
+    expect(await screen.findByText("Couldn't check your payment")).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/internal error \(500\)/i);
+    expect(screen.getByRole('button', { name: /check again/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+  });
+});
+
+describe('PaymentPage — the way back', () => {
+  it('goes back to the contract before paying', async () => {
+    serveBooking('PENDING');
+    renderAt();
+    expect(await screen.findByRole('link', { name: /back to contract/i })).toHaveAttribute('href', '/book/b1/contract');
+  });
+
+  it('offers the booking itself once paid, not the contract', async () => {
+    serveBooking('CONFIRMED');
+    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'SUCCESSFUL' })));
+    renderAt();
+    expect(await screen.findByRole('link', { name: /view booking/i })).toHaveAttribute('href', '/dashboard/bookings/b1');
+    expect(screen.queryByRole('link', { name: /back to contract/i })).not.toBeInTheDocument();
   });
 });

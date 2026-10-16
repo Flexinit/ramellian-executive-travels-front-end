@@ -40,14 +40,17 @@ Browser ──▶ Host Nginx on the VPS (site installed by Jenkins from deploy/n
               └── everything    ──▶ files in /var/www/ramellian/current
 ```
 
-- The site calls the API on **its own address**: `VITE_API_BASE_URL` is empty, so requests go to `/api/v1/...` and
-  photos to `/uploads/...` on whichever address the page was opened from, http or https. Host Nginx forwards them to
-  the backend.
+- The site calls the API on **its own address**: `VITE_API_BASE_URL` is `https://ramellianexecutivetravels.co.ke`, so
+  requests go to `https://ramellianexecutivetravels.co.ke/api/v1/...` and photos to `.../uploads/...`. Host Nginx
+  forwards them to the backend. The site has one address: Nginx redirects http and `www.` to it
+  (`deploy/nginx/host-site-https.conf`), so the page and its API are always the same origin.
 - Nginx drops the browser's `Origin` header on the way. The backend's CORS settings refuse every browser origin
   (`403 Invalid CORS request`), so without this the browser could not log in. Because the requests are same-site,
   dropping it is safe, and there's also no "mixed content" problem (an https page calling an http API).
-- Local development works the same way: `npm run dev` forwards `/api` and `/uploads` to `DEV_API_PROXY_TARGET`
-  from `.env` and drops `Origin` too (`vite.config.js`).
+- Local development calls the office backend directly: `VITE_API_BASE_URL=http://192.168.8.9:8090` in
+  `.env.development`, which accepts calls from `http://localhost:5173`. Leave it empty there to go through
+  `npm run dev`'s proxy instead (`DEV_API_PROXY_TARGET`, `vite.config.js`), which also drops `Origin` and works on
+  any port.
 - `VITE_*` values are baked into the files when the site is **built** (in the GitHub Actions workflow). Changing one
   means pushing a new commit.
 
@@ -197,11 +200,12 @@ Check: `curl -I https://ramellianexecutivetravels.co.ke/swagger-ui/index.html`.
 ## Step 6: The live values
 
 These are set on the `npm run build` step of the workflow (`.github/workflows/frontend-build.yml`). Change one by
-editing it and pushing. They override the values in the committed `.env`, which are for local development.
+editing it and pushing. They override the committed `.env` files; keep `.env.production` (the same values, for a
+build made on your own machine) in step. `.env.development` is for local development.
 
 | Setting | Value |
 |---|---|
-| `VITE_API_BASE_URL` | empty: the site calls the API on its own address |
+| `VITE_API_BASE_URL` | `https://ramellianexecutivetravels.co.ke`: the site's own address (Nginx forwards to the backend). Needs the https site; on the plain-http fallback (`host-site.conf`, before a certificate exists) set it empty |
 | `VITE_SWAGGER_URL` | `http://102.68.87.231:8090/swagger-ui/index.html`, only shown in developer hints |
 | `VITE_PESAPAL_ENV` | `live` (use `sandbox` while testing payments) |
 | `VITE_GOOGLE_CLIENT_ID` | the Google OAuth client ID (public by design: it ships in the site's code) |
@@ -210,7 +214,7 @@ editing it and pushing. They override the values in the committed `.env`, which 
 ## Step 7: Outside services that need the new address
 
 - **Google Cloud Console** → APIs & Services → Credentials → the OAuth client → **Authorised JavaScript origins**:
-  add `https://ramellianexecutivetravels.co.ke` and `https://www.ramellianexecutivetravels.co.ke`. Without this, "Continue with Google" fails.
+  add `https://ramellianexecutivetravels.co.ke` (`www.` now redirects to it, so it isn't strictly needed). Without this, "Continue with Google" fails.
 - **Pesapal** (live account): register the callback and IPN URLs on `https://ramellianexecutivetravels.co.ke/...`.
 - **Backend config**: links it puts in emails (verify email, reset password), and any allowed origins, must use the https domain.
 

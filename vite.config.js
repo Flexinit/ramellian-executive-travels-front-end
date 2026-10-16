@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { googleFontsUrl } from './src/theme/fonts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,10 +22,20 @@ function devApiProxy(target) {
   return { '/api': route, '/uploads': route };
 }
 
+/** Puts the Google Fonts link for src/theme/fonts.js into index.html, where `<!-- app-fonts -->` stands. */
+function appFonts() {
+  const tags = [
+    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
+    `<link rel="stylesheet" href="${googleFontsUrl()}" />`,
+  ].join('\n    ');
+  return { name: 'app-fonts', transformIndexHtml: (html) => html.replace('<!-- app-fonts -->', tags) };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react()],
+    plugins: [react(), appFonts()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
