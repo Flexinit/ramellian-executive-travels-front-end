@@ -147,13 +147,13 @@ const SECTIONS = [
   },
 ];
 
-/** See `LegalPage` — this content is a draft pending legal review, not final. */
 function RentalTermsSection() {
   const { data: terms = [] } = useRentalTerms();
   if (!terms.length) return null;
   return (
     <section className="flex flex-col gap-3">
       <h2 className="font-heading text-brand-white text-lg font-semibold">Rental terms</h2>
+      <p className="text-brand-grey text-sm">Renters accept the terms for Everyone and Renters before booking; owners accept the ones for Everyone and Owners before listing a car.</p>
       <RentalTermsList />
     </section>
   );

@@ -6,9 +6,11 @@ import React from 'react';
  *
  * @param {'sm'|'md'|'lg'} size
  * @param {boolean} wordmarkOnly — hide image, show text only
+ * @param {boolean} compactOnTinyScreens — on the narrowest phones (under 360px) show only the mark, not the
+ *   wordmark, so a full header row still fits (the top bar)
  * @param {string} className
  */
-export default function Logo({ size = 'md', wordmarkOnly = false, className = '' }) {
+export default function Logo({ size = 'md', wordmarkOnly = false, compactOnTinyScreens = false, className = '' }) {
   const containerSizes = {
     sm: 'h-8',
     md: 'h-10',
@@ -37,7 +39,7 @@ export default function Logo({ size = 'md', wordmarkOnly = false, className = ''
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
-      <div className="flex flex-col leading-tight">
+      <div className={`flex flex-col leading-tight ${compactOnTinyScreens && !wordmarkOnly ? 'max-[359px]:hidden' : ''}`}>
         <span className={`font-heading font-bold text-brand-gold ${textSizes[size]}`}>
           RAMELLIAN
         </span>

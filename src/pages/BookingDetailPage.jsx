@@ -83,8 +83,8 @@ export default function BookingDetailPage() {
       <PageTitle title="Booking Details" />
       <div className="flex flex-col gap-6">
         <BackLink to="/dashboard/bookings" label="Back to My Bookings" />
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
+        <div className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-4 min-w-0 max-w-full">
             <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-white/5">
               {photoUrl ? (
                 <AuthImage
@@ -100,7 +100,7 @@ export default function BookingDetailPage() {
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="font-heading text-brand-white text-2xl font-bold truncate">{vehicle?.model || 'Booking'}</h1>
+              <h1 className="font-heading text-brand-white text-2xl font-bold sm:truncate">{vehicle?.model || 'Booking'}</h1>
               <p className="text-brand-grey text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
             </div>
           </div>
@@ -120,8 +120,8 @@ export default function BookingDetailPage() {
           {vehicle?.ownerEmail && (
             <div className="flex justify-between gap-4 text-sm">
               <span className="text-brand-grey shrink-0">Owner</span>
-              <span className="text-brand-white text-right inline-flex items-center gap-1.5">
-                <Mail size={13} className="text-brand-grey shrink-0" aria-hidden="true" />
+              <span className="text-brand-white text-right inline-flex items-start gap-1.5 min-w-0 break-all">
+                <Mail size={13} className="text-brand-grey shrink-0 mt-[3px]" aria-hidden="true" />
                 {vehicle.ownerEmail}
               </span>
             </div>

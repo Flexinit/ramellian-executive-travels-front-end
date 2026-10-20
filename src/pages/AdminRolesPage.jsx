@@ -147,7 +147,7 @@ export default function AdminRolesPage() {
           !permissions.isError && <EmptyState icon={KeyRound} title="No permissions found" description="Try a different search, or add a permission." />
         ) : (
           <>
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
+            <div className="table-scroll rounded-2xl border border-white/10">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/10">

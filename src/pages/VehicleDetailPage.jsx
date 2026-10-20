@@ -61,10 +61,11 @@ export default function VehicleDetailPage() {
       {/* `min-w-0` on both columns: a grid column otherwise grows to its content's natural width, so a large
           photo pushed the gallery past the right edge (its Next arrow and photo count were cut off). */}
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-8 lg:gap-12 items-start">
-        {/* Photo and details side by side (stacked on a phone), with Reviews right under them, so the whole
-            vehicle — photo, name, features, price and reviews — fits on one screen without scrolling. */}
+        {/* Photo and details side by side (stacked on a phone and a tablet, where the details column would be
+            too narrow), with Reviews right under them, so the whole vehicle — photo, name, features, price and
+            reviews — fits on one screen without scrolling. */}
         <div className="flex flex-col gap-6 min-w-0">
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6 md:gap-10 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6 xl:gap-10 items-start">
             <div className="min-w-0">
               <ImageGallery photos={vehicle.photos} alt={vehicle.model} tier={vehicle.tier} />
             </div>

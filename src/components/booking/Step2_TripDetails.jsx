@@ -5,6 +5,7 @@ import BookingModeToggle from './BookingModeToggle';
 import TripTypeSelect from './TripTypeSelect';
 import RenterNotesTextarea from './RenterNotesTextarea';
 import PickupLocationInput from './PickupLocationInput';
+import TripRouteInputs from './TripRouteInputs';
 import DeliveryChoice from './DeliveryChoice';
 import Input from '../ui/Input';
 import DropoffLocationInput from './DropoffLocationInput';
@@ -68,7 +69,7 @@ export default function Step2_TripDetails({ vehicle }) {
       {/* Full width: side by side with the mode toggle, the chosen dates and times got cut off. */}
       <DateRangePicker value={dateRange} onChange={handleDateRangeChange} disabledRanges={myPeriods} />
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <BookingModeToggle />
         <DeliveryChoice vehicle={vehicle} />
       </div>
@@ -80,7 +81,9 @@ export default function Step2_TripDetails({ vehicle }) {
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      <TripRouteInputs />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <PickupLocationInput />
         <DropoffLocationInput />
       </div>

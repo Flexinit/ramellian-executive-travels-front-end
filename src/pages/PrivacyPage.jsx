@@ -85,7 +85,6 @@ const SECTIONS = [
   },
 ];
 
-/** See `LegalPage` — this content is a draft pending legal review, not final. */
 export default function PrivacyPage() {
   return (
     <LegalPage

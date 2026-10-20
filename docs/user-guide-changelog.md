@@ -3,6 +3,32 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-20 (phone and tablet layout)
+
+- **Changed:** on a phone, bookings (My Bookings, Fleet Bookings, All Bookings) and the admin Users, All Vehicles and
+  Audit Log lists show each row as a labelled card instead of a squeezed table.
+- **Changed:** the phone menu strip fades at its edge when there's more to swipe to, and opens scrolled to the
+  current page.
+- **Changed:** on the narrowest phones (under 360px wide) the top bar shows only the logo mark, so its icons fit.
+- **Changed:** the booking form's side-by-side fields (Booking Mode / Getting the vehicle, Travelling from / to,
+  Pickup / Drop-off Location) stack on a phone; a vehicle's photo and details sit side by side only on wide screens.
+- **Fixed:** pages with a table (bookings, Users, All Vehicles, Reports) were wider than a phone screen, so the page
+  zoomed out and the WhatsApp button sat off screen. Tab rows too long for the screen now scroll inside themselves.
+- **Fixed:** status badges, prices and long email addresses no longer break out of their boxes or split oddly on a
+  phone; booking pages put the status badge above the vehicle name there.
+
+## 2026-10-17 (trip route required; terms must be accepted)
+
+- **Added:** **Travelling from** and **Travelling to** on the booking form. Both are required, show on Your Booking,
+  and are part of the contract (on its letterhead, whatever the owner's template says, and in its trip details).
+  Bookings already in a basket without them must be edited before checkout.
+- **Added:** renters must tick **I have read and accept the Terms of Service and the rental terms** before
+  **Continue to contract**; owners must tick **… the terms for owners** before **Add Vehicle**. **Read them** opens
+  the terms that apply to them.
+- **Changed (admins):** each rental term says **Who it applies to**: Everyone, Renters (accepted at checkout) or Owners
+  (accepted when listing a car). Admins add, edit, delete and switch them on or off under **Rental Terms**.
+- **Changed:** the Terms of Service and Privacy Policy are no longer marked as drafts.
+
 ## 2026-10-16 (log-in and sign-up: remember me, show password, password rules)
 
 - **Added:** **Remember me on this device** on the log-in and sign-up forms. Ticked, you stay signed in after closing

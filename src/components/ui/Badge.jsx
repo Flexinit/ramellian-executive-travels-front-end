@@ -26,7 +26,7 @@ export default function Badge({ label, variant = 'neutral', size = 'sm', classNa
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border ${sizes[size]} ${variants[variant]} ${className}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-full border ${sizes[size]} ${variants[variant]} ${className}`}
     >
       {label}
     </span>

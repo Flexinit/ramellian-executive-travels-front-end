@@ -28,6 +28,8 @@ const INITIAL_DRAFT = {
   dropoffLocation: '',
   deliveryRequested: false,
   passengerCount:  null,
+  tripOrigin:      '',
+  tripDestination: '',
 };
 
 /**

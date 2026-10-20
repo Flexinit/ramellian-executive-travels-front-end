@@ -102,7 +102,7 @@ export default function BookingsChart({ report }) {
       </div>
 
       {tableView ? (
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="w-full text-sm" aria-labelledby={titleId}>
             <thead>
               <tr className="border-b border-white/10 text-left text-brand-grey">

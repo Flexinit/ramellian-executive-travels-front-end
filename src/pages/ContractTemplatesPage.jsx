@@ -108,7 +108,7 @@ export default function ContractTemplatesPage() {
     <PageWrapper className="max-w-3xl">
       <PageTitle title="Contract Templates" />
       <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Contract Templates</h1>
           <Button size="sm" onClick={() => setEditing({})}>
             <Plus size={15} aria-hidden="true" />

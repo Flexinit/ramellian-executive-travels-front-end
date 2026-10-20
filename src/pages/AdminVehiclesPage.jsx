@@ -72,7 +72,7 @@ export default function AdminVehiclesPage() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <SegmentedControl kind="tab" size="sm" label="Approval status" options={tabs} value={approvalFilter} onChange={setApprovalFilter} className="max-w-full overflow-x-auto" />
+          <SegmentedControl kind="tab" size="sm" label="Approval status" options={tabs} value={approvalFilter} onChange={setApprovalFilter} />
           <Input
             label="Search"
             name="search"
@@ -95,8 +95,8 @@ export default function AdminVehiclesPage() {
         ) : shown.length === 0 ? (
           !isError && <EmptyState icon={Car} title="No vehicles found" description="Try a different search or status." />
         ) : (
-          <Card className="overflow-x-auto">
-            <table className="w-full text-left">
+          <Card className="table-scroll">
+            <table className="stack-table w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
                   {['Vehicle', 'Owner', 'Place', 'Per day', 'Insurance', 'Approval', 'Status', ''].map((col, i) => (
@@ -109,7 +109,7 @@ export default function AdminVehiclesPage() {
               <tbody className="divide-y divide-white/5">
                 {pages.pageItems.map((v) => (
                   <tr key={v.id}>
-                    <td className="px-4 py-3 text-sm text-brand-white">
+                    <td className="stack-full px-4 py-3 text-sm text-brand-white">
                       <div className="flex items-center gap-3">
                         <VehicleThumb vehicle={v} onOpen={setGallery} />
                         <span>
@@ -118,10 +118,10 @@ export default function AdminVehiclesPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-brand-grey">{v.ownerEmail || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-brand-grey">{v.location}</td>
-                    <td className="px-4 py-3 text-sm text-brand-white">{formatCurrency(v.pricePerDay)}</td>
-                    <td className="px-4 py-3">
+                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-brand-grey break-all md:break-normal">{v.ownerEmail || '—'}</td>
+                    <td data-label="Place" className="px-4 py-3 text-sm text-brand-grey">{v.location}</td>
+                    <td data-label="Per day" className="px-4 py-3 text-sm text-brand-white">{formatCurrency(v.pricePerDay)}</td>
+                    <td data-label="Insurance" className="px-4 py-3">
                       <div className="flex flex-col items-start gap-1.5">
                         <Badge
                           label={!v.comprehensiveInsurance ? 'No insurance' : v.insuranceVerificationStickerPhoto ? 'Insured · sticker' : 'Insured · no sticker'}
@@ -140,14 +140,14 @@ export default function AdminVehiclesPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td data-label="Approval" className="px-4 py-3">
                       <Badge label={approvalLabel(v)} variant={approvalVariant(v)} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td data-label="Status" className="px-4 py-3">
                       <Badge label={v.available === false ? 'Unavailable' : 'Available'} variant={v.available === false ? 'neutral' : 'success'} />
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2 justify-end">
+                    <td className="stack-full px-4 py-3">
+                      <div className="flex flex-wrap gap-2 md:flex-nowrap md:justify-end">
                         <Button size="sm" to={`/admin/vehicles/${v.id}/edit`} aria-label={`Edit ${v.model}`}>
                           Edit
                         </Button>

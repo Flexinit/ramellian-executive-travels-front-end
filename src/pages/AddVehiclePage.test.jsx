@@ -253,6 +253,7 @@ describe('AddVehiclePage photos', () => {
     await goToPhotos(user);
     chooseFile(screen.getByLabelText(/add front photo/i), new File(['x'], 'IMG_0001.jpg', { type: 'image/jpeg' }));
     chooseFile(screen.getByLabelText(/add left side photo/i), new File(['x'], 'IMG_0002.PNG', { type: 'image/png' }));
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await waitFor(() => expect([...uploaded].sort()).toEqual(['front.jpg', 'left.png', 'sticker.jpg']));
@@ -266,6 +267,7 @@ describe('AddVehiclePage photos', () => {
     renderPage();
     await goToPhotos(user);
     chooseFile(screen.getByLabelText(/add back photo/i), new File(['x'], 'a.jpg', { type: 'image/jpeg' }));
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await waitFor(() => expect(errorToast).toHaveBeenCalledWith("Couldn't upload: Back."));
@@ -278,6 +280,7 @@ describe('AddVehiclePage submit', () => {
     const user = userEvent.setup();
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     expect(await screen.findByText(/toyota prado added/i)).toBeInTheDocument();
@@ -295,6 +298,7 @@ describe('AddVehiclePage submit', () => {
     );
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -312,6 +316,7 @@ describe('AddVehiclePage submit', () => {
     );
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -338,6 +343,7 @@ describe('AddVehiclePage submit', () => {
     await user.click(screen.getByRole('checkbox', { name: /available for booking/i }));
     await next(user);
     await screen.findByText(/0 of 6 angles added/i);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -367,6 +373,7 @@ describe('AddVehiclePage submit', () => {
     fireEvent.change(screen.getByLabelText(/available until/i), { target: { value: '2026-12-01T09:00' } });
     await next(user);
     await screen.findByText(/0 of 6 angles added/i);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -483,6 +490,7 @@ describe('AddVehiclePage submit', () => {
     );
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -503,6 +511,7 @@ describe('AddVehiclePage submit', () => {
     }));
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     expect(await screen.findByText(/insurance sticker photo didn't upload/i)).toBeInTheDocument();
@@ -513,6 +522,7 @@ describe('AddVehiclePage submit', () => {
     server.use(http.post(`${BASE}/vehicles/:id/photos`, () => HttpResponse.json({ message: 'boom' }, { status: 500 })));
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     expect(await screen.findByText(/insurance sticker photo didn't upload/i)).toBeInTheDocument();
@@ -541,6 +551,7 @@ describe('AddVehiclePage submit', () => {
     await fillFeatures(user);
     await next(user);
     await screen.findByText(/0 of 6 angles added/i);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -579,6 +590,7 @@ describe('AddVehiclePage submit', () => {
     );
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);
@@ -610,6 +622,7 @@ describe('AddVehiclePage submit', () => {
     const user = userEvent.setup();
     renderPage();
     await goToPhotos(user);
+    await user.click(screen.getByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(screen.getByRole('button', { name: /^add vehicle$/i }));
 
     await waitFor(() => expect(screen.getByRole('button', { name: /add another/i })).toBeInTheDocument());

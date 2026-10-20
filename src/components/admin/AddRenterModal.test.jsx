@@ -56,10 +56,10 @@ describe('AddRenterModal (POST /users/admin/renters)', () => {
 });
 
 describe('groupRentalTerms', () => {
-  it('groups by category, with uncategorised terms under General', () => {
+  it('groups by category, with uncategorised terms under Everyone', () => {
     expect(groupRentalTerms([{ id: 1, category: 'Drivers' }, { id: 2 }, { id: 3, category: 'Drivers' }])).toEqual([
       { category: 'Drivers', terms: [{ id: 1, category: 'Drivers' }, { id: 3, category: 'Drivers' }] },
-      { category: 'General', terms: [{ id: 2 }] },
+      { category: 'Everyone', terms: [{ id: 2 }] },
     ]);
   });
 });

@@ -20,7 +20,7 @@ import { TRIP_TYPE_LABELS, BOOKING_MODES } from '../../lib/constants';
  *   (`POST /bookings/quote`), shown instead of the client-side guess when given; omit to keep the guess.
  */
 export default function BookingSummaryCard({ vehicle, draft, actions, note, quote }) {
-  const { startTime, endTime, bookingMode, tripType, renterNotes, pickupLocation, dropoffLocation, deliveryRequested } = draft;
+  const { startTime, endTime, bookingMode, tripType, renterNotes, pickupLocation, dropoffLocation, deliveryRequested, tripOrigin, tripDestination } = draft;
   const deliveryFee = quote?.deliveryFee;
   const days = quote?.numberOfDays ?? billableDays(startTime, endTime);
   const photo = vehicle?.photos?.[0];
@@ -62,6 +62,12 @@ export default function BookingSummaryCard({ vehicle, draft, actions, note, quot
             {startTime && endTime ? `${formatDateTime(startTime)} – ${formatDateTime(endTime)}` : '—'}
           </dd>
         </div>
+        {(tripOrigin || tripDestination) && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-brand-grey shrink-0">Route</dt>
+            <dd className="text-brand-white text-right">{tripOrigin || '—'} → {tripDestination || '—'}</dd>
+          </div>
+        )}
         {tripType && (
           <div className="flex justify-between gap-4">
             <dt className="text-brand-grey shrink-0">Trip Type</dt>

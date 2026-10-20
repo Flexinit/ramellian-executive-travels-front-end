@@ -3,6 +3,7 @@ import { useLocation, useParams, useNavigate, Link } from 'react-router-dom';
 import BackLink from '../components/ui/BackLink';
 import ContractConfirmBar from '../components/contract/ContractConfirmBar';
 import ContractPageLayout from '../components/contract/ContractPageLayout';
+import { routeFromBooking } from '../lib/tripRoute';
 import { useRenterName } from '../hooks/useRenterName';
 import { RotateCcw, Trash2, Car, CreditCard, CheckCircle2 } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -190,6 +191,7 @@ export default function ContractPage() {
               pdfUrl={draft.data?.pdfUrl}
               document={{
                 reference: bookingId,
+                route: routeFromBooking(booking || {}),
                 agreementDate: draft.data?.acceptedAt || new Date(),
                 renter: { name: renterName, signedAt: renterSignedAt(draft.data) },
                 owner: { name: draft.data?.ownerSignedBy, signedAt: ownerSignedAt(draft.data) },

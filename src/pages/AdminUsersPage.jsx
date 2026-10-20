@@ -94,8 +94,8 @@ export default function AdminUsersPage() {
           !isError && <EmptyState icon={Users} title="No accounts found" description="Try a different search or role." />
         ) : (
           <div className="flex flex-col gap-4">
-          <div className="overflow-x-auto rounded-2xl border border-white/10">
-            <table className="w-full text-left">
+          <div className="table-scroll rounded-2xl border border-white/10">
+            <table className="stack-table w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
                   {['Name', 'Email', 'Roles', 'Status', ''].map((col, i) => (
@@ -119,24 +119,24 @@ export default function AdminUsersPage() {
                       aria-label={`Open ${userDisplayName(user)}`}
                       className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
                     >
-                      <td className="px-4 py-3 text-sm text-brand-white">
+                      <td className="stack-full px-4 py-3 text-sm text-brand-white">
                         <span className="flex items-center gap-3">
                           <Avatar name={userDisplayName(user)} size="sm" />
                           {userDisplayName(user)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-brand-grey">{user.email}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="Email" className="stack-full px-4 py-3 text-sm text-brand-grey break-all md:break-normal">{user.email}</td>
+                      <td data-label="Roles" className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {roleBadges(user.roles).map((label) => (
                             <Badge key={label} label={label} variant="gold" />
                           ))}
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td data-label="Status" className="px-4 py-3">
                         <Badge label={user.enabled ? 'Active' : 'Disabled'} variant={user.enabled ? 'success' : 'danger'} />
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="stack-full px-4 py-3 text-right">
                         <Button
                           size="sm"
                           aria-label={`Edit ${userDisplayName(user)}`}

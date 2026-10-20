@@ -1260,3 +1260,28 @@ loads the contract, finds its booking, remembers the pair and shows the owner's 
 as the notification's button). **Please make sure** that notification has `referenceType: "CONTRACT"` and
 `referenceId` = the **contract id** — if it carries the booking id instead, the owner still can't reach the contract
 (item 13). Not checked live: the test account isn't an owner.
+
+## 43. `POST /auth/login` refuses a log-in without `rememberMe` — found 2026-10-17 (local backend 192.168.8.31)
+
+Every log-in without `rememberMe` (even for an unknown email) answers 400 "The request format or parameter values
+are invalid", although `LoginRequest` marks it optional. The portal now always sends it (the "Remember me" box), so
+log-in works — but other clients (mobile, scripts) will break. **Ask:** treat a missing `rememberMe` as `false`
+(e.g. `Boolean`, not `boolean`, or a default). The VPS (old backend) ignores the field, so the portal works on both.
+
+## 44. Trip origin and destination on a booking — required by the product, no fields yet — 2026-10-17
+
+The product now requires every booking to say where the trip starts and where it's going, and both are part of the
+contract. `BookingRequest`/`BookingResponse` have only `pickupLocation`/`dropoffLocation` (where the car is collected
+and returned — not the same thing). **Portal today:** asks for both (**Travelling from / Travelling to**, required),
+sends them as `tripOrigin` / `tripDestination` (ignored for now), and also writes them first in the notes —
+"Trip: from Nairobi to Diani Beach." — which the contract reads them from. **Ask:** add `tripOrigin` and
+`tripDestination` (required, ≤255) to `BookingRequest`, `BookingResponse` and the batch request; the portal will
+then stop writing them into the notes.
+
+## 31 (update, 2026-10-17). Terms acceptance — now required by the product at booking and listing, still not recorded
+
+Renters must tick "I have read and accept the Terms of Service and the rental terms" at checkout, and owners "… the
+terms for owners" before listing a car (on top of the sign-up box). It's enforced in the portal only — the backend
+still has nowhere to record it. **Ask:** record `termsAcceptedAt` (and which terms — e.g. the rental-term ids/version)
+on the user at sign-up, on each booking (`BookingRequest.termsAccepted`), and on each vehicle (`VehicleRequest.ownerTermsAccepted`).
+The Terms / Privacy pages are no longer marked as drafts (product owner's decision).

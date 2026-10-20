@@ -110,6 +110,8 @@ function SignatureBox({ role, name, signedAt, children }) {
  * @param {string} contractText — the filled contract text
  * @param {string} [reference] — the booking reference
  * @param {string|Date} [agreementDate] — when the agreement was made (accepted)
+ * @param {{ origin?: string, destination?: string }} [route] — the trip's route, always on the letterhead (whatever
+ *   the owner's template says)
  * @param {{ name?: string, signedAt?: string }} [renter]
  * @param {{ name?: string, signedAt?: string }} [owner]
  * @param {React.ReactNode} [renterSigning] — shown in the renter's place while unsigned (the signature pad, on
@@ -121,7 +123,7 @@ function SignatureBox({ role, name, signedAt, children }) {
  * @param {function} [onProgress] — staged only: called with `{ part, parts, atEnd }` whenever the part changes
  * @param {React.ReactNode} [actions] — small actions (e.g. Print) shown on the document's own top bar
  */
-export default function ContractDocument({ contractText, reference, agreementDate, renter = {}, owner = {}, renterSigning, ownerSigning, signaturesId, staged = false, onProgress, actions }) {
+export default function ContractDocument({ contractText, reference, agreementDate, route, renter = {}, owner = {}, renterSigning, ownerSigning, signaturesId, staged = false, onProgress, actions }) {
   const { title, preamble, blocks: allBlocks } = parseContract(contractText);
   // The template's own "Agreement reference / Date of agreement" table repeats the letterhead — left out.
   const first = allBlocks[0];
@@ -171,6 +173,9 @@ export default function ContractDocument({ contractText, reference, agreementDat
             )}
             {agreementDate && (
               <div className="flex gap-1.5"><dt>Dated</dt><dd className="font-semibold text-slate-800">{formatDateTime(agreementDate)}</dd></div>
+            )}
+            {(route?.origin || route?.destination) && (
+              <div className="flex gap-1.5"><dt>Trip</dt><dd className="font-semibold text-slate-800">from {route.origin || '—'} to {route.destination || '—'}</dd></div>
             )}
           </dl>
         </div>

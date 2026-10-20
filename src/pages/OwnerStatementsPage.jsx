@@ -34,7 +34,7 @@ function Table({ caption, head, rows }) {
   return (
     <Card className="p-0 overflow-hidden">
       <h2 className="px-5 pt-4 pb-3 font-heading text-brand-white text-base font-semibold">{caption}</h2>
-      <div className="overflow-x-auto">
+      <div className="table-scroll">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-y border-white/10 bg-white/[0.03] text-left text-xs uppercase tracking-wider text-brand-grey">
@@ -108,7 +108,7 @@ export default function OwnerStatementsPage() {
               {s?.from || s?.to ? `${s.from ? formatDate(s.from) : 'Start'} – ${s.to ? formatDate(s.to) : 'today'}` : 'All time'}
               {s?.generatedAt ? ` · generated ${formatDate(s.generatedAt)}` : ''}
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatTile icon={CalendarCheck2} label="Paid bookings" value={sum.totalBookings ?? 0} />
               <StatTile icon={Receipt} label="Gross" value={formatCurrency(sum.totalGrossRevenue ?? 0)} />
               <StatTile

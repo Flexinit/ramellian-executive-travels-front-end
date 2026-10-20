@@ -60,12 +60,12 @@ export default function OwnerBookingDetailPage() {
     <PageWrapper className="max-w-2xl">
       <PageTitle title="Booking Details" />
       <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
+          <div className="min-w-0">
             <h1 className="font-heading text-brand-white text-2xl font-bold">{vehicle?.model || 'Booking'}</h1>
             <p className="text-brand-grey text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
           </div>
-          <BookingStatusBadge status={booking.status} />
+          <BookingStatusBadge status={booking.status} className="shrink-0" />
         </div>
 
         <Button to={`/messages/booking/${booking.id}`} className="self-start">

@@ -41,6 +41,69 @@
   }
 }
 
+@layer utilities {
+  /* A strip that scrolls sideways (tabs, the phone menu) without a scrollbar drawn across it. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* A sideways-scrolling table box. `relative` keeps absolutely positioned bits inside the table (the
+     screen-reader-only column labels) inside the box — otherwise they escape it and widen the whole page on a phone. */
+  .table-scroll {
+    position: relative;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* A table that turns into a stack of cards on a phone (below `md`), instead of being squeezed or scrolled
+   sideways. The markup stays a real table, so nothing changes from `md` up. Each cell labels itself from its
+   `data-label` (the column heading the hidden header row would have given it); `stack-full` makes a cell take
+   the card's whole width and `stack-end` lines it up on the right. A cell spanning every column (an expanded
+   details panel) always takes the whole width. */
+@media (max-width: 767px) {
+  .stack-table,
+  .stack-table > tbody {
+    display: block;
+  }
+  .stack-table > thead {
+    display: none;
+  }
+  .stack-table > tbody > tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem 1rem;
+    align-items: start;
+    padding: 1rem;
+  }
+  .stack-table > tbody > tr > td {
+    display: block;
+    padding: 0;
+    text-align: left;
+  }
+  .stack-table > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: theme('colors.brand-grey');
+  }
+  .stack-table > tbody > tr > td.stack-full,
+  .stack-table > tbody > tr > td[colspan] {
+    grid-column: 1 / -1;
+  }
+  .stack-table > tbody > tr > td.stack-end {
+    justify-self: end;
+    text-align: right;
+  }
+}
+
 /* Print / Save as PDF on a contract (lib/printContract.js): only the contract document is printed. */
 @media print {
   body.printing-contract * {

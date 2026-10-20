@@ -66,7 +66,7 @@ describe('verifying right after registering', () => {
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/auth/verify-email'));
     await user.click(screen.getByText('verify'));
 
-    await waitFor(() => expect(logins).toEqual([{ email: EMAIL, password: 'secret123' }]));
+    await waitFor(() => expect(logins).toEqual([{ email: EMAIL, password: 'secret123', rememberMe: false }]));
   });
 
   it('lands back on checkout, signed in, when a booking is waiting', async () => {

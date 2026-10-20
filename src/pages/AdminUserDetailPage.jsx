@@ -198,7 +198,7 @@ export default function AdminUserDetailPage() {
           All users
         </Button>
 
-        <Card className="p-5 sm:p-6 flex flex-col gap-5 md:flex-row md:items-center md:justify-between bg-gradient-to-br from-brand-gold/10 via-transparent to-transparent">
+        <Card className="p-5 sm:p-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between bg-gradient-to-br from-brand-gold/10 via-transparent to-transparent">
           <div className="flex items-center gap-4 min-w-0">
             {user.profilePhotoUrl ? (
               <AuthImage
@@ -224,7 +224,7 @@ export default function AdminUserDetailPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 md:justify-end shrink-0">
+          <div className="flex flex-wrap gap-2 lg:justify-end lg:shrink-0">
             {!isMe && (
               <Button size="sm" to={`/messages/user/${user.id}`}>
                 <MessageSquare size={14} aria-hidden="true" />
@@ -252,7 +252,7 @@ export default function AdminUserDetailPage() {
         </Card>
         {isMe && <p className="text-xs text-brand-grey -mt-3">This is your own account — you can&apos;t disable or delete it, and changing your role could lock you out of the admin pages.</p>}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label="At a glance">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" aria-label="At a glance">
           <FactChip icon={Mail} label="Email" on={user.emailVerified} onText="Verified" offText="Not verified" />
           <FactChip icon={ShieldCheck} label="Two-factor sign-in" on={user.twoFactorEnabled} onText="On" offText="Off" />
           <FactChip icon={BadgeCheck} label="Profile" on={user.hasCompletedProfile} onText="Completed" offText="Not completed" />

@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import Avatar from '../ui/Avatar';
@@ -109,6 +109,16 @@ export default function DashboardLayout({ items = [], heading }) {
   const roleLabel = user ? primaryRoleLabel(user.roles) : '';
   const sections = groupItems(items);
 
+  // On a phone the menu is a sideways strip — bring the current page's item into view inside it (only the
+  // strip scrolls, never the page), or a page far down the list opens with its item hidden off the edge.
+  const navRef = useRef(null);
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector('[aria-current="page"]');
+    if (!nav || !active || nav.scrollWidth <= nav.clientWidth) return;
+    nav.scrollLeft = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+  }, [pathname]);
+
   return (
     <div className="flex flex-col md:flex-row flex-1 bg-brand-dark">
       {/* From md up the menu stays put under the top bar (h-20) while the page scrolls, scrolling on its own if taller. */}
@@ -128,7 +138,12 @@ export default function DashboardLayout({ items = [], heading }) {
         )}
         {heading && <p className="hidden md:block text-brand-grey text-xs uppercase tracking-widest mb-6 mt-4">{heading}</p>}
 
-        <nav aria-label="Dashboard" className="flex flex-row md:flex-col gap-1.5 overflow-x-auto md:overflow-visible pb-1 md:pb-0">
+        {/* On a phone the strip fades out at its right edge, so it's clear there is more to scroll to. */}
+        <nav
+          ref={navRef}
+          aria-label="Dashboard"
+          className="relative flex flex-row md:flex-col gap-1.5 overflow-x-auto no-scrollbar md:overflow-visible -mx-4 px-4 md:mx-0 md:px-0 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] md:[mask-image:none]"
+        >
           {sections.map((section, index) => {
             const links = section.items.map((item) => (
               <MenuLink key={item.to + item.label} item={item} active={pathname === item.to} badgeCounts={badgeCounts} />

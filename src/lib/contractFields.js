@@ -1,5 +1,6 @@
 import { formatCurrency, formatDate, formatDateTime } from './utils';
 import { TRIP_TYPE_LABELS, BOOKING_MODES } from './constants';
+import { routeFromBooking, withoutRoute } from './tripRoute';
 
 /**
  * Fills a contract template's `{{field}}`s (docs/contract-templates/vehicle-rental-agreement.md) with this
@@ -17,7 +18,7 @@ import { TRIP_TYPE_LABELS, BOOKING_MODES } from './constants';
  *
  * Left blank (`BLANK`): anything the renter's own view doesn't have — the owner's name and business details
  * (no endpoint gives a renter the owner's profile; backend-requests item 37) — and anything not stored at all
- * yet (licence number, destination, booking created time). Vehicle year, insurer, policy number (VehicleResponse) and
+ * yet (licence number, booking created time). The trip's origin and destination come from the booking (lib/tripRoute.js). Vehicle year, insurer, policy number (VehicleResponse) and
  * passengers (BookingResponse.passengerCount) are filled in when the owner / renter gave them.
  */
 
@@ -45,6 +46,7 @@ function postponementTerms(policy) {
  */
 export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy, now = new Date() }) {
   const mode = booking.bookingMode;
+  const route = routeFromBooking(booking);
   // Not delivered, so it's collected from and returned to where the vehicle is kept.
   const baseLocation = booking.deliveryRequested ? undefined : vehicle.location;
   return {
@@ -80,7 +82,9 @@ export function contractValues({ booking = {}, vehicle = {}, renter = {}, policy
     passenger_count: booking.passengerCount != null ? String(booking.passengerCount) : undefined,
     delivery_requested: yesNo(booking.deliveryRequested),
     chauffeur_name: booking.chauffeurName || booking.chauffeurEmail || (mode === BOOKING_MODES.CHAUFFEURED ? 'To be assigned' : 'Not applicable'),
-    renter_notes: booking.renterNotes || 'None',
+    trip_origin: route.origin || undefined,
+    trip_destination: route.destination || undefined,
+    renter_notes: withoutRoute(booking.renterNotes) || 'None',
     dispatcher_notes: booking.dispatcherNotes || 'None',
 
     daily_rate: money(vehicle.pricePerDay ?? vehicle.dailyPrice),

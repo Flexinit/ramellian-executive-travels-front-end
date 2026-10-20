@@ -47,14 +47,17 @@ export const useToggleRentalTerm = () => useTermMutation((id) => apiPatch(`/rent
 /** Deletes a term. Pass its id. */
 export const useDeleteRentalTerm = () => useTermMutation((id) => apiDelete(`/rental-terms/${id}`), 'Rental term deleted.');
 
+/** Who a term applies to — its `category`. Terms without one apply to Everyone. */
+export const TERM_AUDIENCES = ['Everyone', 'Renters', 'Owners'];
+
 /**
- * Terms grouped by category, in order — `[{ category, terms }]`; terms without a category come under "General".
+ * Terms grouped by category, in order — `[{ category, terms }]`; terms without a category come under "Everyone".
  * @param {object[]} terms
  */
 export function groupRentalTerms(terms = []) {
   const groups = new Map();
   for (const t of terms) {
-    const key = (t.category || '').trim() || 'General';
+    const key = (t.category || '').trim() || 'Everyone';
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(t);
   }

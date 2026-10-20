@@ -70,7 +70,8 @@ document tools under a **Documents** heading (Review Documents, Approved Documen
 you can click to fold or open (**Administration**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
 **My Rentals**), each with its own icon.
 The heading holding the page you're on is open by itself and the others are folded away; on a phone the strip
-stays flat. Menus for a single role aren't grouped.
+stays flat. Menus for a single role aren't grouped. On a phone the menu is a strip along the top that you swipe
+sideways; it fades at its right edge when there's more to see, and it opens scrolled to the page you're on.
 
 **How signing in works.** The login page asks only for your email and password — there is no "log in as"
 choice. The roles on your account decide where you land:
@@ -294,6 +295,8 @@ verifying your email (which signs you in), and picks up where you left off.
 2. **Book it** — on the vehicle's page, check your dates, **Self-Drive** or **Chauffeured** (a
    vehicle that only offers one has it chosen for you), an optional trip type (tap one) and, if you need them,
    special instructions (**Add special instructions** opens the box), then either:
+   **Travelling from** and **Travelling to** are required: where your trip starts and where you're going (not the same
+   as where you collect the car). They're written into the contract.
    The whole booking panel fits on screen beside the vehicle, so **Book now** is always visible without scrolling.
    - **Book now** — goes straight to checkout. If you're not signed in, **Create Account** is already open there
      (with **Log in** one tap away). Anything else already in your booking comes along too.
@@ -343,6 +346,8 @@ verifying your email (which signs you in), and picks up where you left off.
    from the panel needs no extra step — it signs you in right there and the panel just closes.
    While you're booking (checkout, contract, payment, signing), the **Finish setting up your account** window and
    banner stay out of the way; they come back once you leave the booking pages.
+   Before **Continue to contract**, tick **I have read and accept the Terms of Service and the rental terms**
+   (**Read them** shows the terms for renters).
    Each vehicle is checked again against its live listing: if it's no longer available, is your own, isn't offered in
    the mode you chose or can't be booked on those dates, you're told and must remove it to go on; if its daily price
    changed you see the new price. If a vehicle's start time has passed since you added it (the selection is kept in
@@ -409,7 +414,9 @@ verifying your email (which signs you in), and picks up where you left off.
    Bookings**, **All Bookings** and the Bookings tab of both Reports pages, so status filtering looks and works
    identically whichever role is looking. Below that, filter further by **When** (All time / Upcoming / Ongoing
    / Past), trip type, mode, a pickup-date range
-   (**From**/**To**), and a vehicle name search — any combination at once. A booking whose contract you left
+   (**From**/**To**), and a vehicle name search — any combination at once. On a phone each booking shows as a card
+   (vehicle, dates, status, cost and so on, each labelled) instead of a table row; the admin **Users**, **All
+   Vehicles** and **Audit Log** lists do the same. A booking whose contract you left
    unsigned also gets a **Sign contract** button
    here, back to the signature pad, as long as this is the same browser session that drafted it. Each row has a
    **View Details** button (the

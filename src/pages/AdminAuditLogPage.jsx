@@ -77,8 +77,8 @@ export default function AdminAuditLogPage() {
         ) : entries.length === 0 ? (
           !isError && <EmptyState icon={ScrollText} title="No entries found" description="Try different filters." />
         ) : (
-          <div className={`overflow-x-auto rounded-2xl border border-white/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
-            <table className="w-full text-left">
+          <div className={`table-scroll rounded-2xl border border-white/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+            <table className="stack-table w-full text-left">
               <thead>
                 <tr className="border-b border-white/10">
                   {['When', 'Who', 'Action', 'About', 'Result'].map((col) => (
@@ -102,11 +102,11 @@ export default function AdminAuditLogPage() {
                       aria-label={`Open ${actionLabel(entry.action)} by ${entry.actorEmail || 'unknown'}`}
                       className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
                     >
-                      <td className="px-4 py-3 text-sm text-brand-grey whitespace-nowrap">{formatDateTime(entry.createdAt)}</td>
-                      <td className="px-4 py-3 text-sm text-brand-white break-all">{entry.actorEmail || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-brand-white">{actionLabel(entry.action)}</td>
-                      <td className="px-4 py-3 text-sm text-brand-grey">{entry.resourceType || '—'}</td>
-                      <td className="px-4 py-3">
+                      <td data-label="When" className="stack-full px-4 py-3 text-sm text-brand-grey whitespace-nowrap">{formatDateTime(entry.createdAt)}</td>
+                      <td data-label="Who" className="stack-full px-4 py-3 text-sm text-brand-white break-all">{entry.actorEmail || '—'}</td>
+                      <td data-label="Action" className="px-4 py-3 text-sm text-brand-white">{actionLabel(entry.action)}</td>
+                      <td data-label="About" className="px-4 py-3 text-sm text-brand-grey">{entry.resourceType || '—'}</td>
+                      <td data-label="Result" className="px-4 py-3">
                         <Badge label={entry.status || '—'} variant={auditStatusVariant(entry.status)} />
                       </td>
                     </tr>

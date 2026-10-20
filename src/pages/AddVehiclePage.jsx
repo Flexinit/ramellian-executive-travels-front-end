@@ -7,6 +7,7 @@ import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
+import TermsAcceptance from '../components/booking/TermsAcceptance';
 import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
 import ToggleChip from '../components/ui/ToggleChip';
@@ -66,6 +67,9 @@ export default function AddVehiclePage() {
   const availabilityMode = watch('availabilityMode');
 
   const [stepIndex, setStepIndex] = useState(0);
+  // Owners must read and accept the terms for owners before listing a car (product rule 2026-10-17).
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsError, setTermsError] = useState('');
   const [slotPhotos, setSlotPhotos] = useState({});
   const [extraPhotos, setExtraPhotos] = useState([]);
   const { stickerFile, setStickerFile, stickerError, setStickerError, stickerBusy, pickSticker } = useStickerPicker();
@@ -136,6 +140,11 @@ export default function AddVehiclePage() {
       e.preventDefault();
       goNext();
       return;
+    }
+    if (!termsAccepted) {
+      e.preventDefault();
+      setTermsError('Please read and accept the terms for owners to list your vehicle.');
+      return undefined;
     }
     return handleSubmit(onSubmit, onInvalid)(e);
   }
@@ -447,6 +456,17 @@ export default function AddVehiclePage() {
                 />
               )}
 
+              {isLastStep && (
+                <TermsAcceptance
+                  who="owner"
+                  checked={termsAccepted}
+                  onChange={(v) => {
+                    setTermsAccepted(v);
+                    if (v) setTermsError('');
+                  }}
+                  error={termsError}
+                />
+              )}
               <div className="flex items-center justify-between gap-3 pt-2">
                 {stepIndex > 0 ? (
                   <Button type="button" onClick={() => setStepIndex((i) => i - 1)}>

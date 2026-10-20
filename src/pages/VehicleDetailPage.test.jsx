@@ -39,6 +39,12 @@ function serve(vehicle = VEHICLE) {
   server.use(http.get(`${BASE}/vehicles/:id`, () => HttpResponse.json(vehicle)));
 }
 
+/** Where the trip starts and ends — required before booking. Set once the vehicle page has loaded its form. */
+async function fillRoute() {
+  await screen.findByLabelText(/travelling from/i);
+  act(() => useBookingStore.getState().setDraft({ tripOrigin: 'Nairobi', tripDestination: 'Diani Beach' }));
+}
+
 function signIn(email) {
   act(() => useAuthStore.setState({ token: 'test-token', user: { id: 'u1', email, roles: ['RENTER'] } }));
 }
@@ -143,6 +149,7 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     serve();
     search();
     renderAt('/vehicles/v1');
+    await fillRoute();
 
     await user.click(await screen.findByRole('button', { name: /book now/i }));
 
@@ -155,6 +162,7 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     serve();
     search({ pickupLocation: '' });
     renderAt('/vehicles/v1');
+    await fillRoute();
 
     expect(await screen.findByText(/no fee — you collect it yourself/i)).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: /^deliver$/i }));
@@ -174,6 +182,7 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     serve({ ...VEHICLE, tripTypes: ['GENERAL'] });
     search();
     renderAt('/vehicles/v1');
+    await fillRoute();
 
     await user.click(await screen.findByRole('button', { name: 'Wedding' }));
     await user.click(screen.getByRole('button', { name: /add to booking/i }));
@@ -188,6 +197,7 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     signIn('renter@example.com');
     search();
     renderAt('/vehicles/v1');
+    await fillRoute();
 
     await user.click(await screen.findByRole('button', { name: /book now/i }));
 
@@ -310,6 +320,7 @@ describe('Adding a vehicle to the booking (no account needed)', () => {
     serve();
     act(() => useBookingStore.getState().setDraft({ vehicleId: 'v1', startTime: START, endTime: END, bookingMode: 'SELF_DRIVE', tripType: 'WEDDING' }));
     renderAt('/vehicles/v1');
+    await fillRoute();
 
     await user.click(await screen.findByRole('button', { name: /add to booking/i }));
 

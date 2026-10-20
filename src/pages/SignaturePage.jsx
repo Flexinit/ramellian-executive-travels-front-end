@@ -7,6 +7,7 @@ import BackLink from '../components/ui/BackLink';
 import ContractConfirmBar from '../components/contract/ContractConfirmBar';
 import ContractSigningPlace from '../components/contract/ContractSigningPlace';
 import ContractPageLayout from '../components/contract/ContractPageLayout';
+import { routeFromBooking } from '../lib/tripRoute';
 import { useRenterName } from '../hooks/useRenterName';
 import ContractViewer from '../components/payment/ContractViewer';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
@@ -102,6 +103,7 @@ export default function SignaturePage() {
               pdfUrl={contract.pdfUrl}
               document={{
                 reference: bookingId,
+                route: routeFromBooking(booking || {}),
                 agreementDate: contract.acceptedAt || contract.reviewedAt,
                 renter: { name: renterName, signedAt: renterSignedAt(contract), signedBy: contract.renterSignedBy },
                 owner: { name: contract.ownerSignedBy, signedAt: ownerSignedAt(contract) },

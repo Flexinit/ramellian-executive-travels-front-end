@@ -18,7 +18,7 @@ export default function PriceDisplay({ amount, period = '/ day', size = 'md', cl
   };
 
   return (
-    <div className={`flex items-baseline gap-1.5 ${className}`}>
+    <div className={`flex items-baseline gap-1.5 whitespace-nowrap ${className}`}>
       <span className={`font-heading font-bold text-brand-gold ${sizes[size]}`}>
         {formatCurrency(amount)}
       </span>

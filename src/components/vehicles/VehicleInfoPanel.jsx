@@ -68,8 +68,8 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
     <div className="flex flex-col gap-5">
       <div>
         <div className="flex items-start justify-between gap-4">
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">{model}</h1>
-          {tier === VEHICLE_TIERS.EXECUTIVE && <Badge label="Executive" variant="gold" />}
+          <h1 className="min-w-0 break-words font-heading text-brand-white text-2xl sm:text-3xl font-bold">{model}</h1>
+          {tier === VEHICLE_TIERS.EXECUTIVE && <Badge label="Executive" variant="gold" className="shrink-0 mt-1.5" />}
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-sm text-brand-grey">

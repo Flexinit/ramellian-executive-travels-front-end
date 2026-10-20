@@ -106,7 +106,7 @@ export default function AdminVehicleApprovalsPage({ view = 'review' }) {
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            {isReview ? <SegmentedControl kind="tab" size="sm" label="Approval status" options={tabs} value={filter} onChange={setTab} className="max-w-full overflow-x-auto" /> : <span />}
+            {isReview ? <SegmentedControl kind="tab" size="sm" label="Approval status" options={tabs} value={filter} onChange={setTab} /> : <span />}
             <Input label="Search" name="search" type="search" placeholder="Model, registration, owner…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full sm:w-72" />
           </div>
 

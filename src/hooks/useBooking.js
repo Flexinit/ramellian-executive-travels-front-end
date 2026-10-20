@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { apiPost } from '../lib/api';
 import { useCartStore } from '../store/cartStore';
 import { stripPhoneNumbers } from '../lib/contactGuard';
+import { notesWithRoute } from '../lib/tripRoute';
 import { apiErrorMessage } from '../lib/apiError';
 
 /**
@@ -49,8 +50,11 @@ function bookingRequestFor(item) {
     endTime: item.endTime,
     bookingMode: item.bookingMode,
     tripType: item.tripType || undefined,
-    // Stripped once more on the way out: phone numbers can't be shared through the portal.
-    renterNotes: stripPhoneNumbers(item.renterNotes || '').text || undefined,
+    // Stripped once more on the way out: phone numbers can't be shared through the portal. The trip's route goes
+    // first in the notes until the backend stores it itself (lib/tripRoute.js).
+    renterNotes: stripPhoneNumbers(notesWithRoute(item.tripOrigin, item.tripDestination, item.renterNotes || '')).text || undefined,
+    tripOrigin: item.tripOrigin || undefined,
+    tripDestination: item.tripDestination || undefined,
     pickupLocation: item.pickupLocation || undefined,
     dropoffLocation: item.dropoffLocation || undefined,
     // Delivered to the renter (a flat fee, set in Platform Settings) or collected by them (no fee).

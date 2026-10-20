@@ -4,13 +4,17 @@ import { useRentalTerms, groupRentalTerms } from '../../hooks/useRentalTerms';
 
 /**
  * The platform's rental terms as renters read them (`GET /rental-terms` — the enabled ones, public), grouped by
- * category. Renders nothing while there are none, so pages can include it unconditionally.
+ * category (who they apply to: Everyone, Renters, Owners). Renders nothing (or `empty`) while there are none, so
+ * pages can include it unconditionally.
+ * @param {string[]} [audiences] — only these categories (e.g. ['Everyone', 'Renters']); all when omitted
+ * @param {React.ReactNode} [empty]
  * @param {string} [className]
  */
-export default function RentalTermsList({ className = '' }) {
-  const { data: terms = [], isLoading } = useRentalTerms();
+export default function RentalTermsList({ audiences, empty = null, className = '' }) {
+  const { data: all = [], isLoading } = useRentalTerms();
+  const terms = audiences ? all.filter((t) => audiences.includes((t.category || '').trim() || 'Everyone')) : all;
   if (isLoading) return <div className="flex justify-center py-6"><Spinner label="Loading the rental terms" /></div>;
-  if (!terms.length) return null;
+  if (!terms.length) return empty;
 
   return (
     <div className={`flex flex-col gap-6 ${className}`}>

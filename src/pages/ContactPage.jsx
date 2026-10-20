@@ -133,7 +133,7 @@ export default function ContactPage() {
                   <Mail size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="text-brand-white hover:text-brand-gold transition-colors focus-ring rounded-md"
+                    className="min-w-0 break-all text-brand-white hover:text-brand-gold transition-colors focus-ring rounded-md"
                   >
                     {SUPPORT_EMAIL}
                   </a>

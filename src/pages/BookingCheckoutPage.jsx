@@ -11,6 +11,7 @@ import CheckoutPhonePrompt from '../components/booking/CheckoutPhonePrompt';
 import CartTotals from '../components/booking/CartTotals';
 import DocumentGateModal from '../components/documents/DocumentGateModal';
 import RentalTermsList from '../components/booking/RentalTermsList';
+import TermsAcceptance from '../components/booking/TermsAcceptance';
 import { useRentalTerms } from '../hooks/useRentalTerms';
 import LoginModal from '../components/auth/LoginModal';
 import RegisterModal from '../components/auth/RegisterModal';
@@ -26,6 +27,7 @@ import { normalizeVehicle } from '../hooks/useVehicles';
 import { apiGet } from '../lib/api';
 import { bookingWindowProblem, isOwnVehicle, tripTypeProblem } from '../lib/vehicleOptions';
 import { missingBookingDocuments, modeProblem } from '../lib/cart';
+import { routeProblem } from '../lib/tripRoute';
 import { BOOKING_MODES } from '../lib/constants';
 import { formatCurrency } from '../lib/utils';
 import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
@@ -41,6 +43,8 @@ function itemProblem(item, vehicle, isError, user) {
   if (item.startTime && new Date(item.startTime) <= new Date()) {
     return "This trip's start time has passed since you added it. Edit it to choose new dates.";
   }
+  // Added before the route was asked for: Edit to add where the trip starts and ends.
+  if (routeProblem(item.tripOrigin, item.tripDestination)) return 'Add where your trip starts and where it is going: Edit it to fill them in.';
   if (!vehicle) return null;
   if (isOwnVehicle(vehicle, user)) return "This is your vehicle, so you can't book it. Please remove it to continue.";
   if (vehicle.available === false) return 'This vehicle is no longer available. Please remove it to continue.';
@@ -79,6 +83,8 @@ export default function BookingCheckoutPage() {
   const [pendingRemove, setPendingRemove] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  // Renters must read and accept the Terms of Service and the rental terms before booking (product rule 2026-10-17).
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { data: rentalTerms = [] } = useRentalTerms();
   // null | 'login' | 'register' — one piece of state for both, so "Create one"/"Log in" inside either modal
   // can switch straight to the other without a moment where neither is open.
@@ -231,7 +237,8 @@ export default function BookingCheckoutPage() {
                     </button>
                   </p>
                 )}
-                <Button size="lg" loading={start.isPending} disabled={blocked || needsPhone} onClick={handleContinue}>
+                <TermsAcceptance who="renter" checked={termsAccepted} onChange={setTermsAccepted} />
+                <Button size="lg" loading={start.isPending} disabled={blocked || needsPhone || !termsAccepted} onClick={handleContinue}>
                   {!start.isPending && <FileText size={16} aria-hidden="true" />} Continue to contract
                 </Button>
                 <Button to="/booking" className="self-start">

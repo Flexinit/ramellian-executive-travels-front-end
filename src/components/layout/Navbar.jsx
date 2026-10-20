@@ -32,7 +32,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-30 bg-brand-dark/95 backdrop-blur-md border-b border-white/10">
       <div
-        className={`h-20 flex items-center gap-6 ${
+        className={`h-20 flex items-center gap-3 sm:gap-6 ${
           isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
         }`}
       >
@@ -43,7 +43,7 @@ export default function Navbar() {
             isAuthenticated ? 'md:w-64 md:h-full md:flex md:items-center md:pl-5 md:rounded-none md:border-r md:border-white/10' : ''
           }`}
         >
-          <Logo size="md" />
+          <Logo size="md" compactOnTinyScreens />
         </Link>
 
         <div className="hidden lg:flex items-center gap-8 ml-auto">

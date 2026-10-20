@@ -19,15 +19,17 @@ import {
   useToggleRentalTerm,
   useDeleteRentalTerm,
   groupRentalTerms,
+  TERM_AUDIENCES,
 } from '../hooks/useRentalTerms';
+import Select from '../components/ui/Select';
 import { apiErrorMessage } from '../lib/apiError';
 
-const EMPTY = { title: '', content: '', category: '', displayOrder: '' };
+const EMPTY = { title: '', content: '', category: 'Everyone', displayOrder: '' };
 
 /** Add or edit one term (`RentalTermRequest`: title and content required; category and order optional). */
 function TermForm({ term, onDone }) {
   const [values, setValues] = useState(
-    term ? { title: term.title || '', content: term.content || '', category: term.category || '', displayOrder: term.displayOrder ?? '' } : EMPTY
+    term ? { title: term.title || '', content: term.content || '', category: term.category || 'Everyone', displayOrder: term.displayOrder ?? '' } : EMPTY
   );
   const [errors, setErrors] = useState({});
   const create = useCreateRentalTerm();
@@ -60,7 +62,13 @@ function TermForm({ term, onDone }) {
       <Input label="Title" value={values.title} onChange={set('title')} error={errors.title} placeholder="e.g. Minimum age" />
       <Textarea label="Term" name="content" rows={5} value={values.content} onChange={set('content')} error={errors.content} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input label="Category (optional)" value={values.category} onChange={set('category')} placeholder="e.g. Drivers, Payment, Vehicle use" hint="Terms are grouped by this." />
+        <Select
+          label="Who it applies to"
+          placeholder="Everyone"
+          value={TERM_AUDIENCES.includes(values.category) && values.category !== 'Everyone' ? values.category : ''}
+          onChange={(e) => setValues((v) => ({ ...v, category: e.target.value || 'Everyone' }))}
+          options={TERM_AUDIENCES.filter((a) => a !== 'Everyone').map((a) => ({ value: a, label: a === 'Renters' ? 'Renters (accepted at checkout)' : 'Owners (accepted when listing a car)' }))}
+        />
         <Input label="Order (optional)" type="number" step="1" value={values.displayOrder} onChange={set('displayOrder')} error={errors.displayOrder} hint="Lower numbers come first." />
       </div>
       {(create.isError || update.isError) && (
@@ -92,7 +100,11 @@ export default function AdminRentalTermsPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Rental Terms</h1>
-            <p className="text-brand-grey text-sm mt-1.5">The rules every rental follows. Renters see the ones switched on, on the Terms page and at checkout.</p>
+            <p className="text-brand-grey text-sm mt-1.5">
+              The terms people must accept. Renters read and accept the ones for Everyone and Renters before booking;
+              owners accept the ones for Everyone and Owners before listing a car. Only switched-on terms are shown, also
+              on the Terms page.
+            </p>
           </div>
           <Button onClick={() => setEditing('new')}><Plus size={15} aria-hidden="true" /> Add a term</Button>
         </div>

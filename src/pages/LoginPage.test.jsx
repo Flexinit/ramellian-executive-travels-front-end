@@ -177,7 +177,7 @@ describe('LoginPage — one form for everyone; the account decides where you lan
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/admin'));
   });
 
-  it('sends the backend only the email and password', async () => {
+  it('sends the backend the email, password and the Remember me choice', async () => {
     const user = userEvent.setup();
     let body;
     server.use(
@@ -190,7 +190,7 @@ describe('LoginPage — one form for everyone; the account decides where you lan
     await fillAndSubmit(user);
 
     await waitFor(() => expect(body).toBeDefined());
-    expect(body).toEqual({ email: 'ann@example.com', password: 'secret123' });
+    expect(body).toEqual({ email: 'ann@example.com', password: 'secret123', rememberMe: false });
   });
 
   it('lands by roles after two-factor login too', async () => {

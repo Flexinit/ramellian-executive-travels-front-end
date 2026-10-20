@@ -53,8 +53,8 @@ export default function BookingTable({ bookings, isLoading, basePath, actionLabe
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="overflow-x-auto">
-        <table className="w-full text-left">
+      <Card className="table-scroll">
+        <table className="stack-table w-full text-left">
           <thead>
             <tr className="border-b border-white/10">
               {columns.map((col) => (

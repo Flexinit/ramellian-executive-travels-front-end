@@ -3,7 +3,8 @@ import React from 'react';
 /**
  * A pill-shaped "pick one of a few" switch (booking mode, fleet tier…). One is
  * always selected; the selected one gets the gold-outline look of the Button. Use this instead of hand-styling a
- * row of buttons.
+ * row of buttons. On a narrow screen a row too long to fit scrolls sideways inside its own pill instead of
+ * widening the page.
  *
  * @param {{ value: any, label: string }[]} options
  * @param {any} value — the selected option's value
@@ -24,7 +25,7 @@ export default function SegmentedControl({ options, value, onChange, label, kind
     <div
       role={isRadio ? 'radiogroup' : 'tablist'}
       aria-label={label}
-      className={`inline-flex rounded-full bg-white/5 border border-white/10 p-1 w-fit ${className}`}
+      className={`inline-flex rounded-full bg-white/5 border border-white/10 p-1 w-fit max-w-full overflow-x-auto no-scrollbar ${className}`}
     >
       {options.map((opt) => {
         const selected = value === opt.value;
@@ -35,7 +36,7 @@ export default function SegmentedControl({ options, value, onChange, label, kind
             role={isRadio ? 'radio' : 'tab'}
             {...(isRadio ? { 'aria-checked': selected } : { 'aria-selected': selected })}
             onClick={() => onChange(opt.value)}
-            className={`font-semibold rounded-full border transition-colors focus-ring ${sizes[size]} ${
+            className={`shrink-0 font-semibold rounded-full border transition-colors focus-ring ${sizes[size]} ${
               selected ? 'bg-brand-gold/15 text-brand-gold border-brand-gold' : 'border-transparent text-brand-grey hover:text-brand-white'
             }`}
           >

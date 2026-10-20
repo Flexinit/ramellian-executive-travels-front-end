@@ -53,7 +53,8 @@ The Owner confirms that the Vehicle is roadworthy, has a valid comprehensive ins
 - Purpose of trip: {{trip_type}}
 - Pick-up: {{start_date_time}} at {{pickup_location}}
 - Return: {{end_date_time}} at {{dropoff_location}}
-- Destination / route: {{trip_destination}}
+- Travelling from: {{trip_origin}}
+- Destination: {{trip_destination}}
 - Number of passengers: {{passenger_count}}
 - Number of rental days: {{number_of_days}}
 - Vehicle delivered to the pick-up point: {{delivery_requested}}

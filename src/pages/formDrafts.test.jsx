@@ -223,6 +223,7 @@ describe('Add vehicle draft', () => {
     fireEvent.change(sticker);
     await user.click(screen.getByRole('button', { name: /^continue$/i }));
     await draftSaved('vehicle.u1');
+    await user.click(await screen.findByRole('checkbox', { name: /i have read and accept/i }));
     await user.click(await screen.findByRole('button', { name: /^add vehicle$/i }));
 
     await screen.findByText(/toyota prado added/i);

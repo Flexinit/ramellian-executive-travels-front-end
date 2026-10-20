@@ -11,6 +11,7 @@ import { useContract, useOwnerSignContract, renterSignedAt, ownerSignedAt } from
 import { useFilledContract } from '../../hooks/useFilledContract';
 import { useAuthStore } from '../../store/authStore';
 import { formatDateTime } from '../../lib/utils';
+import { routeFromBooking } from '../../lib/tripRoute';
 
 /**
  * The owner's side of a booking's contract: who has signed and when, and **Read & sign** — the contract read part
@@ -61,6 +62,7 @@ export default function OwnerContractSigning({ contractId, booking }) {
           <ContractDocument
             contractText={text}
             reference={booking?.id}
+            route={routeFromBooking(booking || {})}
             agreementDate={contract.acceptedAt || contract.reviewedAt}
             renter={{ name: contract.renterSignedBy || booking?.renterName, signedAt: renterAt }}
             owner={{ name: myName, signedAt: ownerAt }}

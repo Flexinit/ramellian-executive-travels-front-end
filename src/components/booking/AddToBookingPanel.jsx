@@ -14,6 +14,7 @@ import { useVehicleWindowBooked } from '../../hooks/useVehicles';
 import { useRenterVehicleOverlap } from '../../hooks/useBookings';
 import { bookingWindowProblem, tripTypeProblem } from '../../lib/vehicleOptions';
 import { billableDays, lineTotal, modeProblem, onlyMode, vehicleSnapshot } from '../../lib/cart';
+import { routeProblem } from '../../lib/tripRoute';
 import { formatCurrency } from '../../lib/utils';
 
 /**
@@ -77,6 +78,8 @@ export default function AddToBookingPanel({ vehicle }) {
             dropoffLocation: inCart.dropoffLocation || '',
             deliveryRequested: !!inCart.deliveryRequested,
             passengerCount: inCart.passengerCount ?? null,
+            tripOrigin: inCart.tripOrigin || '',
+            tripDestination: inCart.tripDestination || '',
           }
         : fromSearch(useBookingStore.getState().search, vehicle)),
     });
@@ -131,6 +134,11 @@ export default function AddToBookingPanel({ vehicle }) {
       toast.error('You already have a booking on this vehicle covering those dates. Please choose different dates.');
       return;
     }
+    const noRoute = routeProblem(draft.tripOrigin, draft.tripDestination);
+    if (noRoute) {
+      toast.error(noRoute);
+      return;
+    }
     if (draft.deliveryRequested && !String(draft.pickupLocation || '').trim()) {
       toast.error('Please enter the delivery address, or choose to collect the vehicle yourself.');
       return;
@@ -146,6 +154,8 @@ export default function AddToBookingPanel({ vehicle }) {
       dropoffLocation: draft.dropoffLocation || '',
       deliveryRequested: !!draft.deliveryRequested,
       passengerCount: draft.passengerCount ?? null,
+      tripOrigin: String(draft.tripOrigin || '').trim(),
+      tripDestination: String(draft.tripDestination || '').trim(),
       vehicle: vehicleSnapshot(vehicle),
     });
     const startedNew = alreadyBooked && !useCartStore.getState().items.find((i) => i.vehicleId === vehicle.id)?.bookingId;

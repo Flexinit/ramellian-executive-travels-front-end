@@ -57,6 +57,8 @@ const line = (vehicleId, model, dailyPrice, extra = {}) => ({
   bookingMode: 'CHAUFFEURED',
   tripType: null,
   renterNotes: '',
+  tripOrigin: 'Nairobi',
+  tripDestination: 'Diani Beach',
   vehicle: { id: vehicleId, model, dailyPrice, ownerEmail: 'owner@example.com', photos: [] },
   ...extra,
 });
@@ -65,6 +67,11 @@ const live = (id, extra = {}) => ({ id, model: 'Live', pricePerDay: 15000, avail
 
 function serveVehicles(byId) {
   server.use(http.get(`${BASE}/vehicles/:id`, ({ params }) => HttpResponse.json(live(params.id, byId?.[params.id]))));
+}
+
+/** Checkout needs the Terms of Service and rental terms accepted before Continue to contract. */
+async function acceptTerms(user) {
+  await user.click(await screen.findByRole('checkbox', { name: /i have read and accept/i }));
 }
 
 function signIn(email = 'renter@example.com') {
@@ -294,6 +301,7 @@ describe('Checkout — signed in, one vehicle', () => {
     seed([line('a', 'Prado', 15000, { renterNotes: 'Call 0712345678 on arrival' })]);
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/a/contract'));
@@ -321,6 +329,7 @@ describe('Checkout — signed in, one vehicle', () => {
     renderAt('/booking/checkout');
 
     expect(await screen.findByText(/delivered to you/i)).toBeInTheDocument();
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     await waitFor(() => expect(created).toHaveLength(1));
@@ -351,6 +360,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     seed([line('a', 'Prado', 15000), line('b', 'Alphard', 20000)]);
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     // The entry into the group uses the first vehicle's own id in the URL, same as a single booking would —
@@ -372,6 +382,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     seed([line('a', 'Prado', 15000, { bookingId: 'bk-1' }), line('b', 'Alphard', 20000, { bookingId: 'bk-2' })], null, 'g1');
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/book/a/contract'));
@@ -387,6 +398,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     seed([line('a', 'Prado', 15000, { bookingId: 'bk-1' })]);
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveAttribute('data-booking', 'bk-1'));
@@ -405,6 +417,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     seed([line('a', 'Prado', 15000)]);
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await waitFor(() => expect(screen.getByRole('button', { name: /continue to contract/i })).toBeEnabled());
     // wait for the documents to have loaded
     await act(() => new Promise((r) => setTimeout(r, 100)));
@@ -448,6 +461,7 @@ describe('Checkout — signed in, several vehicles (docs/backend-requests.md ite
     seed([line('a', 'Prado', 15000)]);
     renderAt('/booking/checkout');
 
+    await acceptTerms(user);
     await user.click(await screen.findByRole('button', { name: /continue to contract/i }));
 
     expect(await screen.findByText(/verification required/i)).toBeInTheDocument();

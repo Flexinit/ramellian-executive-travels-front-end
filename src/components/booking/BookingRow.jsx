@@ -45,6 +45,9 @@ const RENTER_BASE_PATH = '/dashboard/bookings';
  * list. An optional `actionLabel`/`onAction` renders a trailing action
  * button (e.g. "Assign" on the owner's table) without affecting the toggle.
  *
+ * On a phone the row shows as a card (BookingTable's `stack-table`): each cell names its own column through
+ * `data-label`, since the table's header row is hidden there.
+ *
  * The vehicle is now fetched as soon as the row renders, not only once expanded — the collapsed row
  * itself shows its photo and registration number (the real backend's `BookingResponse` carries neither;
  * `booking.vehicleModel`/`vehicleId` was the only thing ever shown there before, which is a raw UUID for
@@ -112,7 +115,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
         aria-expanded={expanded}
         className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
       >
-        <td className="px-4 py-3 text-sm text-brand-white">
+        <td className="stack-full px-4 py-3 text-sm text-brand-white">
           <div className="flex items-center gap-3">
             <div className="w-12 h-9 rounded-lg overflow-hidden shrink-0 bg-white/5">
               {photoUrl ? (
@@ -136,18 +139,18 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
             </div>
           </div>
         </td>
-        <td className="px-4 py-3 text-sm text-brand-grey">
+        <td data-label="Dates" className="px-4 py-3 text-sm text-brand-grey">
           <div>{formatDateRange(booking.startTime, booking.endTime)}</div>
           <div className="text-xs text-brand-grey/70">
             {formatTime(booking.startTime)} – {formatTime(booking.endTime)}
           </div>
         </td>
-        <td className="px-4 py-3">
+        <td className="stack-end px-4 py-3">
           <BookingStatusBadge status={booking.status} />
         </td>
-        <td className="px-4 py-3 text-sm text-brand-white text-right">{formatCurrency(total)}</td>
+        <td data-label="Cost" className="px-4 py-3 text-sm text-brand-white text-right">{formatCurrency(total)}</td>
         {showContract && (
-          <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+          <td data-label="Contract" className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
             {contractId ? (
               <ContractPdfActions contractId={contractId} signed label="Signed PDF" />
             ) : (
@@ -156,12 +159,12 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
           </td>
         )}
         {showReceipt && (
-          <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+          <td data-label="Receipt" className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
             {everPaid ? <ReceiptActions booking={booking} vehicle={vehicle} /> : <span className="text-brand-grey text-sm">—</span>}
           </td>
         )}
         {onAction && (
-          <td className="px-4 py-3 text-right">
+          <td data-label="Chauffeur" className="px-4 py-3 text-right">
             <Button
               size="sm"
               onClick={(e) => {
@@ -173,7 +176,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
             </Button>
           </td>
         )}
-        <td className="px-4 py-3 text-right">
+        <td className="stack-full px-4 py-3 text-right">
           <Button size="sm" onClick={(e) => { e.stopPropagation(); toggle(); }}>
             {expanded ? 'Hide' : 'View'} Details
             <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${expanded ? 'rotate-180' : ''}`} />
