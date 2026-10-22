@@ -23,9 +23,9 @@ import { CONTACT_KINDS } from '../../lib/cart';
 /** Same schema as RegisterPage — see that file's own note on why account type isn't asked here. */
 const schema = z
   .object({
-    firstName: z.string().min(1, 'Enter your first name'),
-    lastName: z.string().min(1, 'Enter your last name'),
-    email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+    firstName: z.string().min(1, 'Please enter your first name'),
+    lastName: z.string().min(1, 'Please enter your last name'),
+    email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
     verifyVia: z.enum(['EMAIL', WHATSAPP_CHANNEL]),
     // Always asked (product rule) — see RegisterPage's own copy of this field.
     phoneNumber: phoneField,
