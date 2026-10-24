@@ -5,6 +5,8 @@ first.
 
 ## 2026-10-25 (quotations, change vehicle, dark mode, tables)
 
+- **Changed:** at checkout a visitor chooses **Sign up to continue** or **I have an account** — the sign-up form no
+  longer opens by itself when they arrive.
 - **Changed (super admins):** **Invoices** in the Admin Panel is now **Quotations** — the same tool, producing a
   numbered quotation (QUO-…) valid for 30 days. Only super admins see it. Invoices will be generated automatically
   later.

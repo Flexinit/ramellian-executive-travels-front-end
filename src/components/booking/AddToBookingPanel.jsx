@@ -8,7 +8,6 @@ import Step2_TripDetails from './Step2_TripDetails';
 import ContractPreviewLink from './ContractPreviewLink';
 import { useBookingStore } from '../../store/bookingStore';
 import { useCartStore } from '../../store/cartStore';
-import { useAuthStore } from '../../store/authStore';
 import { useBookingQuote } from '../../hooks/useBooking';
 import { useVehicleWindowBooked } from '../../hooks/useVehicles';
 import { useRenterVehicleOverlap } from '../../hooks/useBookings';
@@ -54,7 +53,6 @@ export default function AddToBookingPanel({ vehicle }) {
   const clearDraft = useBookingStore((s) => s.clearDraft);
   const inCart = useCartStore((s) => s.items.find((i) => i.vehicleId === vehicle.id));
   const addItem = useCartStore((s) => s.addItem);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   // A real booking already exists for this vehicle (created on the backend, not just a local draft) —
   // choosing different dates below starts a separate, new booking rather than editing that one; see
   // cartStore's addItem for how the old booking id is kept or dropped depending on what actually changed.
@@ -161,8 +159,9 @@ export default function AddToBookingPanel({ vehicle }) {
     const startedNew = alreadyBooked && !useCartStore.getState().items.find((i) => i.vehicleId === vehicle.id)?.bookingId;
     if (bookNow) {
       clearDraft();
-      // A visitor lands on checkout with Create Account already open over it (Log in is one tap away there).
-      navigate('/booking/checkout', isAuthenticated ? undefined : { state: { auth: 'register' } });
+      // A visitor lands on checkout and chooses there: Sign up to continue, or I have an account (product owner,
+      // 2026-10-25 — nothing opens by itself).
+      navigate('/booking/checkout');
       return;
     }
     clearDraft();

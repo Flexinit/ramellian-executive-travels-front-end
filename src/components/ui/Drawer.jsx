@@ -80,12 +80,13 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
     if (justDismissed && onReopen) {
       return createPortal(
         <Button
+          variant="outline"
           size="sm"
           onClick={() => {
             setJustDismissed(false);
             onReopen();
           }}
-          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 bg-surface shadow-xl"
+          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 shadow-xl"
         >
           <PanelRightOpen size={16} aria-hidden="true" /> Continue: {title}
         </Button>,

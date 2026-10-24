@@ -121,7 +121,7 @@ describe('Your Booking — the basket', () => {
     expect(useCartStore.getState().items).toEqual([]);
   });
 
-  it('offers another vehicle and takes a visitor from Book straight to checkout, with Create Account open', async () => {
+  it('offers another vehicle and takes a visitor from Book to checkout, where they choose to sign up or log in', async () => {
     const user = userEvent.setup();
     seed([line('a', 'Prado', 15000)]);
     renderAt('/booking');
@@ -130,7 +130,10 @@ describe('Your Booking — the basket', () => {
     await user.click(screen.getByRole('button', { name: /^book$/i }));
 
     expect(await screen.findByRole('heading', { name: 'Checkout' })).toBeInTheDocument();
-    expect(await screen.findByRole('dialog', { name: /create account/i })).toBeInTheDocument();
+    // Nothing opens by itself — the visitor picks.
+    expect(screen.queryByRole('dialog', { name: /create account/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign up to continue/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /i have an account/i })).toBeInTheDocument();
   });
 
   it('takes someone already signed in straight from Book to checkout', async () => {
@@ -169,7 +172,9 @@ describe('Signing up from checkout — the visitor becomes a booking lead', () =
       http.post(`${BASE}/auth/register`, () => HttpResponse.json({ message: 'ok' }, { status: 201 }))
     );
     seed([line('a', 'Prado', 15000, { renterNotes: 'Please arrive early' }), line('b', 'Alphard', 20000)]);
-    renderAt({ pathname: '/booking/checkout', state: { auth: 'register' } });
+    renderAt('/booking/checkout');
+    // Nothing opens by itself: the visitor chooses to sign up.
+    await user.click(screen.getByRole('button', { name: /sign up to continue/i }));
 
     await fillSignUp(user, await screen.findByRole('dialog', { name: /create account/i }));
 
@@ -185,7 +190,9 @@ describe('Signing up from checkout — the visitor becomes a booking lead', () =
       http.post(`${BASE}/auth/register`, () => HttpResponse.json({ message: 'ok' }, { status: 201 }))
     );
     seed([line('a', 'Prado', 15000)]);
-    renderAt({ pathname: '/booking/checkout', state: { auth: 'register' } });
+    renderAt('/booking/checkout');
+    // Nothing opens by itself: the visitor chooses to sign up.
+    await user.click(screen.getByRole('button', { name: /sign up to continue/i }));
 
     await fillSignUp(user, await screen.findByRole('dialog', { name: /create account/i }));
 

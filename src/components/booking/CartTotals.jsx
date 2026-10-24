@@ -59,12 +59,14 @@ export default function CartTotals({ items, quotes = {} }) {
         breakdowns[0] && <Lines lines={breakdowns[0].lines} />
       )}
 
-      <div aria-label="Total to pay" className="pt-3 border-t border-ink/10">
-        <DetailList>
-          <DetailRow label={`${estimated ? 'Estimated total' : 'Total'}${several ? ` · ${items.length} vehicles` : ''}`}>
-            <PriceDisplay amount={total} period="" size="lg" />
-          </DetailRow>
-        </DetailList>
+      {/* The total on its own line, not in a table cell: the big figure needs the room, and wraps under its label
+          rather than being cut off when the column is narrow. */}
+      <div aria-label="Total to pay" className="pt-3 border-t border-ink/10 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <span className="text-muted text-sm">
+          {estimated ? 'Estimated total' : 'Total'}
+          {several ? ` · ${items.length} vehicles` : ''}
+        </span>
+        <PriceDisplay amount={total} period="" size="lg" />
       </div>
       <p className="text-muted text-xs">
         {estimated

@@ -11,7 +11,6 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import EmptyState from '../components/ui/EmptyState';
 import { useCartStore } from '../store/cartStore';
-import { useAuthStore } from '../store/authStore';
 import { bookingQuoteQuery } from '../hooks/useBooking';
 
 /**
@@ -24,7 +23,6 @@ export default function BookingCartPage() {
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const clear = useCartStore((s) => s.clear);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   // A started booking (bookingId set) already exists on the backend, so removing it here is confirmed
   // first — it only forgets the cart entry, the booking itself stays in My Bookings to cancel from there.
   const [pendingRemove, setPendingRemove] = useState(null);
@@ -110,7 +108,7 @@ export default function BookingCartPage() {
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
             <CartTotals items={items} quotes={quotes} />
             <div className="flex flex-col gap-3">
-              <Button size="lg" onClick={() => navigate('/booking/checkout', isAuthenticated ? undefined : { state: { auth: 'register' } })}>
+              <Button size="lg" onClick={() => navigate('/booking/checkout')}>
                 <ArrowRight size={16} aria-hidden="true" /> Book
               </Button>
               <Button to="/vehicles" className="self-start">

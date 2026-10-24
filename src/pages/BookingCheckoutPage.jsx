@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { Pencil, Trash2, FileText, ArrowLeft, UserPlus, LogIn } from 'lucide-react';
 import { useQueries } from '@tanstack/react-query';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -98,16 +98,8 @@ export default function BookingCheckoutPage() {
     if (isAuthenticated) setAuthModal(null);
   }, [isAuthenticated]);
 
-  // A visitor's Book / Book now lands here with `state.auth` ('register'): Create Account opens straight away
-  // over the booking. The state is cleared at once so a reload or Back doesn't reopen it.
-  const location = useLocation();
-  const navigate = useNavigate();
-  const requestedAuth = location.state?.auth;
-  useEffect(() => {
-    if (!requestedAuth) return;
-    if (!isAuthenticated && (requestedAuth === 'login' || requestedAuth === 'register')) setAuthModal(requestedAuth);
-    navigate(location.pathname, { replace: true, state: null });
-  }, [requestedAuth, isAuthenticated, navigate, location.pathname]);
+  // A visitor chooses here — "Sign up to continue" or "I have an account" — and only then does that form open
+  // (product owner, 2026-10-25: it used to open by itself on arrival).
 
   // Sign-up asks for the phone number and saves it; a profile still without one (an older account, or the
   // save after sign-up failed) is caught here — asked once, saved to the profile (CheckoutPhonePrompt).
