@@ -114,7 +114,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} onReopen={onReopen} title="Create Account" size="md">
       <div className="flex flex-col gap-5">
-        <p className="text-brand-grey text-sm -mt-2">
+        <p className="text-muted text-sm -mt-2">
           {hasSelection ? 'Your booking is saved — create your account to continue with it.' : 'Book chauffeured or self-drive vehicles in minutes.'}
         </p>
 
@@ -134,7 +134,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
 
           {whatsappOffered && (
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-brand-white">Send my verification code by</span>
+              <span className="text-sm font-medium text-ink">Send my verification code by</span>
               <SegmentedControl
                 label="Send my verification code by"
                 size="sm"
@@ -181,11 +181,11 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
             label={
               <>
                 I agree to the{' '}
-                <Link to="/terms" target="_blank" className="text-brand-gold hover:text-brand-gold-light underline">
+                <Link to="/terms" target="_blank" className="text-accent hover:text-accent-hover underline">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" target="_blank" className="text-brand-gold hover:text-brand-gold-light underline">
+                <Link to="/privacy" target="_blank" className="text-accent hover:text-accent-hover underline">
                   Privacy Policy
                 </Link>
               </>
@@ -197,7 +197,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
           </Button>
         </form>
 
-        <p className="text-center text-brand-grey text-sm">
+        <p className="text-center text-muted text-sm">
           Already have an account?{' '}
           {onSwitchToLogin ? (
             <button
@@ -206,7 +206,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
                 reset();
                 onSwitchToLogin();
               }}
-              className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md"
+              className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md"
             >
               Log in
             </button>
@@ -214,7 +214,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
             <Link
               to="/auth/login"
               onClick={handleClose}
-              className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md"
+              className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md"
             >
               Log in
             </Link>

@@ -72,7 +72,7 @@ function TermForm({ term, onDone }) {
         <Input label="Order (optional)" type="number" step="1" value={values.displayOrder} onChange={set('displayOrder')} error={errors.displayOrder} hint="Lower numbers come first." />
       </div>
       {(create.isError || update.isError) && (
-        <p role="alert" className="text-sm text-red-400">{apiErrorMessage(create.error || update.error, "Couldn't save the rental term.")}</p>
+        <p role="alert" className="text-sm text-red-600">{apiErrorMessage(create.error || update.error, "Couldn't save the rental term.")}</p>
       )}
       <div className="flex gap-3 justify-end">
         <Button onClick={onDone}>Cancel</Button>
@@ -99,8 +99,8 @@ export default function AdminRentalTermsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Rental Terms</h1>
-            <p className="text-brand-grey text-sm mt-1.5">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Rental Terms</h1>
+            <p className="text-muted text-sm mt-1.5">
               The terms people must accept. Renters read and accept the ones for Everyone and Renters before booking;
               owners accept the ones for Everyone and Owners before listing a car. Only switched-on terms are shown, also
               on the Terms page.
@@ -118,17 +118,17 @@ export default function AdminRentalTermsPage() {
         ) : (
           groupRentalTerms(terms).map(({ category, terms: list }) => (
             <section key={category} className="flex flex-col gap-3">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-gold">{category}</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-gold-deep">{category}</h2>
               {list.map((t) => (
                 <Card key={t.id} className="p-4 flex flex-col gap-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h3 className="text-brand-white font-semibold">{t.title}</h3>
-                      <p className="text-xs text-brand-grey mt-0.5">Order {t.displayOrder ?? '—'}</p>
+                      <h3 className="text-ink font-semibold">{t.title}</h3>
+                      <p className="text-xs text-muted mt-0.5">Order {t.displayOrder ?? '—'}</p>
                     </div>
                     <Badge label={t.enabled ? 'Shown to renters' : 'Hidden'} variant={t.enabled ? 'success' : 'neutral'} />
                   </div>
-                  <p className="text-sm text-brand-grey leading-relaxed whitespace-pre-line">{t.content}</p>
+                  <p className="text-sm text-muted leading-relaxed whitespace-pre-line">{t.content}</p>
                   <div className="flex flex-wrap gap-2">
                     <ToggleChip active={!!t.enabled} disabled={toggle.isPending} onClick={() => toggle.mutate(t.id)}>
                       {t.enabled ? 'Switched on' : 'Switched off'}
@@ -149,7 +149,7 @@ export default function AdminRentalTermsPage() {
 
       <Modal isOpen={!!deleting} onClose={() => setDeleting(null)} title="Delete rental term">
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-brand-grey">Delete “{deleting?.title}”? Renters won't see it any more. To hide it for now instead, switch it off.</p>
+          <p className="text-sm text-muted">Delete “{deleting?.title}”? Renters won't see it any more. To hide it for now instead, switch it off.</p>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setDeleting(null)}>Keep it</Button>
             <Button variant="danger" loading={remove.isPending} onClick={() => remove.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}>

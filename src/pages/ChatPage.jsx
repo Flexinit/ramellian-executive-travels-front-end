@@ -38,13 +38,13 @@ export default function ChatPage() {
       <PageTitle title={`Chat with ${otherName}`} />
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
-          <Link to="/messages" className="inline-flex items-center gap-1.5 text-sm text-brand-grey hover:text-brand-white w-fit focus-ring rounded-md">
+          <Link to="/messages" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink w-fit focus-ring rounded-md">
             <ArrowLeft size={14} aria-hidden="true" />
             All messages
           </Link>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">{otherName}</h1>
-          {vehicle && <p className="text-brand-gold text-sm">{vehicle}</p>}
-          <p className="text-brand-grey text-xs">Phone numbers can't be shared here — anything that looks like one is removed.</p>
+          <h1 className="font-heading text-ink text-2xl font-bold">{otherName}</h1>
+          {vehicle && <p className="text-accent text-sm">{vehicle}</p>}
+          <p className="text-muted text-xs">Phone numbers can't be shared here — anything that looks like one is removed.</p>
         </div>
 
         <ChatThread bookingId={bookingId} otherUserId={otherUserId} recipientId={recipientId} />

@@ -181,10 +181,10 @@ export default function DateRangePicker({ value, onChange, className = '', disab
         aria-expanded={open}
         className="w-full flex items-center gap-2.5 text-left"
       >
-        <Calendar size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
+        <Calendar size={16} className="text-accent shrink-0" aria-hidden="true" />
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-grey">Trip Dates</span>
-          <span className={`text-sm truncate ${startDate ? 'text-brand-white' : 'text-brand-grey/60'}`}>{label}</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-ink">Trip Dates</span>
+          <span className={`text-sm truncate ${startDate ? 'text-ink' : 'text-muted'}`}>{label}</span>
         </div>
       </button>
 
@@ -193,7 +193,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
           ref={panelRef}
           role="dialog"
           aria-label="Choose trip dates and times"
-          className="absolute z-50 top-full mt-2.5 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0 w-[300px] max-h-[75vh] overflow-y-auto bg-brand-navy border border-white/10 rounded-2xl shadow-card p-3.5 origin-top animate-panel-in"
+          className="absolute z-50 top-full mt-2.5 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0 w-[300px] max-h-[75vh] overflow-y-auto bg-surface border border-black/10 rounded-2xl shadow-card p-3.5 origin-top animate-panel-in"
         >
           {/* Quick presets */}
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -202,7 +202,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
                 key={preset.label}
                 type="button"
                 onClick={() => applyPreset(preset)}
-                className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-brand-grey text-[11px] font-medium hover:text-brand-gold hover:border-brand-gold/40 transition-colors focus-ring"
+                className="px-2.5 py-1 rounded-full bg-surface border border-line text-ink text-[11px] font-medium hover:border-brand-gold hover:bg-brand-gold/10 transition-colors focus-ring"
               >
                 {preset.label}
               </button>
@@ -212,7 +212,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
           {/* Which endpoint the next click picks — the calendar itself already guides this (handleDayClick:
               first click sets the start, the next sets the end, a third starts over), but nothing said so
               out loud until now; a renter shouldn't have to infer it from watching a highlight move. */}
-          <p className="text-[11px] font-medium text-brand-gold mb-2" aria-live="polite">
+          <p className="text-[11px] font-medium text-accent mb-2" aria-live="polite">
             {!startDate ? 'Select your start date' : !endDate ? 'Now select your return date' : 'Tip: pick a new day to start over'}
           </p>
 
@@ -222,23 +222,23 @@ export default function DateRangePicker({ value, onChange, className = '', disab
               type="button"
               onClick={() => setViewMonth((m) => subMonths(m, 1))}
               aria-label="Previous month"
-              className="p-1 rounded-full text-brand-grey hover:text-brand-gold hover:bg-white/5 transition-colors focus-ring"
+              className="p-1 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
             >
               <ChevronLeft size={15} aria-hidden="true" />
             </button>
-            <span className="font-heading text-brand-white text-sm font-semibold">{format(viewMonth, 'MMMM yyyy')}</span>
+            <span className="font-heading text-ink text-sm font-semibold">{format(viewMonth, 'MMMM yyyy')}</span>
             <button
               type="button"
               onClick={() => setViewMonth((m) => addMonths(m, 1))}
               aria-label="Next month"
-              className="p-1 rounded-full text-brand-grey hover:text-brand-gold hover:bg-white/5 transition-colors focus-ring"
+              className="p-1 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
             >
               <ChevronRight size={15} aria-hidden="true" />
             </button>
           </div>
 
           {disabledRanges.length > 0 && (
-            <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-red-400">
+            <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-red-600">
               <span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50 shrink-0" aria-hidden="true" />
               Not available
             </div>
@@ -247,7 +247,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
           {/* Weekday row */}
           <div className="grid grid-cols-7">
             {WEEKDAY_LABELS.map((d, i) => (
-              <span key={i} className="text-center text-[9px] font-semibold text-brand-grey/70 uppercase py-0.5">
+              <span key={i} className="text-center text-[9px] font-semibold text-muted uppercase py-0.5">
                 {d}
               </span>
             ))}
@@ -277,41 +277,46 @@ export default function DateRangePicker({ value, onChange, className = '', disab
                   aria-current={isSameDay(day, today) ? 'date' : undefined}
                   aria-pressed={isEndpoint}
                   title={booked ? 'Not available — already booked' : undefined}
+                  // Bookable days are dark and medium-weight; past days a plain readable grey (no strike-through);
+                  // the picked dates Ramellian navy with gold numbers, the days between them a soft gold band,
+                  // and today a small gold dot. Gold marks what matters, never what can't be chosen.
                   className={[
                     'relative h-7 text-[11px] rounded-full transition-colors focus-ring',
-                    !inMonth ? 'text-white/20' : booked ? 'bg-red-500/15 text-red-400 line-through font-semibold border border-red-500/30 cursor-not-allowed' : disabled ? 'text-white/15 cursor-not-allowed' : 'text-brand-white hover:bg-white/10',
-                    inRange ? 'bg-brand-gold/15' : '',
-                    isEndpoint ? 'bg-brand-gold text-brand-dark font-semibold hover:bg-brand-gold' : '',
+                    isEndpoint ? 'bg-brand-navy text-brand-gold font-bold' : !inMonth ? 'text-black/30' : booked ? 'bg-red-500/15 text-red-600 line-through font-semibold border border-red-500/30 cursor-not-allowed' : disabled ? 'text-muted cursor-not-allowed' : 'text-ink font-medium hover:bg-brand-gold/20',
+                    inRange && !isEndpoint ? 'bg-brand-gold/20' : '',
                   ].join(' ')}
                 >
                   {format(day, 'd')}
+                  {isSameDay(day, today) && !isEndpoint && (
+                    <span aria-hidden="true" className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-brand-gold" />
+                  )}
                 </button>
               );
             })}
           </div>
 
           {/* Times */}
-          <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-white/10">
+          <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-black/10">
             <label className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-grey inline-flex items-center gap-1">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-muted inline-flex items-center gap-1">
                 <Clock size={10} aria-hidden="true" /> Pick-up Time
               </span>
               <input
                 type="time"
                 value={startTime || DEFAULT_START_TIME}
                 onChange={(e) => onChange({ ...value, startTime: e.target.value })}
-                className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-white [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </label>
             <label className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-brand-grey inline-flex items-center gap-1">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-muted inline-flex items-center gap-1">
                 <Clock size={10} aria-hidden="true" /> Return Time
               </span>
               <input
                 type="time"
                 value={endTime || DEFAULT_END_TIME}
                 onChange={(e) => onChange({ ...value, endTime: e.target.value })}
-                className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-brand-white [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </label>
           </div>
@@ -321,7 +326,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
             <button
               type="button"
               onClick={handleClear}
-              className="text-[11px] text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md px-1"
+              className="text-[11px] text-muted hover:text-ink transition-colors focus-ring rounded-md px-1"
             >
               Clear
             </button>

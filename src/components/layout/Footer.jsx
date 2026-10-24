@@ -54,12 +54,12 @@ export default function Footer({ compact = false }) {
 
   if (compact) {
     return (
-      <footer className="bg-brand-navy border-t border-white/10 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-brand-grey text-xs">
+      <footer className="bg-surface border-t border-black/10 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-muted text-xs">
           <p>© {year} Ramellian Executive Travels. All rights reserved.</p>
           <nav aria-label="Legal" className="flex items-center gap-4">
-            <Link to="/privacy" className="hover:text-brand-white transition-colors focus-ring rounded-md">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-brand-white transition-colors focus-ring rounded-md">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-ink transition-colors focus-ring rounded-md">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-ink transition-colors focus-ring rounded-md">Terms of Service</Link>
           </nav>
         </div>
       </footer>
@@ -67,21 +67,21 @@ export default function Footer({ compact = false }) {
   }
 
   return (
-    <footer className="bg-brand-navy border-t border-white/10 mt-auto">
+    <footer className="bg-surface border-t border-black/10 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 grid gap-10 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <Logo size="md" />
-          <p className="text-brand-grey text-sm max-w-xs leading-relaxed">
+          <p className="text-muted text-sm max-w-xs leading-relaxed">
             Executive chauffeur and self-drive rentals across Nairobi.
           </p>
-          <div className="flex flex-col gap-2 text-sm text-brand-grey">
+          <div className="flex flex-col gap-2 text-sm text-muted">
             <span className="inline-flex items-center gap-2">
               <MapPin size={14} aria-hidden="true" />
               Nairobi, Kenya
             </span>
             <Link
               to="/contact"
-              className="hover:text-brand-gold transition-colors focus-ring rounded-md w-fit"
+              className="hover:text-accent transition-colors focus-ring rounded-md w-fit"
             >
               Contact Us
             </Link>
@@ -90,7 +90,7 @@ export default function Footer({ compact = false }) {
 
         {COLUMNS.map((col) => (
           <nav key={col.heading} aria-label={col.heading}>
-            <h3 className="font-heading text-brand-gold text-sm font-semibold uppercase tracking-wider mb-5">
+            <h3 className="font-heading text-brand-gold-deep text-sm font-semibold uppercase tracking-wider mb-5">
               {col.heading}
             </h3>
             <ul className="flex flex-col gap-3">
@@ -98,7 +98,7 @@ export default function Footer({ compact = false }) {
                 <li key={link.to}>
                   <Link
                     to={link.to}
-                    className="text-brand-grey text-sm hover:text-brand-white transition-colors focus-ring rounded-md"
+                    className="text-muted text-sm hover:text-ink transition-colors focus-ring rounded-md"
                   >
                     {link.label}
                   </Link>
@@ -109,8 +109,8 @@ export default function Footer({ compact = false }) {
         ))}
       </div>
 
-      <div className="border-t border-white/10">
-        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-brand-grey text-xs text-center sm:text-left">
+      <div className="border-t border-black/10">
+        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-muted text-xs text-center sm:text-left">
           © {year} Ramellian Executive Travels. All rights reserved.
         </p>
       </div>

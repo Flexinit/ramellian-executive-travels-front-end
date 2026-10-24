@@ -38,11 +38,11 @@ export default function CancelBookingModal({ isOpen, onClose, booking }) {
             <Spinner label="Checking the cancellation policy" />
           </div>
         ) : blocked ? (
-          <p className="text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+          <p className="text-sm text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
             This booking starts too soon to cancel here. Message the owner if you need help.
           </p>
         ) : (
-          <p className="text-brand-grey text-sm">
+          <p className="text-muted text-sm">
             Cancel this booking? The owner will be told.
             {quote &&
               (quote.refundPercent >= 100

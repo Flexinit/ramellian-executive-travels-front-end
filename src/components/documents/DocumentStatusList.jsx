@@ -27,18 +27,18 @@ const TYPE_LABELS = {
  */
 export default function DocumentStatusList({ documents = [] }) {
   if (documents.length === 0) {
-    return <p className="text-brand-grey text-sm">No documents uploaded yet.</p>;
+    return <p className="text-muted text-sm">No documents uploaded yet.</p>;
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-white/10">
+    <ul className="flex flex-col divide-y divide-black/10">
       {documents.map((doc) => {
         const meta = STATUS_META[doc.status] || STATUS_META[DOCUMENT_STATUSES.PENDING];
         const Icon = meta.icon || File;
         return (
           <li key={doc.id || doc.type} className="flex items-center justify-between gap-3 py-3">
-            <span className="inline-flex items-center gap-2.5 text-sm text-brand-white">
-              <Icon size={15} className="text-brand-gold shrink-0" aria-hidden="true" />
+            <span className="inline-flex items-center gap-2.5 text-sm text-ink">
+              <Icon size={15} className="text-accent shrink-0" aria-hidden="true" />
               {TYPE_LABELS[doc.type] || doc.type}
             </span>
             <Badge label={meta.label} variant={meta.variant} />

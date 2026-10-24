@@ -92,25 +92,25 @@ export default function VerifyEmailPage() {
   const Icon = whatsapp ? MessageCircle : MailCheck;
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-brand-dark px-4 py-12">
+    <div className="flex-1 flex items-center justify-center bg-canvas px-4 py-12">
       <PageTitle title={whatsapp ? 'Verify WhatsApp' : 'Verify Email'} />
       <div className="w-full max-w-sm flex flex-col gap-8">
 
-        <div className="bg-brand-navy border border-white/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-gold/10 flex items-center justify-center">
-            <Icon size={24} className="text-brand-gold" aria-hidden="true" />
+        <div className="bg-surface border border-black/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
+          <div className="w-14 h-14 mx-auto rounded-full bg-accent/10 flex items-center justify-center">
+            <Icon size={24} className="text-accent" aria-hidden="true" />
           </div>
 
           <div>
-            <h1 className="font-heading text-brand-white text-2xl font-bold">{whatsapp ? 'Verify on WhatsApp' : 'Verify your email'}</h1>
-            <p className="text-brand-grey text-sm mt-1.5">
+            <h1 className="font-heading text-ink text-2xl font-bold">{whatsapp ? 'Verify on WhatsApp' : 'Verify your email'}</h1>
+            <p className="text-muted text-sm mt-1.5">
               {whatsapp ? (
                 <>
                   We sent a 6-digit code to your WhatsApp
-                  {maskedPhone ? <> number <span className="text-brand-white">{maskedPhone}</span></> : ' number'}.
+                  {maskedPhone ? <> number <span className="text-ink">{maskedPhone}</span></> : ' number'}.
                 </>
               ) : knownEmail ? (
-                <>We sent a verification code to <span className="text-brand-white">{knownEmail}</span>.</>
+                <>We sent a verification code to <span className="text-ink">{knownEmail}</span>.</>
               ) : (
                 'Enter your email and the verification code we sent you.'
               )}
@@ -118,7 +118,7 @@ export default function VerifyEmailPage() {
           </div>
 
           {verify.isSuccess && (
-            <p className="text-emerald-400 text-sm font-medium">{whatsapp ? 'WhatsApp verified' : 'Email verified'} — taking you on…</p>
+            <p className="text-emerald-600 text-sm font-medium">{whatsapp ? 'WhatsApp verified' : 'Email verified'} — taking you on…</p>
           )}
 
           {verify.isError && (
@@ -135,7 +135,7 @@ export default function VerifyEmailPage() {
                     onExpire={() => setExpired(true)}
                     label="left to enter your code"
                   />
-                  <p className="text-brand-grey text-xs">Time left to enter your code</p>
+                  <p className="text-muted text-xs">Time left to enter your code</p>
                 </div>
               )}
 
@@ -170,7 +170,7 @@ export default function VerifyEmailPage() {
 
               {!timerRunning && (
                 <div className="flex flex-col items-center gap-2" aria-live="polite">
-                  <p className="text-brand-grey text-sm">{expired ? "Time's up — request a new code." : "Didn't get a code?"}</p>
+                  <p className="text-muted text-sm">{expired ? "Time's up — request a new code." : "Didn't get a code?"}</p>
                   <Button size="sm" onClick={handleResend} loading={resend.isPending} disabled={!activeEmail}>
                     Resend code
                   </Button>
@@ -178,8 +178,8 @@ export default function VerifyEmailPage() {
               )}
 
               {whatsappOffered && (
-                <div className="border-t border-white/10 pt-5 flex flex-col items-center gap-2">
-                  <p className="text-brand-grey text-xs">{whatsapp ? 'Prefer email?' : 'Prefer WhatsApp?'}</p>
+                <div className="border-t border-black/10 pt-5 flex flex-col items-center gap-2">
+                  <p className="text-muted text-xs">{whatsapp ? 'Prefer email?' : 'Prefer WhatsApp?'}</p>
                   <Button size="sm" onClick={handleSwitch} loading={switching.isPending} disabled={!activeEmail}>
                     {whatsapp ? 'Get the code by email instead' : 'Get the code on WhatsApp instead'}
                   </Button>
@@ -189,9 +189,9 @@ export default function VerifyEmailPage() {
           )}
         </div>
 
-        <p className="text-center text-brand-grey text-sm">
+        <p className="text-center text-muted text-sm">
           Wrong account?{' '}
-          <Link to="/auth/login" className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md">
+          <Link to="/auth/login" className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md">
             Back to login
           </Link>
         </p>

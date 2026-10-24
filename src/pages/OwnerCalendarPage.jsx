@@ -42,7 +42,7 @@ export default function OwnerCalendarPage() {
       <PageTitle title="Booking Calendar" />
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Booking Calendar</h1>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Booking Calendar</h1>
           {vehicleOptions.length > 1 && (
             <Select
               label="Vehicle"

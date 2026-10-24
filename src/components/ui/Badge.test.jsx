@@ -11,26 +11,26 @@ describe('Badge', () => {
 
   it('applies success variant classes', () => {
     const { container } = render(<Badge label="Active" variant="success" />);
-    expect(container.firstChild).toHaveClass('bg-green-500/15');
+    expect(container.firstChild).toHaveClass('bg-green-50');
   });
 
   it('applies warning variant classes', () => {
     const { container } = render(<Badge label="Pending" variant="warning" />);
-    expect(container.firstChild).toHaveClass('bg-yellow-500/15');
+    expect(container.firstChild).toHaveClass('bg-amber-50');
   });
 
   it('applies danger variant classes', () => {
     const { container } = render(<Badge label="Cancelled" variant="danger" />);
-    expect(container.firstChild).toHaveClass('bg-red-500/15');
+    expect(container.firstChild).toHaveClass('bg-red-50');
   });
 
   it('applies info variant classes', () => {
     const { container } = render(<Badge label="Info" variant="info" />);
-    expect(container.firstChild).toHaveClass('bg-blue-500/15');
+    expect(container.firstChild).toHaveClass('bg-blue-50');
   });
 
   it('applies neutral variant by default', () => {
     const { container } = render(<Badge label="Unknown" />);
-    expect(container.firstChild).toHaveClass('bg-brand-grey/15');
+    expect(container.firstChild).toHaveClass('bg-subtle');
   });
 });

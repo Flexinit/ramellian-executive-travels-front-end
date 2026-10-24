@@ -10,12 +10,12 @@ export default function Divider({ label, className = '' }) {
   if (label) {
     return (
       <div role="separator" className={`flex items-center gap-3 ${className}`}>
-        <div className="flex-1 h-px bg-white/10" />
-        <span className="text-xs text-brand-grey font-medium px-1 select-none">{label}</span>
-        <div className="flex-1 h-px bg-white/10" />
+        <div className="flex-1 h-px bg-black/10" />
+        <span className="text-xs text-muted font-medium px-1 select-none">{label}</span>
+        <div className="flex-1 h-px bg-black/10" />
       </div>
     );
   }
 
-  return <hr className={`border-0 h-px bg-white/10 ${className}`} />;
+  return <hr className={`border-0 h-px bg-black/10 ${className}`} />;
 }

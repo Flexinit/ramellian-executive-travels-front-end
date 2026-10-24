@@ -84,8 +84,8 @@ export default function AdminVehicleApprovalsPage({ view = 'review' }) {
               Vehicle Approvals
             </Button>
           )}
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">{config.title}</h1>
-          <p className="text-brand-grey text-sm mt-1 max-w-2xl">{config.intro}</p>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">{config.title}</h1>
+          <p className="text-muted text-sm mt-1 max-w-2xl">{config.intro}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

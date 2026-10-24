@@ -1109,6 +1109,10 @@ also answer 403 without a login, so even with URLs a signed-out visitor couldn't
 2. Serve the files of an **approved, listed** vehicle's photos without a login, so visitors can see them
    (keep unapproved vehicles' photos private).
 
+**Rechecked live 2026-10-22.** Ask 1 is still open: `VehicleResponse` still has no `photos`, and
+`GET /vehicles/{id}/photos` still answers 500 (`HttpRequestMethodNotSupported`). Ask 2 looks done: an `/uploads/vehicles/…`
+file now loads without a login (200).
+
 **Until then.** Nothing the frontend can do: there's no list to read. `AuthImage` already loads a public URL
 directly when signed out, and `normalizeVehicle` already prefers `photos` from the server over the local copy,
 so both start working as soon as the field exists.

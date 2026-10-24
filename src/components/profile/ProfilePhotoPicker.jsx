@@ -46,7 +46,7 @@ export default function ProfilePhotoPicker({ name, size = 'xl' }) {
         </div>
       )}
 
-      <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-brand-gold text-brand-dark flex items-center justify-center border-2 border-brand-dark hover:bg-brand-gold-light transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-brand-gold">
+      <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-accent text-on-accent flex items-center justify-center border-2 border-on-accent hover:bg-accent-hover transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-accent">
         <Camera size={13} aria-hidden="true" />
         <span className="sr-only">{photoUrl ? 'Change profile photo' : 'Upload profile photo'}</span>
         <input
@@ -64,7 +64,7 @@ export default function ProfilePhotoPicker({ name, size = 'xl' }) {
           type="button"
           onClick={clearPhoto}
           aria-label="Remove profile photo"
-          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-brand-navy border border-white/20 text-brand-grey hover:text-brand-white flex items-center justify-center focus-ring"
+          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-surface border border-black/20 text-muted hover:text-ink flex items-center justify-center focus-ring"
         >
           <X size={11} aria-hidden="true" />
         </button>

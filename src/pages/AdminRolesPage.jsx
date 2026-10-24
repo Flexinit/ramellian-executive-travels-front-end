@@ -30,26 +30,26 @@ function RoleCard({ role, onEdit, onDelete }) {
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-heading text-brand-white text-lg font-semibold">{roleTitle(role.roleName)}</h2>
-          <p className="font-mono text-xs text-brand-grey break-all">{role.roleName}</p>
+          <h2 className="font-heading text-ink text-lg font-semibold">{roleTitle(role.roleName)}</h2>
+          <p className="font-mono text-xs text-muted break-all">{role.roleName}</p>
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
           {BUILT_IN_ROLES.includes(role.roleName) && <Badge label="Built in" variant="neutral" />}
           <Badge label={`${permissions.length} ${permissions.length === 1 ? 'permission' : 'permissions'}`} variant="gold" />
         </div>
       </div>
-      {role.description && <p className="text-sm text-brand-grey">{role.description}</p>}
+      {role.description && <p className="text-sm text-muted">{role.description}</p>}
       {permissions.length > 0 ? (
         <ul className="flex flex-wrap gap-1.5" aria-label={`Permissions of ${roleTitle(role.roleName)}`}>
           {permissions.slice(0, SHOWN_CHIPS).map((name) => (
-            <li key={name} className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-brand-grey">
+            <li key={name} className="rounded-full border border-black/10 bg-black/5 px-2 py-0.5 text-[11px] text-muted">
               {name}
             </li>
           ))}
-          {permissions.length > SHOWN_CHIPS && <li className="px-1 py-0.5 text-[11px] text-brand-grey">+{permissions.length - SHOWN_CHIPS} more</li>}
+          {permissions.length > SHOWN_CHIPS && <li className="px-1 py-0.5 text-[11px] text-muted">+{permissions.length - SHOWN_CHIPS} more</li>}
         </ul>
       ) : (
-        <p className="text-xs text-brand-grey">No permissions yet.</p>
+        <p className="text-xs text-muted">No permissions yet.</p>
       )}
       <div className="flex flex-wrap gap-2">
         <Button size="sm" onClick={() => onEdit(role)} aria-label={`Edit role ${roleTitle(role.roleName)}`}>
@@ -103,8 +103,8 @@ export default function AdminRolesPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Roles &amp; Permissions</h1>
-            <p className="text-brand-grey text-sm mt-1 max-w-2xl">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Roles &amp; Permissions</h1>
+            <p className="text-muted text-sm mt-1 max-w-2xl">
               A permission is one thing a person may do; a role is a set of them. Change what a role can do here, and give people roles from Users → Edit.
               People pick up a role&apos;s permissions the next time they log in.
             </p>
@@ -147,20 +147,20 @@ export default function AdminRolesPage() {
           !permissions.isError && <EmptyState icon={KeyRound} title="No permissions found" description="Try a different search, or add a permission." />
         ) : (
           <>
-            <div className="table-scroll rounded-2xl border border-white/10">
+            <div className="table-scroll rounded-2xl border border-black/10">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider">Permission</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider">What it allows</th>
+                  <tr className="border-b border-black/10">
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Permission</th>
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">What it allows</th>
                     <th scope="col" className="px-4 py-3"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-black/5">
                   {pages.pageItems.map((p) => (
                     <tr key={p.id || p.permissionName}>
-                      <td className="px-4 py-3 font-mono text-xs text-brand-white break-all">{p.permissionName}</td>
-                      <td className="px-4 py-3 text-sm text-brand-grey">{p.description || '—'}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-ink break-all">{p.permissionName}</td>
+                      <td className="px-4 py-3 text-sm text-muted">{p.description || '—'}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <Button size="sm" onClick={() => setPermissionModal(p)} aria-label={`Edit permission ${p.permissionName}`}>
@@ -188,12 +188,12 @@ export default function AdminRolesPage() {
 
       <Modal isOpen={!!removing} onClose={() => setRemoving(null)} title={removing?.kind === 'role' ? 'Delete role' : 'Delete permission'}>
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
-            This can&apos;t be undone. Delete {removing?.kind} <span className="font-mono text-brand-white">{removingName}</span>?
+          <p className="text-muted text-sm">
+            This can&apos;t be undone. Delete {removing?.kind} <span className="font-mono text-ink">{removingName}</span>?
           </p>
-          {removing?.kind === 'permission' && <p className="text-xs text-brand-grey">Roles that have this permission will lose it.</p>}
+          {removing?.kind === 'permission' && <p className="text-xs text-muted">Roles that have this permission will lose it.</p>}
           {removingBuiltIn && (
-            <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-700">
               This is a built-in role the portal relies on. Deleting it can lock people out, including you.
             </p>
           )}

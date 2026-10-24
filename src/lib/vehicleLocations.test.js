@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupByLocation, isSameLocation, locationFacets, priceBounds, UNKNOWN_LOCATION } from './vehicleLocations';
+import { isSameLocation, locationFacets, priceBounds, UNKNOWN_LOCATION } from './vehicleLocations';
 
 const cars = [
   { id: 1, location: 'Nairobi CBD', pricePerDay: 22000 },
@@ -21,18 +21,6 @@ describe('locationFacets', () => {
   it('leaves out vehicles with no location, and copes with nothing', () => {
     expect(locationFacets([{ location: null }])).toEqual([]);
     expect(locationFacets()).toEqual([]);
-  });
-});
-
-describe('groupByLocation', () => {
-  it('groups by place, the busiest first, with a heading for ones with no location', () => {
-    const groups = groupByLocation(cars);
-    expect(groups.map((g) => [g.name, g.vehicles.length])).toEqual([
-      ['Nairobi CBD', 2],
-      [UNKNOWN_LOCATION, 1],
-      ['Mombasa', 1],
-      ['Roysambu', 1],
-    ].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
   });
 });
 

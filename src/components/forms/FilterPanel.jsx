@@ -1,4 +1,5 @@
 import React from 'react';
+import { SelfDriveIcon, ChauffeurIcon } from '../ui/TripModeIcons';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import Input from '../ui/Input';
@@ -49,6 +50,10 @@ export default function FilterPanel({ bare = false }) {
   const urlMax = Number(searchParams.get('maxPrice')) || 0;
   const sliderMax = Math.max(priceBounds.max, urlMax, urlMin);
 
+  // Looking only for chauffeured cars: fuel type and gearbox don't matter to someone who won't drive, so those two
+  // filters are hidden (and cleared when Chauffeured is picked).
+  const chauffeuredOnly = searchParams.get('chauffeured') === 'true' && searchParams.get('selfDrive') !== 'true';
+
   function updateParams(updates) {
     setSearchParams(
       (prev) => {
@@ -93,19 +98,19 @@ export default function FilterPanel({ bare = false }) {
   return (
     <div
       className={`flex flex-col gap-3 ${
-        bare ? '' : 'bg-brand-navy/50 backdrop-blur-md shadow-lg shadow-black/20 border border-white/15 rounded-2xl p-5'
+        bare ? '' : 'bg-surface backdrop-blur-md shadow-card border border-subtle rounded-card p-5'
       }`}
     >
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-brand-white text-sm font-semibold inline-flex items-center gap-2">
-          <SlidersHorizontal size={15} className="text-brand-gold" aria-hidden="true" />
+        <h2 className="font-heading text-ink text-sm font-semibold inline-flex items-center gap-2">
+          <SlidersHorizontal size={15} className="text-accent" aria-hidden="true" />
           Filters
         </h2>
         {hasFilters && (
           <button
             type="button"
             onClick={handleClearAll}
-            className="inline-flex items-center gap-1 text-xs text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+            className="inline-flex items-center gap-1 text-xs text-muted hover:text-ink transition-colors focus-ring rounded-md"
           >
             <X size={12} aria-hidden="true" />
             Clear all
@@ -117,17 +122,26 @@ export default function FilterPanel({ bare = false }) {
 
       <div role="group" aria-label="Booking mode" className="flex gap-2">
         {[
-          { key: 'selfDrive', label: 'Self-Drive' },
-          { key: 'chauffeured', label: 'Chauffeured' },
+          { key: 'selfDrive', label: 'Self-Drive', icon: SelfDriveIcon },
+          { key: 'chauffeured', label: 'Chauffeured', icon: ChauffeurIcon },
         ].map((opt) => {
           const active = searchParams.get(opt.key) === 'true';
           return (
             <ToggleChip
               key={opt.key}
               active={active}
-              onClick={() => updateParams({ [opt.key]: active ? undefined : 'true' })}
-              className="flex-1"
+              onClick={() =>
+                updateParams({
+                  [opt.key]: active ? undefined : 'true',
+                  // Chauffeured only: the renter won't drive, so fuel and gearbox stop mattering — drop those filters.
+                  ...(opt.key === 'chauffeured' && !active && searchParams.get('selfDrive') !== 'true'
+                    ? { fuelType: undefined, transmissionType: undefined }
+                    : {}),
+                })
+              }
+              className="flex-1 inline-flex items-center justify-center gap-1.5"
             >
+              <opt.icon size={14} />
               {opt.label}
             </ToggleChip>
           );
@@ -136,7 +150,7 @@ export default function FilterPanel({ bare = false }) {
 
       {locations.length > 0 && (
         <div role="group" aria-label="Available in" className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium text-brand-white">Available in</span>
+          <span className="text-sm font-medium text-ink">Available in</span>
           <div className="flex flex-wrap gap-1.5">
             {locations.map((place) => {
               const active = isSameLocation(place.name, selectedLocation);
@@ -146,7 +160,7 @@ export default function FilterPanel({ bare = false }) {
                   active={active}
                   onClick={() => updateParams({ location: active ? undefined : place.name })}
                 >
-                  {place.name} <span className={active ? 'text-brand-gold/80' : 'text-brand-white/70'}>({place.count})</span>
+                  {place.name} <span className={active ? 'text-accent/80' : 'text-ink/70'}>({place.count})</span>
                 </ToggleChip>
               );
             })}
@@ -187,6 +201,7 @@ export default function FilterPanel({ bare = false }) {
           onBlur={(e) => updateParams({ capacity: e.target.value })}
         />
 
+        {!chauffeuredOnly && (
         <Select
           label="Fuel Type"
           name="fuelType"
@@ -195,7 +210,9 @@ export default function FilterPanel({ bare = false }) {
           value={searchParams.get('fuelType') || ''}
           onChange={(e) => updateParams({ fuelType: e.target.value })}
         />
+        )}
 
+        {!chauffeuredOnly && (
         <Select
           label="Transmission"
           name="transmissionType"
@@ -204,6 +221,7 @@ export default function FilterPanel({ bare = false }) {
           value={searchParams.get('transmissionType') || ''}
           onChange={(e) => updateParams({ transmissionType: e.target.value })}
         />
+        )}
       </div>
     </div>
   );

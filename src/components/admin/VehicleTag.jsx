@@ -12,11 +12,11 @@ export default function VehicleTag({ vehicleId }) {
   if (!vehicleId) return null;
 
   return (
-    <p className="flex items-start gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-brand-grey">
-      <Car size={14} className="mt-0.5 shrink-0 text-brand-gold" aria-hidden="true" />
+    <p className="flex items-start gap-2 rounded-lg bg-black/5 px-3 py-2 text-xs text-muted">
+      <Car size={14} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
       {vehicle ? (
         <span className="min-w-0 break-words">
-          For <span className="text-brand-white font-medium">{vehicle.model}</span> · {vehicle.registrationNumber}
+          For <span className="text-ink font-medium">{vehicle.model}</span> · {vehicle.registrationNumber}
           {vehicle.ownerEmail ? ` · owner ${vehicle.ownerEmail}` : ''}
         </span>
       ) : (

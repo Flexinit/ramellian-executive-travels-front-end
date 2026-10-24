@@ -19,7 +19,7 @@
   }
 
   body {
-    @apply bg-brand-dark font-body text-brand-white antialiased;
+    @apply bg-canvas font-body text-ink antialiased;
     min-height: 100vh;
   }
 
@@ -29,15 +29,15 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-brand-navy; }
-  ::-webkit-scrollbar-thumb { @apply bg-brand-gold rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-brand-gold-light; }
+  ::-webkit-scrollbar-track { @apply bg-canvas; }
+  ::-webkit-scrollbar-thumb { @apply bg-line rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted; }
 }
 
 @layer components {
-  /* Reusable focus ring consistent with brand gold */
+  /* Reusable focus ring — the charcoal accent on the light page */
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 }
 
@@ -92,7 +92,7 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: theme('colors.brand-grey');
+    color: theme('colors.muted');
   }
   .stack-table > tbody > tr > td.stack-full,
   .stack-table > tbody > tr > td[colspan] {
@@ -104,16 +104,46 @@
   }
 }
 
-/* Print / Save as PDF on a contract (lib/printContract.js): only the contract document is printed. */
+/* The transparent dark-glass card on the sign-in pages (AuthCard): text on the glass is white, links gold, lines and
+   status colours lightened — while anything on a solid white surface inside it (the fields, white buttons) keeps
+   its dark text. A label set into a field's top edge would sit half on the glass and half on the white box, so there
+   it moves inside the box instead (small, top-left, typing underneath); the hooks (field-label, field-control) are on
+   the shared Input, Select and Textarea. */
+.auth-glass .text-ink { color: #ffffff; }
+.auth-glass .text-muted { color: rgba(255, 255, 255, 0.82); }
+.auth-glass .text-accent { color: #e8c97a; }
+.auth-glass .hover\:text-accent-hover:hover { color: #f3dda0; }
+.auth-glass .border-black\/10 { border-color: rgba(255, 255, 255, 0.25); }
+.auth-glass .text-green-700 { color: #86efac; }
+.auth-glass .text-red-600 { color: #fca5a5; }
+.auth-glass .bg-surface.text-ink,
+.auth-glass .bg-surface .text-ink { color: #000000; }
+.auth-glass .field-label {
+  top: 0.5rem;
+  left: 0.75rem;
+  background: none;
+  font-size: 0.6875rem;
+  color: #555555;
+}
+.auth-glass .field-control {
+  height: 3.5rem;
+  padding-top: 1.25rem;
+}
+
+/* Print / Save as PDF on a contract or an invoice (lib/printContract.js): only that document is printed. */
 @media print {
-  body.printing-contract * {
+  body.printing-contract *,
+  body.printing-invoice * {
     visibility: hidden;
   }
   body.printing-contract .contract-document,
-  body.printing-contract .contract-document * {
+  body.printing-contract .contract-document *,
+  body.printing-invoice .invoice-document,
+  body.printing-invoice .invoice-document * {
     visibility: visible;
   }
-  body.printing-contract .contract-document {
+  body.printing-contract .contract-document,
+  body.printing-invoice .invoice-document {
     position: absolute;
     inset: 0 0 auto 0;
     max-width: none;

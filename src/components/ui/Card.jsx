@@ -1,8 +1,7 @@
 import React from 'react';
 
 /**
- * Generic surface card — dark background with subtle border.
- * Matches otto.rentals' clean card aesthetic on dark backgrounds.
+ * Generic surface card — the design system's white card: a hairline outline, 14px corners and a soft shadow.
  *
  * @param {React.ReactNode} children
  * @param {string} className — appended Tailwind classes
@@ -10,7 +9,7 @@ import React from 'react';
 export default function Card({ children, className = '', ...rest }) {
   return (
     <div
-      className={`bg-brand-navy border border-white/8 rounded-xl shadow-card ${className}`}
+      className={`bg-surface border border-subtle rounded-card shadow-card ${className}`}
       {...rest}
     >
       {children}

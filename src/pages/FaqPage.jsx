@@ -50,16 +50,16 @@ function FaqItem({ question, answer, isOpen, onToggle }) {
           onClick={onToggle}
           className="w-full flex items-center justify-between gap-4 p-5 text-left focus-ring"
         >
-          <span className="font-heading text-brand-white text-sm sm:text-base font-semibold">{question}</span>
+          <span className="font-heading text-ink text-sm sm:text-base font-semibold">{question}</span>
           <ChevronDown
             size={18}
             aria-hidden="true"
-            className={`shrink-0 text-brand-gold transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            className={`shrink-0 text-accent transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
       </h2>
       {isOpen && (
-        <div id={panelId} className="px-5 pb-5 text-brand-grey text-sm leading-relaxed">
+        <div id={panelId} className="px-5 pb-5 text-muted text-sm leading-relaxed">
           {answer}
         </div>
       )}
@@ -76,8 +76,8 @@ export default function FaqPage() {
       <PageTitle title="FAQ" />
       <div className="flex flex-col gap-8 max-w-2xl mx-auto">
         <div className="flex flex-col items-center text-center gap-2">
-          <span className="text-brand-gold text-xs font-semibold tracking-widest uppercase">Support</span>
-          <h1 className="font-heading text-brand-white text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h1>
+          <span className="text-brand-gold-deep text-xs font-semibold tracking-widest uppercase">Support</span>
+          <h1 className="font-heading text-ink text-3xl sm:text-4xl font-bold">Frequently Asked Questions</h1>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -93,7 +93,7 @@ export default function FaqPage() {
         </div>
 
         <div className="flex flex-col items-center text-center gap-3 pt-2">
-          <p className="text-brand-grey text-sm">Still have questions?</p>
+          <p className="text-muted text-sm">Still have questions?</p>
           <Button
             to="/contact"
           >

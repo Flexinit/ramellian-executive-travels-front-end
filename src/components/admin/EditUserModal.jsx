@@ -75,17 +75,17 @@ export default function EditUserModal({ user, onClose }) {
           <div className="flex items-center gap-3">
             <Avatar name={name} size="lg" />
             <div className="min-w-0">
-              <p className="text-brand-white font-semibold truncate">{name}</p>
-              <p className="text-brand-grey text-xs truncate">{user.email}</p>
+              <p className="text-ink font-semibold truncate">{name}</p>
+              <p className="text-muted text-xs truncate">{user.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-3">
             <span className="flex flex-col">
-              <span id={statusId} className="text-sm font-medium text-brand-white">
+              <span id={statusId} className="text-sm font-medium text-ink">
                 Account active
               </span>
-              <span className="text-xs text-brand-grey">
+              <span className="text-xs text-muted">
                 {isMe ? "It's your own account — you can't switch it off." : enabled ? 'On — they can sign in.' : "Off — they can't sign in."}
               </span>
             </span>
@@ -97,14 +97,14 @@ export default function EditUserModal({ user, onClose }) {
               disabled={isMe || setEnabled.isPending}
               onClick={toggleEnabled}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
-                enabled ? 'bg-brand-gold border-brand-gold' : 'bg-white/10 border-white/20'
+                enabled ? 'bg-accent border-accent' : 'bg-black/10 border-black/20'
               }`}
             >
               <span aria-hidden="true" className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-brand-grey">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             Role right now:
             {roleBadges(user.roles).map((label) => (
               <Badge key={label} label={label} variant="gold" />
@@ -112,52 +112,52 @@ export default function EditUserModal({ user, onClose }) {
           </div>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="text-sm font-medium text-brand-white mb-2">Give this account the role</legend>
+            <legend className="text-sm font-medium text-ink mb-2">Give this account the role</legend>
             {roleOptions.map(({ value, label, help }) => {
               const selected = role === value;
               return (
                 <label
                   key={value}
-                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-brand-gold ${
-                    selected ? 'border-brand-gold bg-brand-gold/10' : 'border-white/10 hover:border-brand-gold/50 hover:bg-white/5'
+                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
+                    selected ? 'border-accent bg-accent/10' : 'border-black/10 hover:border-accent/50 hover:bg-black/5'
                   }`}
                 >
                   <input type="radio" name="role" value={value} checked={selected} onChange={() => setChoice(value)} className="sr-only" />
                   <span
                     aria-hidden="true"
                     className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      selected ? 'border-brand-gold bg-brand-gold text-brand-dark' : 'border-white/30'
+                      selected ? 'border-accent bg-accent text-on-accent' : 'border-black/30'
                     }`}
                   >
                     {selected && <Check size={12} />}
                   </span>
                   <span className="flex flex-col">
-                    <span className="text-sm font-medium text-brand-white">{label}</span>
-                    <span className="text-xs text-brand-grey">{help}</span>
+                    <span className="text-sm font-medium text-ink">{label}</span>
+                    <span className="text-xs text-muted">{help}</span>
                   </span>
                 </label>
               );
             })}
           </fieldset>
 
-          <div className="rounded-lg bg-white/5 px-3 py-3 text-xs text-brand-grey flex gap-2" role="note">
-            <Info size={15} className="shrink-0 mt-0.5 text-brand-gold" aria-hidden="true" />
+          <div className="rounded-lg bg-black/5 px-3 py-3 text-xs text-muted flex gap-2" role="note">
+            <Info size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" />
             <div className="flex flex-col gap-1.5">
               <p>
-                <span className="text-brand-white font-medium">Permissions</span> come with the role, so the role above is how you grant or take away access.
+                <span className="text-ink font-medium">Permissions</span> come with the role, so the role above is how you grant or take away access.
                 To change what a role itself can do, use{' '}
-                <Link to="/admin/roles" onClick={onClose} className="text-brand-gold hover:underline focus-ring rounded">
+                <Link to="/admin/roles" onClick={onClose} className="text-accent hover:underline focus-ring rounded">
                   Roles &amp; Permissions
                 </Link>
                 .
               </p>
               <p>
-                <span className="text-brand-white font-medium">Name, phone and other personal details</span> can only be changed by the person
+                <span className="text-ink font-medium">Name, phone and other personal details</span> can only be changed by the person
                 themselves on their Profile page.
                 {isMe && (
                   <>
                     {' '}
-                    <Link to="/dashboard/profile" onClick={onClose} className="text-brand-gold hover:underline focus-ring rounded">
+                    <Link to="/dashboard/profile" onClick={onClose} className="text-accent hover:underline focus-ring rounded">
                       Edit my details
                     </Link>
                   </>

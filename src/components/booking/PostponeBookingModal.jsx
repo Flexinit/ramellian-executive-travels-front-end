@@ -59,17 +59,17 @@ export default function PostponeBookingModal({ isOpen, onClose, booking }) {
         {isLoading ? (
           <div className="flex justify-center py-4"><Spinner label="Checking the booking policy" /></div>
         ) : notAllowed ? (
-          <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+          <p className="text-sm text-amber-700 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
             This owner doesn't allow moving the dates. Message them if you need to change your trip.
           </p>
         ) : tooLate ? (
-          <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+          <p className="text-sm text-amber-700 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
             Dates can only be moved up to {policy.postponementDeadlineHours} hours before pick-up. Message the owner if
             you need help.
           </p>
         ) : (
           <>
-            <p className="text-brand-grey text-sm">
+            <p className="text-muted text-sm">
               Choose the new pick-up and return. The owner will be told.
               {policy?.maxPostponements != null && ` A booking can be moved at most ${policy.maxPostponements} time${policy.maxPostponements === 1 ? '' : 's'}.`}
             </p>
@@ -78,7 +78,7 @@ export default function PostponeBookingModal({ isOpen, onClose, booking }) {
               <Input label="New return" type="datetime-local" value={end} min={start || undefined} onChange={(e) => setEnd(e.target.value)} />
             </div>
             {(problem || postpone.isError) && (
-              <p role="alert" className="text-sm text-red-400">{problem || apiErrorMessage(postpone.error, "Couldn't move the dates.")}</p>
+              <p role="alert" className="text-sm text-red-600">{problem || apiErrorMessage(postpone.error, "Couldn't move the dates.")}</p>
             )}
           </>
         )}

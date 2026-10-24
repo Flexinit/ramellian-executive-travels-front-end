@@ -22,7 +22,7 @@ export function DocumentPreview({ document, onOpen }) {
   const label = document.originalFileName || 'Uploaded document';
 
   if (isError) {
-    return <div className="h-full min-h-40 flex items-center justify-center text-sm text-red-400 px-4 text-center">Couldn&apos;t load this file.</div>;
+    return <div className="h-full min-h-40 flex items-center justify-center text-sm text-red-600 px-4 text-center">Couldn&apos;t load this file.</div>;
   }
   if (!url) {
     return (
@@ -46,7 +46,7 @@ export function DocumentPreview({ document, onOpen }) {
   }
   return (
     <div className="h-full min-h-40 flex flex-col items-center justify-center gap-3 px-4 text-center">
-      <FileText size={32} className="text-brand-grey" aria-hidden="true" />
+      <FileText size={32} className="text-muted" aria-hidden="true" />
       <Button size="sm" href={url} download={label}>
         Download {label}
       </Button>
@@ -63,7 +63,7 @@ export function DocumentViewer({ document, onClose }) {
     <Modal isOpen={!!document} onClose={onClose} title={document ? DOCUMENT_TYPE_LABELS[document.documentType] || document.documentType : ''} size="xl">
       <div className="flex flex-col gap-3 items-center min-h-40 justify-center">
         {!url && !isError && <Spinner size="lg" label="Loading document" />}
-        {isError && <p className="text-sm text-red-400">Couldn&apos;t load this file.</p>}
+        {isError && <p className="text-sm text-red-600">Couldn&apos;t load this file.</p>}
         {url && isImage(document) && <img src={url} alt={label} className="max-h-[75vh] max-w-full rounded-lg" />}
         {url && isPdf(document) && <iframe src={url} title={label} className="w-full h-[75vh] rounded-lg bg-white" />}
         {url && !isImage(document) && !isPdf(document) && (

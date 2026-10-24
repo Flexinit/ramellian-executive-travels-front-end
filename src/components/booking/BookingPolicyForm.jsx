@@ -104,7 +104,7 @@ export default function BookingPolicyForm({ policy, onSave, saving = false }) {
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
       <div className="flex flex-col gap-4">
-        <h3 className="font-heading text-brand-white text-base font-semibold">Cancellation</h3>
+        <h3 className="font-heading text-ink text-base font-semibold">Cancellation</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {number('freeCancellationWindowHours', 'Free cancellation (hours)', 'Full refund up to this many hours before pick-up.')}
           {number('cancellationDeadlineHours', 'Last cancellation (hours)', 'No cancelling closer to pick-up than this.')}
@@ -112,8 +112,8 @@ export default function BookingPolicyForm({ policy, onSave, saving = false }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-white/10 pt-5">
-        <h3 className="font-heading text-brand-white text-base font-semibold">Moving the dates</h3>
+      <div className="flex flex-col gap-4 border-t border-black/10 pt-5">
+        <h3 className="font-heading text-ink text-base font-semibold">Moving the dates</h3>
         <Checkbox checked={values.postponementAllowed} onChange={set('postponementAllowed')} label="Renters can move their booking to new dates" />
         {values.postponementAllowed && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -123,9 +123,9 @@ export default function BookingPolicyForm({ policy, onSave, saving = false }) {
         )}
       </div>
 
-      <div className="rounded-xl bg-white/5 border border-white/10 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-brand-grey">What renters get</p>
-        <ul className="mt-2 flex flex-col gap-1 text-sm text-brand-white list-disc pl-5">
+      <div className="rounded-xl bg-black/5 border border-black/10 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">What renters get</p>
+        <ul className="mt-2 flex flex-col gap-1 text-sm text-ink list-disc pl-5">
           {policySummary({ ...values, postponementDeadlineHours: values.postponementDeadlineHours || 0, maxPostponements: values.maxPostponements || 0 }).map((line) => (
             <li key={line}>{line}</li>
           ))}

@@ -39,7 +39,7 @@ export default function OwnerReportsPage() {
     <PageWrapper>
       <PageTitle title="Owner Reports" />
       <div className="flex flex-col gap-6">
-        <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Fleet Reports</h1>
+        <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Fleet Reports</h1>
         <SegmentedControl kind="tab" label="Report section" value={tab} onChange={setTab} options={TABS} />
 
         {tab === 'revenue' && (

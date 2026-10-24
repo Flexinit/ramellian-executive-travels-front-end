@@ -56,8 +56,8 @@ export default function ContractSignPage() {
       <div className="flex flex-col gap-6">
         {bookingId && <BackLink to={`/owner/bookings/${bookingId}`} label="View booking" />}
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Sign the rental contract</h1>
-          <p className="text-brand-grey text-sm mt-1.5">
+          <h1 className="font-heading text-ink text-2xl font-bold">Sign the rental contract</h1>
+          <p className="text-muted text-sm mt-1.5">
             {b ? `${b.renterName || 'The renter'} · ${formatDateRange(b.startTime, b.endTime)}. ` : ''}
             Read it part by part, confirm you have read it, then sign as the owner.
           </p>

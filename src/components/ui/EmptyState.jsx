@@ -14,13 +14,13 @@ export default function EmptyState({ icon, title, description, action }) {
   const Icon = icon || SearchX;
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center">
-      <div className="w-16 h-16 rounded-full bg-brand-gold/10 flex items-center justify-center">
-        <Icon size={28} className="text-brand-gold" />
+      <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
+        <Icon size={28} className="text-accent" />
       </div>
       <div className="flex flex-col gap-1">
-        <h3 className="font-heading text-lg font-semibold text-brand-white">{title}</h3>
+        <h3 className="font-heading text-lg font-semibold text-ink">{title}</h3>
         {description && (
-          <p data-testid="empty-description" className="text-sm text-brand-grey max-w-xs">
+          <p data-testid="empty-description" className="text-sm text-muted max-w-xs">
             {description}
           </p>
         )}

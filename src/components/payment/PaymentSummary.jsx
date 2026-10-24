@@ -2,6 +2,7 @@ import React from 'react';
 import Card from '../ui/Card';
 import PriceDisplay from '../ui/PriceDisplay';
 import { formatDateRange, calculateTotalPrice } from '../../lib/utils';
+import { DetailList, DetailRow } from '../ui/DetailList';
 
 /**
  * @param {object} booking — { startTime, endTime, numberOfDays }
@@ -13,14 +14,17 @@ export default function PaymentSummary({ booking, vehicle, paid = false, classNa
   return (
     <Card className={`p-4 flex flex-col gap-3 ${className}`}>
       <div>
-        <h3 className="font-heading text-brand-white font-semibold">{vehicle?.model}</h3>
+        <h3 className="font-heading text-ink font-semibold">{vehicle?.model}</h3>
         {booking?.startTime && booking?.endTime && (
-          <p className="text-brand-grey text-xs mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
+          <p className="text-muted text-xs mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
         )}
       </div>
-      <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-        <span className="text-brand-grey text-sm">{paid ? 'Total Paid' : 'Total Due'}</span>
-        <PriceDisplay amount={total} period="" size="md" />
+      <div className="pt-3 border-t border-black/10">
+        <DetailList className="items-center">
+          <DetailRow label={paid ? 'Total Paid' : 'Total Due'}>
+            <PriceDisplay amount={total} period="" size="md" />
+          </DetailRow>
+        </DetailList>
       </div>
     </Card>
   );

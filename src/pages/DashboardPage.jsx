@@ -2,7 +2,6 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { CalendarCheck, Clock, FileClock } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Skeleton from '../components/ui/Skeleton';
@@ -11,20 +10,19 @@ import { useDocuments } from '../hooks/useDocuments';
 import { BOOKING_STATUSES, DOCUMENT_STATUSES } from '../lib/constants';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 
 function StatCard({ icon: Icon, label, value, loading }) {
   return (
     <Card className="p-5 flex items-center gap-4">
-      <div className="w-11 h-11 rounded-xl bg-brand-gold/10 flex items-center justify-center shrink-0">
-        <Icon size={20} className="text-brand-gold" aria-hidden="true" />
+      <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+        <Icon size={20} className="text-accent" aria-hidden="true" />
       </div>
       <div>
-        <p className="text-brand-grey text-xs">{label}</p>
+        <p className="text-muted text-xs">{label}</p>
         {loading ? (
           <Skeleton className="w-10 h-6 mt-1" />
         ) : (
-          <p className="font-heading text-brand-white text-2xl font-bold">{value}</p>
+          <p className="font-heading text-ink text-2xl font-bold">{value}</p>
         )}
       </div>
     </Card>
@@ -54,15 +52,15 @@ export default function DashboardPage() {
   const pendingDocs = documents?.filter((d) => d.status === DOCUMENT_STATUSES.PENDING).length ?? 0;
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
       <PageWrapper>
         <PageTitle title="Dashboard" />
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">
               Welcome{user?.firstName ? `, ${user.firstName}` : ''}
             </h1>
-            <p className="text-brand-grey text-sm mt-1">Here's an overview of your account.</p>
+            <p className="text-muted text-sm mt-1">Here's an overview of your account.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -72,6 +70,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

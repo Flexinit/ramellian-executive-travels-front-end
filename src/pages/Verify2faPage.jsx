@@ -51,19 +51,19 @@ export default function Verify2faPage() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-brand-dark px-4 py-12">
+    <div className="flex-1 flex items-center justify-center bg-canvas px-4 py-12">
       <PageTitle title="Verify Code" />
       <div className="w-full max-w-sm flex flex-col gap-8">
 
-        <div className="bg-brand-navy border border-white/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
-          <div className="w-14 h-14 mx-auto rounded-full bg-brand-gold/10 flex items-center justify-center">
-            <ShieldCheck size={24} className="text-brand-gold" aria-hidden="true" />
+        <div className="bg-surface border border-black/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
+          <div className="w-14 h-14 mx-auto rounded-full bg-accent/10 flex items-center justify-center">
+            <ShieldCheck size={24} className="text-accent" aria-hidden="true" />
           </div>
 
           <div>
-            <h1 className="font-heading text-brand-white text-2xl font-bold">Two-factor verification</h1>
-            <p className="text-brand-grey text-sm mt-1.5">
-              Enter the 6-digit code {email ? <>sent to <span className="text-brand-white">{email}</span></> : 'from your authenticator'}.
+            <h1 className="font-heading text-ink text-2xl font-bold">Two-factor verification</h1>
+            <p className="text-muted text-sm mt-1.5">
+              Enter the 6-digit code {email ? <>sent to <span className="text-ink">{email}</span></> : 'from your authenticator'}.
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export default function Verify2faPage() {
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(e, i)}
                   aria-label={`Digit ${i + 1} of ${CODE_LENGTH}`}
-                  className="w-11 h-12 sm:w-12 sm:h-14 text-center text-xl font-semibold rounded-xl bg-white/5 border border-white/10 text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition"
+                  className="w-11 h-12 sm:w-12 sm:h-14 text-center text-xl font-semibold rounded-tile bg-surface border border-line text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
                 />
               ))}
             </div>
@@ -102,8 +102,8 @@ export default function Verify2faPage() {
           </form>
         </div>
 
-        <p className="text-center text-brand-grey text-sm">
-          <Link to="/auth/login" className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md">
+        <p className="text-center text-muted text-sm">
+          <Link to="/auth/login" className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md">
             Back to login
           </Link>
         </p>

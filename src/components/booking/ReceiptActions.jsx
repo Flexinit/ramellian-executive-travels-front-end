@@ -31,7 +31,7 @@ export default function ReceiptActions({ booking, vehicle, enabled = true }) {
             e.stopPropagation();
             setMode('preview');
           }}
-          className="inline-flex items-center gap-1.5 text-brand-gold text-sm font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+          className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
         >
           <Eye size={14} aria-hidden="true" />
           Receipt
@@ -43,7 +43,7 @@ export default function ReceiptActions({ booking, vehicle, enabled = true }) {
             setMode('download');
           }}
           aria-label="Download receipt"
-          className="p-1.5 text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+          className="p-1.5 text-muted hover:text-ink transition-colors focus-ring rounded-md"
         >
           <Download size={14} aria-hidden="true" />
         </button>
@@ -56,7 +56,7 @@ export default function ReceiptActions({ booking, vehicle, enabled = true }) {
           }}
           aria-label="Download the official receipt (PDF)"
           title="Official receipt (PDF)"
-          className="p-1.5 text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+          className="p-1.5 text-muted hover:text-ink transition-colors focus-ring rounded-md"
         >
           <FileDown size={14} aria-hidden="true" />
         </button>

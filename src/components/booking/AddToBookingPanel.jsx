@@ -179,31 +179,31 @@ export default function AddToBookingPanel({ vehicle }) {
   return (
     // See-through like Browse Vehicles' search and filters, and kept short enough that the Book button is on
     // screen without scrolling the page (the column sticks beside the vehicle's details).
-    <div className="p-5 flex flex-col gap-3.5 rounded-2xl border border-white/20 bg-white/[0.03] backdrop-blur-sm shadow-lg shadow-black/10">
+    <div className="p-5 flex flex-col gap-3.5 rounded-card border border-line bg-surface shadow-card">
       {alreadyBooked && (
-        <p className="text-xs text-brand-grey bg-white/5 border border-white/10 rounded-lg px-3 py-2">
-          You already have a booking for this vehicle (<span className="text-brand-white font-medium">My Bookings</span>) — new dates start a separate one.
+        <p className="text-xs text-muted bg-black/5 border border-black/10 rounded-lg px-3 py-2">
+          You already have a booking for this vehicle (<span className="text-ink font-medium">My Bookings</span>) — new dates start a separate one.
         </p>
       )}
 
       <Step2_TripDetails vehicle={vehicle} />
 
       {windowBooked.isBooked && (
-        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+        <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
           This vehicle is already booked for those dates. Please choose a different start or end date.
         </p>
       )}
 
       {!windowBooked.isBooked && renterOverlap.isBooked && (
-        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+        <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
           You already have a {renterOverlap.booking.status.toLowerCase()} booking on this vehicle covering
           those dates (see My Bookings). Please choose a different start or end date.
         </p>
       )}
 
-      <div className="pt-2.5 border-t border-white/10 flex flex-col gap-2.5">
+      <div className="pt-2.5 border-t border-black/10 flex flex-col gap-2.5">
         <div className="flex items-end justify-between gap-4">
-          <div className="text-sm text-brand-grey">
+          <div className="text-sm text-muted">
             {days > 0 ? (
               <>
                 {days} {days === 1 ? 'day' : 'days'} × {formatCurrency(vehicle.dailyPrice)}

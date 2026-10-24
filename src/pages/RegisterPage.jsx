@@ -23,7 +23,8 @@ import { CONTACT_KINDS } from '../lib/cart';
 import { useFormDraft } from '../hooks/useFormDraft';
 import DraftNotice from '../components/ui/DraftNotice';
 import AuthBackdrop from '../components/layout/AuthBackdrop';
-import dianiBeach from '../assets/destinations/diani-beach.jpg';
+import AuthCard from '../components/auth/AuthCard';
+import { AUTH_PHOTOS } from '../lib/authPhotos';
 
 /**
  * The payload matches the backend's `RegisterRequest` exactly (confirmed
@@ -118,14 +119,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthBackdrop image={dianiBeach}>
+    <AuthBackdrop images={AUTH_PHOTOS} title="Travel in style, wherever you're going" subtitle="Create your account to book chauffeured or self-drive cars — or to list your own.">
       <PageTitle title="Create Account" />
-      <div className="w-full max-w-sm flex flex-col gap-8">
+      <div className="w-full">
 
-        <div className="bg-brand-navy/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6">
+        <AuthCard>
           <div className="text-center">
-            <h1 className="font-heading text-brand-white text-2xl font-bold">Create your account</h1>
-            <p className="text-brand-grey text-sm mt-1.5">
+            <h1 className="font-heading text-ink text-2xl font-bold">Create your account</h1>
+            <p className="text-muted text-sm mt-1.5">
               {hasSelection ? 'Your booking is saved — create your account to continue with it.' : 'Book chauffeured or self-drive vehicles in minutes.'}
             </p>
           </div>
@@ -164,7 +165,7 @@ export default function RegisterPage() {
 
             {whatsappOffered && (
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-brand-white">Send my verification code by</span>
+              <span className="text-sm font-medium text-ink">Send my verification code by</span>
               <SegmentedControl
                 label="Send my verification code by"
                 size="sm"
@@ -214,11 +215,11 @@ export default function RegisterPage() {
               label={
                 <>
                   I agree to the{' '}
-                  <Link to="/terms" target="_blank" className="text-brand-gold hover:text-brand-gold-light underline">
+                  <Link to="/terms" target="_blank" className="text-accent hover:text-accent-hover underline">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link to="/privacy" target="_blank" className="text-brand-gold hover:text-brand-gold-light underline">
+                  <Link to="/privacy" target="_blank" className="text-accent hover:text-accent-hover underline">
                     Privacy Policy
                   </Link>
                 </>
@@ -229,14 +230,14 @@ export default function RegisterPage() {
               Create Account
             </Button>
           </form>
-        </div>
 
-        <p className="text-center text-brand-grey text-sm">
-          Already have an account?{' '}
-          <Link to="/auth/login" className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md">
-            Log in
-          </Link>
-        </p>
+          <p className="pt-5 border-t border-black/10 text-center text-muted text-sm">
+            Already have an account?{' '}
+            <Link to="/auth/login" className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md">
+              Log in
+            </Link>
+          </p>
+        </AuthCard>
       </div>
     </AuthBackdrop>
   );

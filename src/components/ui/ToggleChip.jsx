@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * A pill you switch on and off (a filter, a trip type, a booking mode). A gold
- * outline with a soft gold tint when on — the same look as the Button. Use this instead of hand-styling a `<button aria-pressed>`.
+ * A pill you switch on and off (a filter, a trip type, a booking mode). The design
+ * system's filter pill: solid charcoal when on, white with a grey outline when off. Use this instead of hand-styling a `<button aria-pressed>`.
  *
  * @param {boolean} active — pressed state (also exposed as `aria-pressed`)
  * @param {function} onClick
@@ -23,8 +23,8 @@ export default function ToggleChip({ active = false, onClick, size = 'sm', class
       onClick={onClick}
       className={`rounded-full border transition-colors focus-ring ${sizes[size]} ${
         active
-          ? 'bg-brand-gold/15 text-brand-gold border-brand-gold'
-          : 'bg-transparent text-brand-grey border-white/10 hover:text-brand-gold hover:border-brand-gold/50'
+          ? 'bg-accent text-on-accent border-accent'
+          : 'bg-surface text-ink border-line hover:border-accent'
       } ${className}`}
       {...rest}
     >

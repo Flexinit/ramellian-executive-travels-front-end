@@ -3,21 +3,19 @@ import { Link } from 'react-router-dom';
 import Spinner from './Spinner';
 
 /**
- * The one button for the whole portal — the look of the navbar's "Rent a Car"
- * button: a gold-outline pill, semibold `text-sm`. Use it for every button
- * and every link that looks like one, rather than styling a `<button>` or
- * `<Link>` by hand.
+ * The one button for the whole portal — the Figma design system's button ("Book Now"): a solid charcoal
+ * pill with white, semibold `text-sm`. Use it for every button and every link that looks like one, rather
+ * than styling a `<button>` or `<Link>` by hand.
  *
  * Pass `to` to render a router link (same look, real `<a>`), or `href` for an
  * external link; otherwise it's a `<button>`.
  *
- * @param {'default'|'danger'|'dark'|'navy'} variant
- *   default — the "Rent a Car" look: a gold outline pill, used for EVERY button
- *   (there is no text-only version); danger — the same pill in red, for
- *   destructive actions; dark — the same pill in dark ink, only for a gold or white surface;
- *   navy — the same pill filled in the brand's navy with gold text, the one filled button, for the main
- *   "go on" step on a white surface (the contract's Next, as asked by the product owner 2026-10-16).
- * @param {'sm'|'md'|'lg'|'icon'} size — md is the navbar button size; icon is a round icon-only button
+ * @param {'default'|'outline'|'danger'|'dark'|'navy'} variant
+ *   default — the solid accent pill (Ramellian navy), for every main action (there is no text-only version);
+ *   outline — the same pill in white with a grey outline (the design's unselected pill), for a quieter action
+ *   beside a main one; danger — the pill outlined in red, for destructive actions; dark — a white pill with
+ *   navy text, only on a navy or dark surface; navy — kept for older call sites, same as default.
+ * @param {'xs'|'sm'|'md'|'lg'|'icon'} size — md is the usual size; xs is the small pill on a car card; icon is a round icon-only button
  * @param {boolean} loading
  * @param {boolean} disabled
  * @param {'button'|'submit'|'reset'} type — buttons only
@@ -41,18 +39,21 @@ export default function Button({
   ...rest
 }) {
   const base =
-    'inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark cursor-pointer select-none active:scale-95';
+    'inline-flex items-center justify-center gap-2 font-semibold rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface cursor-pointer select-none active:scale-95';
 
   const off = 'disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:pointer-events-none';
 
+  const filled = `border border-accent bg-accent text-on-accent hover:bg-accent-hover hover:border-accent-hover ${off}`;
   const variants = {
-    default: `border border-brand-gold text-brand-gold bg-transparent hover:bg-brand-gold/10 ${off}`,
-    danger: `border border-red-500 text-red-400 bg-transparent hover:bg-red-500/10 ${off}`,
-    dark: `border border-brand-dark text-brand-dark bg-transparent hover:bg-brand-dark/10 ${off}`,
-    navy: `border border-brand-navy bg-brand-navy text-brand-gold hover:bg-brand-dark ${off}`,
+    default: filled,
+    outline: `border border-line bg-surface text-ink hover:border-accent ${off}`,
+    danger: `border border-red-500 text-red-600 bg-surface hover:bg-red-50 ${off}`,
+    dark: `border border-on-accent bg-on-accent text-accent hover:bg-on-accent/90 ${off}`,
+    navy: filled,
   };
 
   const sizes = {
+    xs: 'px-3 py-1.5 text-[11px]', // the design's small "Book now" pill on a car card
     sm: 'px-4 py-1.5 text-sm',
     md: 'px-5 py-2.5 text-sm',
     lg: 'px-7 py-3.5 text-base',

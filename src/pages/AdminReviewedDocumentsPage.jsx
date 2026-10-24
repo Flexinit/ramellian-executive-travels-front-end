@@ -51,18 +51,18 @@ function ReviewedDocumentCard({ entry, page, onOpen }) {
 
   return (
     <Card className="p-5 grid gap-5 md:grid-cols-[minmax(0,20rem)_1fr]">
-      <div className="rounded-xl border border-white/10 bg-black/20 overflow-hidden self-start w-full">
+      <div className="rounded-xl border border-black/10 bg-subtle overflow-hidden self-start w-full">
         <DocumentPreview document={entry} onOpen={onOpen} />
       </div>
 
       <div className="flex flex-col gap-4 min-w-0">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 className="font-heading text-brand-white text-lg font-semibold">{title}</h2>
-            <p className="text-brand-grey text-xs mt-1 break-all">
+            <h2 className="font-heading text-ink text-lg font-semibold">{title}</h2>
+            <p className="text-muted text-xs mt-1 break-all">
               {entry.originalFileName} · {formatFileSize(entry.fileSize)} · uploaded {formatDateTime(entry.createdAt)}
             </p>
-            <p className="text-brand-grey text-xs mt-1">
+            <p className="text-muted text-xs mt-1">
               {entry.decidedAt ? `${page.badge} ${formatDateTime(entry.decidedAt)}` : 'One of your own documents'}
             </p>
           </div>
@@ -141,9 +141,9 @@ export default function AdminReviewedDocumentsPage({ status }) {
       <PageTitle title={page.title} />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">{page.title}</h1>
-          <p className="text-brand-grey text-sm mt-1">{page.intro}</p>
-          <p className="text-brand-grey text-xs mt-2">
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">{page.title}</h1>
+          <p className="text-muted text-sm mt-1">{page.intro}</p>
+          <p className="text-muted text-xs mt-2">
             Your decisions are saved by the backend. But it can only list documents still waiting, not ones already decided, so this page shows
             your own documents that have been decided, plus the decisions made from this browser. Someone else&apos;s document decided
             elsewhere (or before this page existed) isn&apos;t listed here, even though its decision is saved.

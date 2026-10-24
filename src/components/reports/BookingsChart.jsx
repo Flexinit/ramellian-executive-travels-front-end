@@ -8,9 +8,8 @@ import EmptyState from '../ui/EmptyState';
 import { bookingsByPeriod, OUTCOME_GROUPS } from '../../lib/reports';
 
 /**
- * Fixed categorical slots (dataviz skill's default palette, slots 1–5), validated with
- * `validate_palette.js --mode dark --surface "#16213E"` (this card's own background) — all 5 checks pass,
- * worst adjacent CVD ΔE 8.4, worst adjacent normal-vision ΔE 19.3. One color per outcome, in a fixed order
+ * Fixed categorical slots (dataviz skill’s default palette, slots 1–5 — built to read on light and dark surfaces;
+ * the card is white now). Originally checked against the old dark card: worst adjacent CVD ΔE 8.4. One color per outcome, in a fixed order
  * (never reassigned when a period has fewer outcomes present), since this is series identity, not a
  * good/bad status readout — `BookingStatusBadge`'s own status colors collapse Confirmed/Active/Completed to
  * the same green, which is exactly wrong for telling these apart in one chart.
@@ -37,15 +36,15 @@ function PeriodTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const present = payload.filter((p) => p.value > 0);
   return (
-    <div className="rounded-lg border border-white/10 bg-brand-navy px-3 py-2 shadow-card text-xs min-w-32">
-      <p className="text-brand-white font-semibold mb-1">{label}</p>
+    <div className="rounded-lg border border-black/10 bg-surface px-3 py-2 shadow-card text-xs min-w-32">
+      <p className="text-ink font-semibold mb-1">{label}</p>
       {present.length === 0 ? (
-        <p className="text-brand-grey">No bookings</p>
+        <p className="text-muted">No bookings</p>
       ) : (
         present.map((p) => (
-          <p key={p.dataKey} className="flex items-center gap-1.5 text-brand-grey">
+          <p key={p.dataKey} className="flex items-center gap-1.5 text-muted">
             <span className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: p.color }} aria-hidden="true" />
-            {OUTCOME_GROUPS.find((g) => g.key === p.dataKey)?.label}: <span className="text-brand-white font-medium">{p.value}</span>
+            {OUTCOME_GROUPS.find((g) => g.key === p.dataKey)?.label}: <span className="text-ink font-medium">{p.value}</span>
           </p>
         ))
       )}
@@ -78,7 +77,7 @@ export default function BookingsChart({ report }) {
   return (
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <h3 id={titleId} className="font-heading text-brand-white text-base font-semibold">
+        <h3 id={titleId} className="font-heading text-ink text-base font-semibold">
           Bookings over time
         </h3>
         <div className="flex flex-wrap items-center gap-3">
@@ -105,7 +104,7 @@ export default function BookingsChart({ report }) {
         <div className="table-scroll">
           <table className="w-full text-sm" aria-labelledby={titleId}>
             <thead>
-              <tr className="border-b border-white/10 text-left text-brand-grey">
+              <tr className="border-b border-black/10 text-left text-muted">
                 <th scope="col" className="py-2 pr-4 font-medium">
                   {GRANULARITY_COLUMN_LABEL[granularity]}
                 </th>
@@ -121,14 +120,14 @@ export default function BookingsChart({ report }) {
             </thead>
             <tbody>
               {periods.map((p) => (
-                <tr key={p.period} className="border-b border-white/5">
-                  <td className="py-2 pr-4 text-brand-white">{p.label}</td>
+                <tr key={p.period} className="border-b border-black/5">
+                  <td className="py-2 pr-4 text-ink">{p.label}</td>
                   {OUTCOME_GROUPS.map((g) => (
-                    <td key={g.key} className="py-2 pr-4 text-right text-brand-white tabular-nums">
+                    <td key={g.key} className="py-2 pr-4 text-right text-ink tabular-nums">
                       {p[g.key]}
                     </td>
                   ))}
-                  <td className="py-2 text-right text-brand-white font-semibold tabular-nums">{p.total}</td>
+                  <td className="py-2 text-right text-ink font-semibold tabular-nums">{p.total}</td>
                 </tr>
               ))}
             </tbody>
@@ -142,12 +141,12 @@ export default function BookingsChart({ report }) {
                 <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: '#8A8A9A', fontSize: 10 }}
+                  tick={{ fill: '#6B6B6B', fontSize: 10 }}
                   axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
                   tickLine={false}
                   interval="preserveStartEnd"
                 />
-                <YAxis allowDecimals={false} tick={{ fill: '#8A8A9A', fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
+                <YAxis allowDecimals={false} tick={{ fill: '#6B6B6B', fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip content={<PeriodTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)' }} />
                 {OUTCOME_GROUPS.map((g) => (
                   <Line
@@ -168,7 +167,7 @@ export default function BookingsChart({ report }) {
 
           <ul aria-label="Outcome" className="flex flex-wrap gap-x-4 gap-y-1.5">
             {OUTCOME_GROUPS.map((g) => (
-              <li key={g.key} className="inline-flex items-center gap-1.5 text-xs text-brand-grey">
+              <li key={g.key} className="inline-flex items-center gap-1.5 text-xs text-muted">
                 <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: SERIES_COLOR[g.key] }} aria-hidden="true" />
                 {g.label}
               </li>

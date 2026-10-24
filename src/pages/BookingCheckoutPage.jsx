@@ -3,7 +3,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Pencil, Trash2, FileText, ArrowLeft, UserPlus, LogIn } from 'lucide-react';
 import { useQueries } from '@tanstack/react-query';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import BookingProgress from '../components/booking/BookingProgress';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
@@ -30,7 +29,6 @@ import { missingBookingDocuments, modeProblem } from '../lib/cart';
 import { routeProblem } from '../lib/tripRoute';
 import { BOOKING_MODES } from '../lib/constants';
 import { formatCurrency } from '../lib/utils';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 
 /** Why a vehicle in the selection can't be booked right now, or null. `vehicle` is the live vehicle (undefined while loading). */
 function itemProblem(item, vehicle, isError, user) {
@@ -166,15 +164,15 @@ export default function BookingCheckoutPage() {
   }
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
     <PageWrapper className="max-w-5xl mx-auto">
       <PageTitle title="Checkout" />
       <div className="flex flex-col gap-6">
         <BookingProgress current="checkout" />
 
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Checkout</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl font-bold">Checkout</h1>
+          <p className="text-muted text-sm mt-1">
             {isAuthenticated ? 'One last look, then on to the contract.' : 'Create your account to continue — your booking is saved.'}
           </p>
         </div>
@@ -209,11 +207,11 @@ export default function BookingCheckoutPage() {
                   }
                   note={
                     problems[i] ? (
-                      <p role="alert" className="text-red-400 text-xs">{problems[i]}</p>
+                      <p role="alert" className="text-red-600 text-xs">{problems[i]}</p>
                     ) : item.bookingId ? (
-                      <p className="text-brand-gold text-xs">Booking started — continue to review its contract and pay.</p>
+                      <p className="text-accent text-xs">Booking started — continue to review its contract and pay.</p>
                     ) : live[i]?.data?.dailyPrice != null && live[i].data.dailyPrice !== items[i].vehicle.dailyPrice ? (
-                      <p className="text-brand-gold text-xs">The daily price is now {formatCurrency(live[i].data.dailyPrice)}.</p>
+                      <p className="text-accent text-xs">The daily price is now {formatCurrency(live[i].data.dailyPrice)}.</p>
                     ) : null
                   }
                 />
@@ -229,7 +227,7 @@ export default function BookingCheckoutPage() {
               <div className="flex flex-col gap-3">
                 {needsPhone && <CheckoutPhonePrompt />}
                 {missingDocs.length > 0 && (
-                  <p className="text-amber-300/90 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  <p className="text-amber-700/90 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
                     You can continue without them, but {missingDocs.length > 1 ? 'these are' : 'this is'} still
                     needed before you can pick up the vehicle: {missingDocs.join(', ')}.{' '}
                     <button type="button" onClick={() => setGateOpen(true)} className="underline font-semibold hover:text-amber-200">
@@ -261,8 +259,8 @@ export default function BookingCheckoutPage() {
             {/* After the actions, not before them: the buttons that move the booking on stay on screen without
                 scrolling; this is reading for anyone who wants it. */}
             <Card className="p-4 flex flex-col gap-2">
-              <h2 className="font-heading text-brand-white text-sm font-semibold">What happens next</h2>
-              <ol className="flex flex-col gap-1.5 text-xs text-brand-grey list-decimal pl-4">
+              <h2 className="font-heading text-ink text-sm font-semibold">What happens next</h2>
+              <ol className="flex flex-col gap-1.5 text-xs text-muted list-decimal pl-4">
                 {!isAuthenticated && <li>Create your account and verify your email. Your booking stays saved.</li>}
                 <li>Have your ID ready (and your driving licence for self-drive).</li>
                 <li>
@@ -276,7 +274,7 @@ export default function BookingCheckoutPage() {
                 </li>
               </ol>
               {rentalTerms.length > 0 && (
-                <button type="button" onClick={() => setTermsOpen(true)} className="self-start text-brand-gold text-xs font-semibold hover:text-brand-gold-light focus-ring rounded-md">
+                <button type="button" onClick={() => setTermsOpen(true)} className="self-start text-accent text-xs font-semibold hover:text-accent-hover focus-ring rounded-md">
                   Read the rental terms
                 </button>
               )}
@@ -315,7 +313,7 @@ export default function BookingCheckoutPage() {
 
       <Modal isOpen={!!pendingRemove} onClose={() => setPendingRemove(null)} title="Remove from your booking">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
+          <p className="text-muted text-sm">
             Remove {pendingItem?.vehicle?.model}? Its booking has already started, so it stays in My Bookings —
             cancel it there if you no longer want it at all.
           </p>
@@ -330,7 +328,7 @@ export default function BookingCheckoutPage() {
 
       <Modal isOpen={confirmClear} onClose={() => setConfirmClear(false)} title="Clear your booking">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
+          <p className="text-muted text-sm">
             Remove every vehicle from your booking?{' '}
             {hasStarted && 'Any booking already started stays in My Bookings — cancel it there if you no longer want it. '}
             This can&apos;t be undone here.
@@ -344,6 +342,6 @@ export default function BookingCheckoutPage() {
         </div>
       </Modal>
     </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

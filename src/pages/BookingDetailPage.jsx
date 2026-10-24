@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, CreditCard } from 'lucide-react';
+import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, CreditCard, Repeat } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import BackLink from '../components/ui/BackLink';
@@ -26,6 +26,9 @@ import { formatDateRange, formatDate, formatCurrency, calculateTotalPrice, isBoo
 import { stripPhoneNumbers } from '../lib/contactGuard';
 import { TRIP_TYPE_LABELS, BOOKING_STATUSES } from '../lib/constants';
 import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import { DetailList, DetailRow } from '../components/ui/DetailList';
+import ChangeVehicleModal, { canChangeVehicle } from '../components/booking/ChangeVehicleModal';
 
 export default function BookingDetailPage() {
   const { bookingId } = useParams();
@@ -33,6 +36,7 @@ export default function BookingDetailPage() {
   const { data: vehicle } = useVehicle(booking?.vehicleId);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [movingDates, setMovingDates] = useState(false);
+  const [changingVehicle, setChangingVehicle] = useState(false);
   const overstay = useOverstayCheckout();
   // Which handover modal is open, if either — 'pickup' once the booking's confirmed and waiting to be
   // collected, 'return' once it's out (ACTIVE) and due back. Never both: a booking is only ever in one of
@@ -85,7 +89,7 @@ export default function BookingDetailPage() {
         <BackLink to="/dashboard/bookings" label="Back to My Bookings" />
         <div className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
           <div className="flex items-center gap-4 min-w-0 max-w-full">
-            <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-white/5">
+            <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-black/5">
               {photoUrl ? (
                 <AuthImage
                   src={photoUrl}
@@ -100,8 +104,8 @@ export default function BookingDetailPage() {
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="font-heading text-brand-white text-2xl font-bold sm:truncate">{vehicle?.model || 'Booking'}</h1>
-              <p className="text-brand-grey text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
+              <h1 className="font-heading text-ink text-2xl font-bold sm:truncate">{vehicle?.model || 'Booking'}</h1>
+              <p className="text-muted text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
             </div>
           </div>
           <BookingStatusBadge status={booking.status} className="shrink-0" />
@@ -110,51 +114,44 @@ export default function BookingDetailPage() {
         {isBookingUnfulfilled(booking.status) ? (
           <BookingUnavailableNotice booking={booking} />
         ) : (
-          <Button to={`/messages/booking/${booking.id}`} className="self-start">
-            <MessageSquare size={15} aria-hidden="true" />
-            Message the owner
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button to={`/messages/booking/${booking.id}`}>
+              <MessageSquare size={15} aria-hidden="true" />
+              Message the owner
+            </Button>
+            {canChangeVehicle(booking) && (
+              <Button variant="outline" onClick={() => setChangingVehicle(true)}>
+                <Repeat size={15} aria-hidden="true" />
+                Change vehicle
+              </Button>
+            )}
+          </div>
         )}
+        <ChangeVehicleModal booking={booking} scope="renter" isOpen={changingVehicle} onClose={() => setChangingVehicle(false)} />
 
-        <div className="bg-brand-navy border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
-          {vehicle?.ownerEmail && (
-            <div className="flex justify-between gap-4 text-sm">
-              <span className="text-brand-grey shrink-0">Owner</span>
-              <span className="text-brand-white text-right inline-flex items-start gap-1.5 min-w-0 break-all">
-                <Mail size={13} className="text-brand-grey shrink-0 mt-[3px]" aria-hidden="true" />
-                {vehicle.ownerEmail}
+        <Card className="p-5">
+          <DetailList>
+            <DetailRow
+              label="Owner"
+              hidden={!vehicle?.ownerEmail}
+              valueClassName="break-all"
+            >
+              <span className="inline-flex items-start gap-1.5">
+                <Mail size={13} className="text-muted shrink-0 mt-[3px]" aria-hidden="true" />
+                {vehicle?.ownerEmail}
               </span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-brand-grey">Trip Type</span>
-            <span className="text-brand-white">{booking.tripType ? TRIP_TYPE_LABELS[booking.tripType] || booking.tripType : '—'}</span>
-          </div>
-          {booking.pickupLocation && (
-            <div className="flex justify-between gap-4 text-sm">
-              <span className="text-brand-grey shrink-0">Pickup Location</span>
-              <span className="text-brand-white text-right">{booking.pickupLocation}</span>
-            </div>
-          )}
-          {booking.dropoffLocation && (
-            <div className="flex justify-between gap-4 text-sm">
-              <span className="text-brand-grey shrink-0">Drop-off Location</span>
-              <span className="text-brand-white text-right">{booking.dropoffLocation}</span>
-            </div>
-          )}
-          <div className="flex justify-between gap-4 text-sm">
-            <span className="text-brand-grey shrink-0">Notes</span>
-            <span className="text-brand-white text-right">{stripPhoneNumbers(booking.renterNotes).text || '—'}</span>
-          </div>
-          <div className="flex justify-between text-sm pt-3 border-t border-white/10">
-            <span className="text-brand-grey">Total</span>
-            <span className="text-brand-white font-semibold">{formatCurrency(total)}</span>
-          </div>
-        </div>
+            </DetailRow>
+            <DetailRow label="Trip Type">{booking.tripType ? TRIP_TYPE_LABELS[booking.tripType] || booking.tripType : '—'}</DetailRow>
+            <DetailRow label="Pickup Location" hidden={!booking.pickupLocation}>{booking.pickupLocation}</DetailRow>
+            <DetailRow label="Drop-off Location" hidden={!booking.dropoffLocation}>{booking.dropoffLocation}</DetailRow>
+            <DetailRow label="Notes">{stripPhoneNumbers(booking.renterNotes).text || '—'}</DetailRow>
+            <DetailRow label="Total" divider valueClassName="font-semibold">{formatCurrency(total)}</DetailRow>
+          </DetailList>
+        </Card>
 
         {Number(booking.overstayAmount) > 0 && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-            <p className="text-sm text-brand-white">
+            <p className="text-sm text-ink">
               Returned late{booking.overstayDays ? ` by ${booking.overstayDays} day${booking.overstayDays === 1 ? '' : 's'}` : ''}: an
               overstay charge of <span className="font-semibold">{formatCurrency(booking.overstayAmount)}</span> is due.
             </p>
@@ -182,7 +179,7 @@ export default function BookingDetailPage() {
               Record Pickup
             </Button>
             {!pickupDateReached && (
-              <p className="text-brand-grey text-xs">
+              <p className="text-muted text-xs">
                 You can record this once your trip starts, on {formatDate(booking.startTime)}.
               </p>
             )}
@@ -199,8 +196,8 @@ export default function BookingDetailPage() {
         <HandoverHistory bookingId={booking.id} />
 
         {canReview && (
-          <section aria-labelledby="review-heading" className="bg-brand-navy border border-white/10 rounded-2xl p-5 flex flex-col gap-4">
-            <h2 id="review-heading" className="font-heading text-brand-white text-base font-semibold">
+          <section aria-labelledby="review-heading" className="bg-surface border border-black/10 rounded-2xl p-5 flex flex-col gap-4">
+            <h2 id="review-heading" className="font-heading text-ink text-base font-semibold">
               How was your trip?
             </h2>
             <ReviewForm bookingId={booking.id} />
@@ -209,7 +206,7 @@ export default function BookingDetailPage() {
 
         {contractId && (
           <div className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-brand-white">Contract</h2>
+            <h2 className="text-sm font-semibold text-ink">Contract</h2>
             <div className="flex gap-4">
               <ContractPdfActions contractId={contractId} signed={false} label="Unsigned PDF" />
               <ContractPdfActions contractId={contractId} signed label="Signed PDF" />
@@ -219,7 +216,7 @@ export default function BookingDetailPage() {
 
         {everPaid && (
           <div className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-brand-white">Receipt</h2>
+            <h2 className="text-sm font-semibold text-ink">Receipt</h2>
             <ReceiptActions booking={booking} vehicle={vehicle} />
           </div>
         )}

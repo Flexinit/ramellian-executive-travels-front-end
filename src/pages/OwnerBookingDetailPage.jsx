@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { UserCog2, MessageSquare } from 'lucide-react';
+import { useParams, useLocation } from 'react-router-dom';
+import { UserCog2, MessageSquare, Repeat } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import BookingStatusBadge from '../components/booking/BookingStatusBadge';
@@ -20,12 +20,17 @@ import { useVehicle } from '../hooks/useVehicles';
 import { formatDateRange, formatCurrency, calculateTotalPrice } from '../lib/utils';
 import { stripPhoneNumbers } from '../lib/contactGuard';
 import { sessionContractId } from '../lib/contracts';
+import { DetailList, DetailRow } from '../components/ui/DetailList';
+import ChangeVehicleModal, { canChangeVehicle } from '../components/booking/ChangeVehicleModal';
 
 export default function OwnerBookingDetailPage() {
   const { bookingId } = useParams();
   const { data: booking, isLoading, isError, error, refetch } = useBooking(bookingId);
   const { data: vehicle } = useVehicle(booking?.vehicleId);
   const [assigning, setAssigning] = useState(false);
+  const [changingVehicle, setChangingVehicle] = useState(false);
+  // Shared by the owner (Fleet Bookings) and the Admin Panel (All Bookings): an administrator may switch to any car.
+  const vehicleScope = useLocation().pathname.startsWith('/admin') ? 'admin' : 'owner';
   // Rating the renter, once the trip is over (POST /reviews/bookings/{id}/renter). Hidden once sent.
   const [renterReviewed, setRenterReviewed] = useState(false);
   // `BookingResponse` has no `contractId` field (docs/backend-requests.md item 13) — this is only ever found
@@ -62,51 +67,37 @@ export default function OwnerBookingDetailPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
           <div className="min-w-0">
-            <h1 className="font-heading text-brand-white text-2xl font-bold">{vehicle?.model || 'Booking'}</h1>
-            <p className="text-brand-grey text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
+            <h1 className="font-heading text-ink text-2xl font-bold">{vehicle?.model || 'Booking'}</h1>
+            <p className="text-muted text-sm mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
           </div>
           <BookingStatusBadge status={booking.status} className="shrink-0" />
         </div>
 
-        <Button to={`/messages/booking/${booking.id}`} className="self-start">
-          <MessageSquare size={15} aria-hidden="true" />
-          Message the renter
-        </Button>
-
-        <div className="bg-brand-navy border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-brand-grey">Booking Mode</span>
-            <span className="text-brand-white">{booking.bookingMode || '—'}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-brand-grey">Trip Type</span>
-            <span className="text-brand-white">{booking.tripType || '—'}</span>
-          </div>
-          {booking.pickupLocation && (
-            <div className="flex justify-between gap-4 text-sm">
-              <span className="text-brand-grey shrink-0">Pickup Location</span>
-              <span className="text-brand-white text-right">{booking.pickupLocation}</span>
-            </div>
+        <div className="flex flex-wrap gap-2">
+          <Button to={`/messages/booking/${booking.id}`}>
+            <MessageSquare size={15} aria-hidden="true" />
+            Message the renter
+          </Button>
+          {canChangeVehicle(booking) && (
+            <Button variant="outline" onClick={() => setChangingVehicle(true)}>
+              <Repeat size={15} aria-hidden="true" />
+              Change vehicle
+            </Button>
           )}
-          {booking.dropoffLocation && (
-            <div className="flex justify-between gap-4 text-sm">
-              <span className="text-brand-grey shrink-0">Drop-off Location</span>
-              <span className="text-brand-white text-right">{booking.dropoffLocation}</span>
-            </div>
-          )}
-          <div className="flex justify-between gap-4 text-sm">
-            <span className="text-brand-grey shrink-0">Renter Notes</span>
-            <span className="text-brand-white text-right">{stripPhoneNumbers(booking.renterNotes).text || '—'}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-brand-grey">Chauffeur</span>
-            <span className="text-brand-white">{booking.chauffeurName || 'Not assigned'}</span>
-          </div>
-          <div className="flex justify-between text-sm pt-3 border-t border-white/10">
-            <span className="text-brand-grey">Total</span>
-            <span className="text-brand-white font-semibold">{formatCurrency(total)}</span>
-          </div>
         </div>
+        <ChangeVehicleModal booking={booking} scope={vehicleScope} isOpen={changingVehicle} onClose={() => setChangingVehicle(false)} />
+
+        <Card className="p-5">
+          <DetailList>
+            <DetailRow label="Booking Mode">{booking.bookingMode || '—'}</DetailRow>
+            <DetailRow label="Trip Type">{booking.tripType || '—'}</DetailRow>
+            <DetailRow label="Pickup Location" hidden={!booking.pickupLocation}>{booking.pickupLocation}</DetailRow>
+            <DetailRow label="Drop-off Location" hidden={!booking.dropoffLocation}>{booking.dropoffLocation}</DetailRow>
+            <DetailRow label="Renter Notes">{stripPhoneNumbers(booking.renterNotes).text || '—'}</DetailRow>
+            <DetailRow label="Chauffeur">{booking.chauffeurName || 'Not assigned'}</DetailRow>
+            <DetailRow label="Total" divider valueClassName="font-semibold">{formatCurrency(total)}</DetailRow>
+          </DetailList>
+        </Card>
 
         {booking.bookingMode === 'CHAUFFEURED' && (
           <Button className="self-start" onClick={() => setAssigning(true)}>
@@ -123,8 +114,8 @@ export default function OwnerBookingDetailPage() {
         {booking.status === 'COMPLETED' && !renterReviewed && (
           <Card className="p-5 flex flex-col gap-3">
             <div>
-              <h2 className="font-heading text-brand-white text-base font-semibold">Rate the renter</h2>
-              <p className="text-brand-grey text-sm mt-1">
+              <h2 className="font-heading text-ink text-base font-semibold">Rate the renter</h2>
+              <p className="text-muted text-sm mt-1">
                 How was {booking.renterName || 'this renter'}? It helps other owners decide on future bookings.
               </p>
             </div>
@@ -136,7 +127,7 @@ export default function OwnerBookingDetailPage() {
 
         {contractId && (
           <div className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-brand-white">Contract</h2>
+            <h2 className="text-sm font-semibold text-ink">Contract</h2>
             <div className="flex gap-4">
               <ContractPdfActions contractId={contractId} signed={false} label="Unsigned PDF" />
               <ContractPdfActions contractId={contractId} signed label="Signed PDF" />

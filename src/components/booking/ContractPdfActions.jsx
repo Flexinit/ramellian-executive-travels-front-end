@@ -27,7 +27,7 @@ export default function ContractPdfActions({ contractId, signed, label }) {
             e.stopPropagation();
             setPreviewing(true);
           }}
-          className="inline-flex items-center gap-1.5 text-brand-gold text-sm font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+          className="inline-flex items-center gap-1.5 text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
         >
           <Eye size={14} aria-hidden="true" />
           {label}
@@ -39,7 +39,7 @@ export default function ContractPdfActions({ contractId, signed, label }) {
             downloadContract(contractId, signed);
           }}
           aria-label={`Download ${label}`}
-          className="p-1.5 text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+          className="p-1.5 text-muted hover:text-ink transition-colors focus-ring rounded-md"
         >
           <Download size={14} aria-hidden="true" />
         </button>

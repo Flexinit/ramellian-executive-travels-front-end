@@ -16,8 +16,8 @@ const STATUS_RING = {
   warning: 'ring-yellow-400',
   danger: 'ring-red-400',
   info: 'ring-blue-400',
-  gold: 'ring-brand-gold',
-  neutral: 'ring-brand-grey',
+  gold: 'ring-accent',
+  neutral: 'ring-muted',
 };
 
 /** One day's car icon — tinted to the vehicle's own color (see `lib/vehicleColor.js`), ringed in its
@@ -70,16 +70,16 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
           type="button"
           onClick={() => setViewMonth((m) => subMonths(m, 1))}
           aria-label="Previous month"
-          className="p-1.5 rounded-full text-brand-grey hover:text-brand-gold hover:bg-white/5 transition-colors focus-ring"
+          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
         >
           <ChevronLeft size={16} aria-hidden="true" />
         </button>
-        <span className="font-heading text-brand-white text-sm font-semibold">{format(viewMonth, 'MMMM yyyy')}</span>
+        <span className="font-heading text-ink text-sm font-semibold">{format(viewMonth, 'MMMM yyyy')}</span>
         <button
           type="button"
           onClick={() => setViewMonth((m) => addMonths(m, 1))}
           aria-label="Next month"
-          className="p-1.5 rounded-full text-brand-grey hover:text-brand-gold hover:bg-white/5 transition-colors focus-ring"
+          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
         >
           <ChevronRight size={16} aria-hidden="true" />
         </button>
@@ -87,7 +87,7 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
 
       <div className="grid grid-cols-7">
         {WEEKDAY_LABELS.map((d, i) => (
-          <span key={i} className="text-center text-[10px] font-semibold text-brand-grey/70 uppercase py-1">
+          <span key={i} className="text-center text-[10px] font-semibold text-muted/70 uppercase py-1">
             {d}
           </span>
         ))}
@@ -110,10 +110,10 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
               aria-pressed={isSelected}
               className={[
                 'relative h-11 flex flex-col items-center justify-center gap-1 rounded-lg transition-colors focus-ring',
-                !inMonth ? 'text-white/20' : 'text-brand-white',
-                dayPeriods.length > 0 ? 'cursor-pointer hover:bg-white/10' : 'cursor-default',
-                isSelected ? 'bg-brand-gold/15 ring-1 ring-brand-gold/50' : '',
-                isToday && !isSelected ? 'bg-white/5' : '',
+                !inMonth ? 'text-black/25' : 'text-ink',
+                dayPeriods.length > 0 ? 'cursor-pointer hover:bg-black/10' : 'cursor-default',
+                isSelected ? 'bg-accent/15 ring-1 ring-accent/50' : '',
+                isToday && !isSelected ? 'bg-black/5' : '',
               ].join(' ')}
             >
               <span className="text-[11px]">{format(day, 'd')}</span>
@@ -132,7 +132,7 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
       {statusesPresent.length > 0 && (
         <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label="Legend">
           {statusesPresent.map((status) => (
-            <li key={status} className="inline-flex items-center gap-1.5 text-[11px] text-brand-grey">
+            <li key={status} className="inline-flex items-center gap-1.5 text-[11px] text-muted">
               <BookingMarker status={status} size={12} />
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </li>
@@ -141,14 +141,14 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
       )}
 
       {selectedDay && (
-        <div className="flex flex-col gap-2 pt-3 border-t border-white/10">
-          <span className="text-xs font-semibold text-brand-white">{format(selectedDay, 'd MMMM yyyy')}</span>
+        <div className="flex flex-col gap-2 pt-3 border-t border-black/10">
+          <span className="text-xs font-semibold text-ink">{format(selectedDay, 'd MMMM yyyy')}</span>
           <ul className="flex flex-col gap-2.5">
             {selectedPeriods.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-3 text-sm">
                 <span className="min-w-0">
-                  {p.vehicleModel && <span className="text-brand-white truncate block">{p.vehicleModel}</span>}
-                  <span className="text-brand-grey text-xs block">{formatDateRange(p.start, p.end)}</span>
+                  {p.vehicleModel && <span className="text-ink truncate block">{p.vehicleModel}</span>}
+                  <span className="text-muted text-xs block">{formatDateRange(p.start, p.end)}</span>
                 </span>
                 <BookingStatusBadge status={p.status} className="shrink-0" />
               </li>

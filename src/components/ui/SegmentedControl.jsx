@@ -2,11 +2,12 @@ import React from 'react';
 
 /**
  * A pill-shaped "pick one of a few" switch (booking mode, fleet tier…). One is
- * always selected; the selected one gets the gold-outline look of the Button. Use this instead of hand-styling a
+ * always selected; the selected one is the solid charcoal pill (the design
+ * system's "Filter Cars Type" switch). Use this instead of hand-styling a
  * row of buttons. On a narrow screen a row too long to fit scrolls sideways inside its own pill instead of
  * widening the page.
  *
- * @param {{ value: any, label: string }[]} options
+ * @param {{ value: any, label: string, icon?: React.ComponentType }[]} options — `icon` (optional) shows before the label
  * @param {any} value — the selected option's value
  * @param {(value: any) => void} onChange
  * @param {string} label — accessible name of the group
@@ -25,7 +26,7 @@ export default function SegmentedControl({ options, value, onChange, label, kind
     <div
       role={isRadio ? 'radiogroup' : 'tablist'}
       aria-label={label}
-      className={`inline-flex rounded-full bg-white/5 border border-white/10 p-1 w-fit max-w-full overflow-x-auto no-scrollbar ${className}`}
+      className={`inline-flex rounded-full bg-surface border border-line p-1 w-fit max-w-full overflow-x-auto no-scrollbar ${className}`}
     >
       {options.map((opt) => {
         const selected = value === opt.value;
@@ -36,10 +37,11 @@ export default function SegmentedControl({ options, value, onChange, label, kind
             role={isRadio ? 'radio' : 'tab'}
             {...(isRadio ? { 'aria-checked': selected } : { 'aria-selected': selected })}
             onClick={() => onChange(opt.value)}
-            className={`shrink-0 font-semibold rounded-full border transition-colors focus-ring ${sizes[size]} ${
-              selected ? 'bg-brand-gold/15 text-brand-gold border-brand-gold' : 'border-transparent text-brand-grey hover:text-brand-white'
+            className={`inline-flex items-center justify-center gap-1.5 shrink-0 font-semibold rounded-full border transition-colors focus-ring ${sizes[size]} ${
+              selected ? 'bg-accent text-on-accent border-accent' : 'border-transparent text-ink hover:bg-subtle'
             }`}
           >
+            {opt.icon && <opt.icon size={size === 'sm' ? 14 : 16} aria-hidden="true" />}
             {opt.label}
           </button>
         );

@@ -1,31 +1,30 @@
 import React from 'react';
-import { MapPin, Star, Fuel, Gauge, Users, UserRound, Car, Snowflake, ShieldCheck, CalendarClock, Palette } from 'lucide-react';
+import { MapPin, Star, Fuel, Gauge, Users, Snowflake, ShieldCheck, CalendarClock, Palette } from 'lucide-react';
 import { ratingOrDefault } from '../../lib/ratings';
 import Badge from '../ui/Badge';
 import PriceDisplay from '../ui/PriceDisplay';
+import FeatureTile, { FeatureGrid } from '../ui/FeatureTile';
+import { DetailList, DetailRow } from '../ui/DetailList';
+import { SelfDriveIcon, ChauffeurIcon } from '../ui/TripModeIcons';
 import AuthImage from './AuthImage';
 import { VEHICLE_TIERS } from '../../lib/constants';
 import { formatDateTime } from '../../lib/utils';
 import { tripTypeLabel } from '../../lib/vehicleOptions';
-
-const SPEC_ICONS = { fuelType: Fuel, transmissionType: Gauge, capacity: Users, color: Palette };
-
-const CHIP = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-brand-white text-xs font-medium';
 
 function titleCase(value) {
   return value.charAt(0) + value.slice(1).toLowerCase();
 }
 
 /**
- * Everything the backend's `VehicleResponse` says about a vehicle: model, location,
- * rating, fuel, transmission, seats, colour, self-drive / chauffeured, air
- * conditioning, insurance, the trip types it suits, when it can be booked, and the
- * daily price. The registration number, VIN and insurance sticker photo are only
- * shown to the vehicle's owner.
+ * Everything the backend's `VehicleResponse` says about a vehicle, laid out like the design system's Car Details
+ * screen: the name with its rating on the right and the location and description under it; then "Car features" —
+ * a grid of tiles (seats, fuel, gearbox, colour, how it can be driven, air conditioning, insurance — fuel and gearbox
+ * left out for a chauffeured-only car); what it's
+ * suited for; when it can be booked; and the daily price. The registration number, VIN and insurance sticker photo
+ * are only shown to the vehicle's owner.
  *
- * @param {object} vehicle — same shape as VehicleCard's, plus `description`,
- *   `color`, `tripTypes`, `selfDrive`, `chauffeured`, `hasWorkingAC`,
- *   `comprehensiveInsurance`, `available`, `availableFrom` / `availableTo`,
+ * @param {object} vehicle — same shape as VehicleCard's, plus `description`, `color`, `tripTypes`, `selfDrive`,
+ *   `chauffeured`, `hasWorkingAC`, `comprehensiveInsurance`, `available`, `availableFrom` / `availableTo`,
  *   and (owner only) `registrationNumber`, `vin`, `insuranceVerificationStickerPhoto`.
  * @param {boolean} [isOwner] — the signed-in person owns this vehicle
  */
@@ -55,80 +54,67 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
     description,
   } = vehicle;
 
-  const specs = [
-    fuelType && { key: 'fuelType', label: titleCase(fuelType) },
-    transmissionType && { key: 'transmissionType', label: titleCase(transmissionType) },
-    capacity && { key: 'capacity', label: `${capacity} seats` },
-    color && { key: 'color', label: color },
+  const driving = selfDrive && chauffeured ? 'Self-Drive or Chauffeured' : selfDrive ? 'Self-Drive' : chauffeured ? 'Chauffeured' : null;
+  // A chauffeured-only car: the renter won't drive it, so fuel and gearbox aren't worth a tile.
+  const chauffeuredOnly = chauffeured && !selfDrive;
+  // The ones a renter decides on come first (the grid shows four, then "Show all").
+  const features = [
+    capacity && { icon: Users, label: 'Capacity', value: `${capacity} seats` },
+    driving && { icon: chauffeured && !selfDrive ? ChauffeurIcon : SelfDriveIcon, label: 'Driving', value: driving },
+    transmissionType && !chauffeuredOnly && { icon: Gauge, label: 'Gearbox', value: titleCase(transmissionType) },
+    fuelType && !chauffeuredOnly && { icon: Fuel, label: 'Fuel', value: titleCase(fuelType) },
+    color && { icon: Palette, label: 'Colour', value: color },
+    hasWorkingAC && { icon: Snowflake, label: 'Comfort', value: 'Air Conditioning' },
+    comprehensiveInsurance && { icon: ShieldCheck, label: 'Cover', value: 'Comprehensive Insurance' },
   ].filter(Boolean);
 
   const hasWindow = !!(availableFrom || availableTo);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-4">
-          <h1 className="min-w-0 break-words font-heading text-brand-white text-2xl sm:text-3xl font-bold">{model}</h1>
-          {tier === VEHICLE_TIERS.EXECUTIVE && <Badge label="Executive" variant="gold" className="shrink-0 mt-1.5" />}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-sm text-brand-grey">
-          <span className="inline-flex items-center gap-1 text-brand-gold">
-            <Star size={13} fill="currentColor" aria-hidden="true" />
-            <span className="font-semibold">{ratingOrDefault(rating).toFixed(1)}</span>
-            {typeof tripCount === 'number' && <span className="text-brand-grey">({tripCount} trips)</span>}
-          </span>
-          {location && (
-            <span className="inline-flex items-center gap-1">
-              <MapPin size={13} aria-hidden="true" />
-              {location}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="min-w-0 break-words font-heading text-ink text-xl sm:text-2xl font-semibold">{model}</h1>
+              {tier === VEHICLE_TIERS.EXECUTIVE && <Badge label="Executive" variant="gold" />}
+            </div>
+            {location && (
+              <span className="mt-1 inline-flex items-center gap-1 text-sm text-muted">
+                <MapPin size={13} className="text-icon" aria-hidden="true" />
+                {location}
+              </span>
+            )}
+          </div>
+          {/* The design's rating, top right: the score with its star, and how many trips it rests on. */}
+          <div className="shrink-0 flex flex-col items-end">
+            <span className="inline-flex items-center gap-1 text-sm font-semibold text-ink">
+              {ratingOrDefault(rating).toFixed(1)}
+              <Star size={14} className="text-star" fill="currentColor" aria-hidden="true" />
             </span>
-          )}
+            {typeof tripCount === 'number' && <span className="text-[11px] text-muted">({tripCount} trips)</span>}
+          </div>
         </div>
+        {description && <p className="text-muted text-sm leading-relaxed">{description}</p>}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {specs.map((spec) => {
-          const Icon = SPEC_ICONS[spec.key];
-          return (
-            <span key={spec.key} className={CHIP}>
-              <Icon size={13} className="text-brand-gold" aria-hidden="true" />
-              {spec.label}
-            </span>
-          );
-        })}
-        {selfDrive && (
-          <span className={CHIP}>
-            <Car size={13} className="text-brand-gold" aria-hidden="true" />
-            Self-Drive Available
-          </span>
-        )}
-        {chauffeured && (
-          <span className={CHIP}>
-            <UserRound size={13} className="text-brand-gold" aria-hidden="true" />
-            Chauffeured Available
-          </span>
-        )}
-        {hasWorkingAC && (
-          <span className={CHIP}>
-            <Snowflake size={13} className="text-brand-gold" aria-hidden="true" />
-            Air Conditioning
-          </span>
-        )}
-        {comprehensiveInsurance && (
-          <span className={CHIP}>
-            <ShieldCheck size={13} className="text-brand-gold" aria-hidden="true" />
-            Comprehensive Insurance
-          </span>
-        )}
-      </div>
+      {features.length > 0 && (
+        <section aria-labelledby="car-features-heading" className="flex flex-col gap-3">
+          <h2 id="car-features-heading" className="font-heading text-ink text-base font-semibold">Car features</h2>
+          <FeatureGrid label="Car features" initialCount={4}>
+            {features.map((f) => (
+              <FeatureTile key={f.label} icon={f.icon} label={f.label} value={f.value} />
+            ))}
+          </FeatureGrid>
+        </section>
+      )}
 
       {Array.isArray(tripTypes) && tripTypes.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <p className="text-xs font-medium text-brand-white">Suited for</p>
-          <ul className="flex flex-wrap gap-1.5" aria-label="Suited for">
+        <div className="flex flex-col gap-2">
+          <p className="font-heading text-ink text-base font-semibold">Suited for</p>
+          <ul className="flex flex-wrap gap-2" aria-label="Suited for">
             {tripTypes.map((t) => (
-              <li key={t} className="px-2.5 py-1 rounded-full bg-brand-gold/10 text-brand-gold text-xs font-medium">
+              <li key={t} className="px-3 py-1.5 rounded-full border border-line bg-surface text-ink text-xs font-medium">
                 {tripTypeLabel(t)}
               </li>
             ))}
@@ -137,8 +123,8 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
       )}
 
       {typeof available === 'boolean' && (
-        <p className="inline-flex items-start gap-1.5 text-brand-grey text-xs">
-          <CalendarClock size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
+        <p className="inline-flex items-start gap-1.5 text-muted text-sm">
+          <CalendarClock size={15} className="mt-0.5 shrink-0 text-icon" aria-hidden="true" />
           <span>
             {!available
               ? 'Not available for booking right now.'
@@ -149,24 +135,16 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
         </p>
       )}
 
-      {description && <p className="text-brand-grey text-sm leading-relaxed">{description}</p>}
-
       {isOwner && (registrationNumber || vin || insuranceVerificationStickerPhoto) && (
-        <div className="rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-2 text-xs text-brand-grey">
-          <p className="text-brand-white font-medium text-sm">Your vehicle's details (only you can see these)</p>
-          {registrationNumber && (
-            <p>
-              Registration number: <span className="text-brand-white">{registrationNumber}</span>
-            </p>
-          )}
-          {vin && (
-            <p>
-              VIN: <span className="text-brand-white">{vin}</span>
-            </p>
-          )}
+        <div className="rounded-tile bg-subtle p-4 flex flex-col gap-3">
+          <p className="text-ink font-semibold text-sm">Your vehicle&apos;s details (only you can see these)</p>
+          <DetailList>
+            <DetailRow label="Registration number" hidden={!registrationNumber}>{registrationNumber}</DetailRow>
+            <DetailRow label="VIN" hidden={!vin} valueClassName="font-mono">{vin}</DetailRow>
+          </DetailList>
           {insuranceVerificationStickerPhoto && (
-            <div className="flex items-center gap-2">
-              <div className="w-20 h-14 rounded-md overflow-hidden bg-white/5 shrink-0">
+            <div className="flex items-center gap-2 text-xs text-muted">
+              <div className="w-20 h-14 rounded-md overflow-hidden bg-surface shrink-0">
                 <AuthImage
                   src={insuranceVerificationStickerPhoto}
                   alt="Insurance sticker"
@@ -174,7 +152,7 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
                   loading="lazy"
                   fallback={
                     <div className="w-full h-full flex items-center justify-center">
-                      <ShieldCheck size={18} className="text-brand-gold/60" aria-hidden="true" />
+                      <ShieldCheck size={18} className="text-icon" aria-hidden="true" />
                     </div>
                   }
                 />
@@ -185,7 +163,7 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
         </div>
       )}
 
-      <div className="pt-4 border-t border-white/10">
+      <div className="pt-4 border-t border-black/10">
         <PriceDisplay amount={dailyPrice} size="lg" />
       </div>
     </div>

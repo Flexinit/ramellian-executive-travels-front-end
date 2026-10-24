@@ -14,13 +14,13 @@ function PhotoTile({ vehicle, photo, index, onRemove }) {
   const busy = replace.isPending;
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5">
-      <div className="aspect-[4/3] bg-black/20">
+    <li className="flex flex-col overflow-hidden rounded-xl border border-black/10 bg-black/5">
+      <div className="aspect-[4/3] bg-subtle">
         <AuthImage
           src={photo.url}
           alt={`${vehicle.model} — ${label}`}
           className="h-full w-full object-cover"
-          fallback={<span className="flex h-full w-full items-center justify-center text-brand-grey"><ImageOff size={24} aria-hidden="true" /></span>}
+          fallback={<span className="flex h-full w-full items-center justify-center text-muted"><ImageOff size={24} aria-hidden="true" /></span>}
         />
       </div>
       <div className="flex flex-wrap gap-2 p-2">
@@ -65,7 +65,7 @@ export default function PhotoManager({ vehicle }) {
 
   if (photos.length === 0) {
     return (
-      <p className="flex items-start gap-2 text-sm text-brand-grey">
+      <p className="flex items-start gap-2 text-sm text-muted">
         <ImageOff size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
         <span>
           No photos to show or change here — the backend doesn&apos;t list a vehicle&apos;s photos, so only photos uploaded from this browser appear.
@@ -85,7 +85,7 @@ export default function PhotoManager({ vehicle }) {
 
       <Modal isOpen={!!removing} onClose={() => setRemoving(null)} title="Remove photo">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">This deletes the photo from {vehicle.model}. It can&apos;t be undone.</p>
+          <p className="text-muted text-sm">This deletes the photo from {vehicle.model}. It can&apos;t be undone.</p>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setRemoving(null)}>Cancel</Button>
             <Button

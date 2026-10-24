@@ -1,4 +1,5 @@
 import React from 'react';
+import { SelfDriveIcon, ChauffeurIcon } from '../ui/TripModeIcons';
 import Select from '../ui/Select';
 import Input from '../ui/Input';
 import { BOOKING_STATUSES, BOOKING_PERIODS, BOOKING_PERIOD_LABELS, TRIP_TYPE_LABELS, BOOKING_MODES } from '../../lib/constants';
@@ -7,8 +8,8 @@ const STATUS_OPTIONS = Object.values(BOOKING_STATUSES).map((s) => ({ value: s, l
 const PERIOD_OPTIONS = Object.values(BOOKING_PERIODS).map((value) => ({ value, label: BOOKING_PERIOD_LABELS[value] }));
 const TRIP_TYPE_OPTIONS = Object.entries(TRIP_TYPE_LABELS).map(([value, label]) => ({ value, label }));
 const MODE_OPTIONS = [
-  { value: BOOKING_MODES.SELF_DRIVE, label: 'Self-Drive' },
-  { value: BOOKING_MODES.CHAUFFEURED, label: 'Chauffeured' },
+  { value: BOOKING_MODES.SELF_DRIVE, label: 'Self-Drive', icon: SelfDriveIcon },
+  { value: BOOKING_MODES.CHAUFFEURED, label: 'Chauffeured', icon: ChauffeurIcon },
 ];
 
 /**

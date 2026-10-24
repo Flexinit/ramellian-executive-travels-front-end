@@ -1,20 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { MapPin, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import Button from '../components/ui/Button';
 import SearchBar from '../components/forms/SearchBar';
 import FilterPanel from '../components/forms/FilterPanel';
 import SortDropdown from '../components/forms/SortDropdown';
 import VehicleGrid from '../components/vehicles/VehicleGrid';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import { useVehicleAvailability } from '../hooks/useVehicles';
 import { useBookingStore } from '../store/bookingStore';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { BOOKING_MODES } from '../lib/constants';
-import { groupByLocation } from '../lib/vehicleLocations';
-import { DESTINATION_PHOTOS } from '../lib/destinationPhotos';
 
 // Kept across a fresh arrival at the page — everything else (location, dates, mode, tier, fuel,
 // transmission, seats, free text) is a filter and is cleared. `sort` survives alongside the price
@@ -80,26 +77,24 @@ export default function VehiclesPage() {
   }, [query, setSearch]);
 
   const { vehicles, isLoading, isError, error, refetch } = useVehicleAvailability(filters);
-  // When the results span more than one place, they're shown place by place — but only until the renter picks
-  // a sort. The groups are ordered busiest place first, which overrode any sort (the 8-seat car under "Most
-  // Seats" landed in the second group), so a chosen sort gets one list in exactly that order.
-  const groups = groupByLocation(vehicles);
-  const byLocation = !isLoading && !isError && groups.length > 1 && !searchParams.get('sort');
+  // One continuous grid, never split into a section per place (product owner, 2026-10-25): with a few cars per
+  // place, sections left half-empty rows. The place is on each card and in the "Available in" filter; the order is
+  // the chosen sort, or Recommended (free for the dates first — lib/vehicleRanking.js).
 
   function handleClearFilters() {
     setSearchParams(new URLSearchParams(), { replace: true });
   }
 
   return (
-    <PageBackdrop images={DESTINATION_PHOTOS}>
+    <>
       <PageWrapper className="!pt-6 lg:!pt-8">
       <PageTitle title="Browse Vehicles" />
       <div className="flex flex-col gap-5">
         {/* Sort by sits on the title's line rather than alone above the results, where it left a gap. */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Browse Vehicles</h1>
-            <p className="text-brand-grey text-sm mt-1">
+            <h1 className="font-heading text-ink text-xl sm:text-2xl font-semibold">Browse Vehicles</h1>
+            <p className="text-muted text-xs sm:text-sm mt-1">
               {isLoading ? 'Searching…' : `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} found`}
             </p>
           </div>
@@ -107,29 +102,38 @@ export default function VehiclesPage() {
         </div>
 
         {/* The search and filters stay in view while the cars scroll. The search box is its own full-width
-            bar pinned under the top bar (h-20), with no band behind it — the box itself is frosted glass. On a narrower screen the bar also holds the Filters button, and
+            bar pinned under the top bar (h-20), on the page's own background so the cards don't show through it as they scroll
+            under. On a narrower screen the bar also holds the design's round filter button (with the number of filters in use), and
             the panel opens inside the bar (scrolling on its own); on a wide screen the panel is a column beside
             the results, pinned just below the bar. One FilterPanel, placed by `wide`, so its state is never
             duplicated. */}
         <div
           role="search"
           aria-label="Search vehicles"
-          className="sticky top-20 z-20 py-3 flex flex-col gap-3"
+          className="sticky top-20 z-20 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-3 bg-canvas flex flex-col gap-3"
         >
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <SearchBar />
             </div>
             {!wide && (
-              <Button
-                className="shrink-0"
-                aria-expanded={filtersOpen}
-                aria-controls="vehicle-filters"
-                onClick={() => setFiltersOpen((open) => !open)}
-              >
-                <SlidersHorizontal size={16} aria-hidden="true" />
-                Filters{activeFilters > 0 ? ` (${activeFilters})` : ''}
-              </Button>
+              <span className="relative shrink-0">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={`Filters${activeFilters > 0 ? ` (${activeFilters} in use)` : ''}`}
+                  aria-expanded={filtersOpen}
+                  aria-controls="vehicle-filters"
+                  onClick={() => setFiltersOpen((open) => !open)}
+                >
+                  <SlidersHorizontal size={18} aria-hidden="true" />
+                </Button>
+                {activeFilters > 0 && (
+                  <span aria-hidden="true" className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-on-accent text-[10px] font-bold flex items-center justify-center">
+                    {activeFilters}
+                  </span>
+                )}
+              </span>
             )}
           </div>
           {!wide && (
@@ -146,40 +150,25 @@ export default function VehiclesPage() {
           {wide && (
             <aside
               aria-label="Filters"
-              className="w-72 shrink-0 self-start sticky top-[10.5rem] max-h-[calc(100vh-17rem)] overflow-y-auto"
+              className="w-72 shrink-0 self-start sticky top-[10.5rem] max-h-[calc(100vh-17rem)] overflow-y-auto rounded-card border border-line bg-surface p-4"
             >
               <FilterPanel bare />
             </aside>
           )}
 
-          <div className="w-full lg:w-auto flex-1 min-w-0 flex flex-col gap-4">
-            {byLocation ? (
-              groups.map((group, index) => (
-                <section key={group.name} aria-labelledby={`location-heading-${index}`} className="flex flex-col gap-3">
-                  <h2 id={`location-heading-${index}`} className="font-heading text-brand-white text-lg font-semibold inline-flex items-center gap-2">
-                    <MapPin size={16} className="text-brand-gold" aria-hidden="true" />
-                    {group.name}
-                    <span className="text-brand-grey text-sm font-normal">
-                      · {group.vehicles.length} vehicle{group.vehicles.length === 1 ? '' : 's'}
-                    </span>
-                  </h2>
-                  <VehicleGrid vehicles={group.vehicles} />
-                </section>
-              ))
-            ) : (
-              <VehicleGrid
-                vehicles={vehicles}
-                isLoading={isLoading}
-                isError={isError}
-                error={error}
-                onRetry={refetch}
-                onClearFilters={handleClearFilters}
-              />
-            )}
+          <div className="w-full lg:w-auto flex-1 min-w-0 flex flex-col gap-6">
+            <VehicleGrid
+              vehicles={vehicles}
+              isLoading={isLoading}
+              isError={isError}
+              error={error}
+              onRetry={refetch}
+              onClearFilters={handleClearFilters}
+            />
           </div>
         </div>
       </div>
       </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

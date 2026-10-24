@@ -75,12 +75,12 @@ function TwoFactor() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-3">
         <span className="flex flex-col">
-          <span id={labelId} className="text-sm font-medium text-brand-white">
+          <span id={labelId} className="text-sm font-medium text-ink">
             Two-factor sign-in
           </span>
-          <span className="text-xs text-brand-grey">{enabled ? `On — a code is sent by ${method.toLowerCase()} each time you log in` : 'Off — add a code to your login for extra safety'}</span>
+          <span className="text-xs text-muted">{enabled ? `On — a code is sent by ${method.toLowerCase()} each time you log in` : 'Off — add a code to your login for extra safety'}</span>
         </span>
         <button
           type="button"
@@ -90,7 +90,7 @@ function TwoFactor() {
           disabled={!me || setTwoFactor.isPending}
           onClick={() => setTwoFactor.mutate({ enabled: !enabled, method })}
           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
-            enabled ? 'bg-brand-gold border-brand-gold' : 'bg-white/10 border-white/20'
+            enabled ? 'bg-accent border-accent' : 'bg-black/10 border-black/20'
           }`}
         >
           <span aria-hidden="true" className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -121,17 +121,17 @@ function RecentActivity() {
 
   return (
     <Card className="p-5 flex flex-col gap-4">
-      <h3 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-        <ScrollText size={17} className="text-brand-gold" aria-hidden="true" />
+      <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+        <ScrollText size={17} className="text-accent" aria-hidden="true" />
         Recent activity
       </h3>
-      <ul className="flex flex-col divide-y divide-white/5" aria-label="Recent account activity">
+      <ul className="flex flex-col divide-y divide-black/5" aria-label="Recent account activity">
         {entries.map((entry) => (
           <li key={entry.id}>
-            <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-white/5 px-2 focus-ring">
+            <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-black/5 px-2 focus-ring">
               <span className="flex flex-col min-w-0">
-                <span className="text-sm text-brand-white">{actionLabel(entry.action)}</span>
-                <span className="text-xs text-brand-grey">{formatDateTime(entry.createdAt)}</span>
+                <span className="text-sm text-ink">{actionLabel(entry.action)}</span>
+                <span className="text-xs text-muted">{formatDateTime(entry.createdAt)}</span>
               </span>
               <Badge label={entry.status || '—'} variant={auditStatusVariant(entry.status)} />
             </button>
@@ -151,22 +151,22 @@ export default function SecuritySection() {
   return (
     <section aria-labelledby="security-heading" className="flex flex-col gap-4">
       <div>
-        <h2 id="security-heading" className="flex items-center gap-2 font-heading text-brand-white text-xl font-bold">
-          <ShieldCheck size={20} className="text-brand-gold" aria-hidden="true" />
+        <h2 id="security-heading" className="flex items-center gap-2 font-heading text-ink text-xl font-bold">
+          <ShieldCheck size={20} className="text-accent" aria-hidden="true" />
           Security
         </h2>
-        <p className="text-brand-grey text-sm mt-1">Keep your account safe.</p>
+        <p className="text-muted text-sm mt-1">Keep your account safe.</p>
       </div>
       <Card className="p-5 flex flex-col gap-4">
-        <h3 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-          <KeyRound size={17} className="text-brand-gold" aria-hidden="true" />
+        <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+          <KeyRound size={17} className="text-accent" aria-hidden="true" />
           Password
         </h3>
         <ChangePassword />
       </Card>
       <Card className="p-5 flex flex-col gap-4">
-        <h3 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-          <ShieldCheck size={17} className="text-brand-gold" aria-hidden="true" />
+        <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+          <ShieldCheck size={17} className="text-accent" aria-hidden="true" />
           Two-factor sign-in
         </h3>
         <TwoFactor />

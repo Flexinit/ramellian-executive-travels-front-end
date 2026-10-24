@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { MapPin } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import DateRangePicker, { combineDateAndTime, DEFAULT_START_TIME, DEFAULT_END_TIME } from '../forms/DateRangePicker';
 import BookingModeToggle from './BookingModeToggle';
@@ -14,6 +15,7 @@ import { useMyBookings } from '../../hooks/useBookings';
 import { bookedPeriods } from '../../lib/vehicleBookings';
 import { formatDateRange } from '../../lib/utils';
 import { useAuthStore } from '../../store/authStore';
+import { BOOKING_MODES } from '../../lib/constants';
 
 function timeFromDate(date, fallback) {
   if (!date) return fallback;
@@ -64,18 +66,36 @@ export default function Step2_TripDetails({ vehicle }) {
   const [notesOpen, setNotesOpen] = useState(!!draft.renterNotes || !!draft.passengerCount);
   const seats = Number(vehicle?.capacity) || undefined;
 
+  // Only the questions that apply are asked (product owner, 2026-10-25):
+  //  - chauffeured: the driver brings the car, so there's no "Getting the vehicle" choice — but where the chauffeur
+  //    picks the renter up and drops them off still matters;
+  //  - self-drive, collecting it: it's collected from and returned to the vehicle's own base, so no pickup or
+  //    drop-off fields (the contract uses the base location);
+  //  - self-drive, delivered: the delivery address and where it's returned.
+  // Whatever a hidden field held is cleared, so it's never sent with the booking.
+  const chauffeured = draft.bookingMode === BOOKING_MODES.CHAUFFEURED;
+  const collecting = !chauffeured && !draft.deliveryRequested;
+  useEffect(() => {
+    if (chauffeured && draft.deliveryRequested) setDraft({ deliveryRequested: false });
+  }, [chauffeured, draft.deliveryRequested, setDraft]);
+  useEffect(() => {
+    if (collecting && (draft.pickupLocation || draft.dropoffLocation)) setDraft({ pickupLocation: '', dropoffLocation: '' });
+  }, [collecting, draft.pickupLocation, draft.dropoffLocation, setDraft]);
+
   return (
     <div className="flex flex-col gap-3.5">
       {/* Full width: side by side with the mode toggle, the chosen dates and times got cut off. */}
       <DateRangePicker value={dateRange} onChange={handleDateRangeChange} disabledRanges={myPeriods} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* One above the other: this form sits in a narrow column beside the vehicle, where side by side cut the
+          switches off ("Chauffeur…"). */}
+      <div className="flex flex-col gap-3.5">
         <BookingModeToggle />
-        <DeliveryChoice vehicle={vehicle} />
+        {!chauffeured && <DeliveryChoice vehicle={vehicle} />}
       </div>
 
       {myPeriods.length > 0 && (
-        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+        <p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
           You already have this vehicle booked for {myPeriods.map((p) => formatDateRange(p.start, p.end)).join(', ')} —
           those dates are struck through above and can't be picked again.
         </p>
@@ -83,10 +103,21 @@ export default function Step2_TripDetails({ vehicle }) {
 
       <TripRouteInputs />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <PickupLocationInput />
-        <DropoffLocationInput />
-      </div>
+      {collecting ? (
+        vehicle?.location && (
+          <p className="inline-flex items-start gap-1.5 text-sm text-muted">
+            <MapPin size={14} className="mt-0.5 shrink-0 text-icon" aria-hidden="true" />
+            <span>
+              You collect it from and return it to <span className="font-medium text-ink">{vehicle.location}</span>.
+            </span>
+          </p>
+        )
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <PickupLocationInput />
+          <DropoffLocationInput />
+        </div>
+      )}
 
       <TripTypeSelect vehicle={vehicle} />
 
@@ -112,7 +143,7 @@ export default function Step2_TripDetails({ vehicle }) {
         <button
           type="button"
           onClick={() => setNotesOpen(true)}
-          className="inline-flex items-center gap-1.5 self-start text-brand-gold text-sm font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+          className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
         >
           <Plus size={14} aria-hidden="true" />
           Add passengers or special instructions

@@ -64,17 +64,17 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
           <Upload size={14} aria-hidden="true" />
           Upload a file
         </Button>
-        <span className="text-brand-grey text-xs">.txt, .md, .pdf, or .docx — read into the text below, which you can then edit.</span>
+        <span className="text-muted text-xs">.txt, .md, .pdf, or .docx — read into the text below, which you can then edit.</span>
       </div>
-      {uploadError && <p role="alert" className="text-red-400 text-xs">{uploadError}</p>}
+      {uploadError && <p role="alert" className="text-red-600 text-xs">{uploadError}</p>}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-brand-white">Platform Terms</span>
-        <div className="flex items-start gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5">
-          <ShieldCheck size={15} className="text-brand-gold shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-brand-grey text-xs leading-relaxed whitespace-pre-wrap">{PLATFORM_LIABILITY_CLAUSE}</p>
+        <span className="text-sm font-medium text-ink">Platform Terms</span>
+        <div className="flex items-start gap-2 rounded-lg bg-black/5 border border-black/10 px-3 py-2.5">
+          <ShieldCheck size={15} className="text-accent shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-muted text-xs leading-relaxed whitespace-pre-wrap">{PLATFORM_LIABILITY_CLAUSE}</p>
         </div>
-        <p className="text-brand-grey text-xs">
+        <p className="text-muted text-xs">
           Included automatically at the top of every contract you offer — not editable here. Your own terms,
           below, can add to this but can't remove it.
         </p>
@@ -82,15 +82,15 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
-          <label htmlFor="template-content" className="text-sm font-medium text-brand-white">
+          <label htmlFor="template-content" className="text-sm font-medium text-ink">
             Contract Body (Markdown)
           </label>
-          <div className="flex gap-1 rounded-full border border-white/10 p-0.5 text-xs">
+          <div className="flex gap-1 rounded-full border border-black/10 p-0.5 text-xs">
             <button
               type="button"
               aria-pressed={tab === 'edit'}
               onClick={() => setTab('edit')}
-              className={`px-3 py-1 rounded-full transition ${tab === 'edit' ? 'bg-brand-gold text-brand-dark' : 'text-brand-grey'}`}
+              className={`px-3 py-1 rounded-full transition ${tab === 'edit' ? 'bg-accent text-on-accent' : 'text-muted'}`}
             >
               Edit
             </button>
@@ -98,7 +98,7 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
               type="button"
               aria-pressed={tab === 'preview'}
               onClick={() => setTab('preview')}
-              className={`px-3 py-1 rounded-full transition ${tab === 'preview' ? 'bg-brand-gold text-brand-dark' : 'text-brand-grey'}`}
+              className={`px-3 py-1 rounded-full transition ${tab === 'preview' ? 'bg-accent text-on-accent' : 'text-muted'}`}
             >
               Preview
             </button>
@@ -112,7 +112,7 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={'# Rental Agreement\n\nThis agreement is made between...'}
-            className="w-full rounded-lg bg-white/5 border border-white/10 hover:border-brand-gold/50 px-3 py-2.5 text-brand-white placeholder-brand-grey text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition"
+            className="w-full rounded-tile bg-surface border border-line hover:border-accent/60 px-3 py-2.5 text-ink placeholder-muted text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
           />
         ) : uploading ? (
           <div className="flex justify-center py-10">
@@ -124,7 +124,7 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
               // Exactly how renters will see it (blanks show as "Not provided" until a booking fills them).
               <ContractDocument contractText={withPlatformClause(content)} />
             ) : (
-              <p className="text-brand-grey text-sm">Nothing to preview yet.</p>
+              <p className="text-muted text-sm">Nothing to preview yet.</p>
             )}
           </div>
         )}

@@ -20,12 +20,12 @@ export default function RentalTermsList({ audiences, empty = null, className = '
     <div className={`flex flex-col gap-6 ${className}`}>
       {groupRentalTerms(terms).map(({ category, terms: list }) => (
         <section key={category} className="flex flex-col gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-brand-gold">{category}</h3>
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-brand-gold-deep">{category}</h3>
           <dl className="flex flex-col gap-3">
             {list.map((t) => (
-              <div key={t.id} className="rounded-xl bg-white/5 border border-white/10 px-4 py-3">
-                <dt className="text-sm font-semibold text-brand-white">{t.title}</dt>
-                <dd className="mt-1 text-sm text-brand-grey leading-relaxed whitespace-pre-line">{t.content}</dd>
+              <div key={t.id} className="rounded-xl bg-black/5 border border-black/10 px-4 py-3">
+                <dt className="text-sm font-semibold text-ink">{t.title}</dt>
+                <dd className="mt-1 text-sm text-muted leading-relaxed whitespace-pre-line">{t.content}</dd>
               </div>
             ))}
           </dl>

@@ -92,21 +92,21 @@ export default function ChatThread({ bookingId, otherUserId, recipientId }) {
       <ul
         aria-label="Messages"
         aria-live="polite"
-        className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
+        className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-black/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
       >
-        {messages.length === 0 && <li className="m-auto text-sm text-brand-grey text-center">No messages yet — say hello.</li>}
+        {messages.length === 0 && <li className="m-auto text-sm text-muted text-center">No messages yet — say hello.</li>}
         {messages.map((m) => {
           const mine = m.senderId === myId;
           return (
             <li key={m.id} className={`flex flex-col max-w-[80%] ${mine ? 'self-end items-end' : 'self-start items-start'}`}>
               <span
                 className={`rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap break-words ${
-                  mine ? 'bg-brand-gold/15 border border-brand-gold/40 text-brand-white' : 'bg-white/5 border border-white/10 text-brand-white'
+                  mine ? 'bg-accent/15 border border-accent/40 text-ink' : 'bg-black/5 border border-black/10 text-ink'
                 }`}
               >
                 {stripPhoneNumbers(m.message).text}
               </span>
-              <span className="text-[11px] text-brand-grey mt-1">
+              <span className="text-[11px] text-muted mt-1">
                 {mine ? 'You' : m.senderName || 'Them'}
                 {m.createdAt ? ` · ${formatDateTime(m.createdAt)}` : ''}
                 {mine && m.read ? ' · Seen' : ''}
@@ -116,14 +116,14 @@ export default function ChatThread({ bookingId, otherUserId, recipientId }) {
         })}
         {send.isPending && (
           <li className="flex flex-col max-w-[80%] self-end items-end">
-            <span className="rounded-2xl px-4 py-2 text-sm bg-brand-gold/15 border border-brand-gold/40 text-brand-white">
+            <span className="rounded-2xl px-4 py-2 text-sm bg-accent/15 border border-accent/40 text-ink">
               <TypingDots label="Sending message" />
             </span>
           </li>
         )}
         {theyAreTyping && (
           <li className="flex flex-col max-w-[80%] self-start items-start">
-            <span className="rounded-2xl px-4 py-2 text-sm bg-white/5 border border-white/10 text-brand-white">
+            <span className="rounded-2xl px-4 py-2 text-sm bg-black/5 border border-black/10 text-ink">
               <TypingDots label="Typing" />
             </span>
           </li>

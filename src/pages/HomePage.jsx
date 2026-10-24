@@ -8,16 +8,16 @@ import TrustSection from '../components/home/TrustSection';
 import CtaBanner from '../components/home/CtaBanner';
 
 /**
- * Public homepage — otto.rentals-style search-first layout on Ramellian's
- * dark/gold theme. See docs/design.md §4 for the section order.
+ * Public homepage — search first, then the cars (the design system's Home: search, then "Best Cars"), then the
+ * services, how it works, why book with us and the closing banner. See docs/design.md §4 for the section order.
  */
 export default function HomePage() {
   return (
     <>
       <PageTitle />
       <HeroSection />
-      <ServicesSection />
       <FeaturedVehiclesSection />
+      <ServicesSection />
       <HowItWorksSection />
       <TrustSection />
       <CtaBanner />

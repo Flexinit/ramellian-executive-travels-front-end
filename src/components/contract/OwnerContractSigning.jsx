@@ -38,7 +38,7 @@ export default function OwnerContractSigning({ contractId, booking }) {
   const ownerAt = ownerSignedAt(contract);
 
   const status = (label, at, by) => (
-    <p className={`inline-flex items-center gap-1.5 text-sm ${at ? 'text-emerald-400' : 'text-brand-grey'}`}>
+    <p className={`inline-flex items-center gap-1.5 text-sm ${at ? 'text-emerald-600' : 'text-muted'}`}>
       {at ? <ShieldCheck size={14} aria-hidden="true" /> : <Clock size={14} aria-hidden="true" />}
       {label}: {at ? `signed ${formatDateTime(at)}${by ? ` by ${by}` : ''}` : 'not signed yet'}
     </p>
@@ -46,7 +46,7 @@ export default function OwnerContractSigning({ contractId, booking }) {
 
   return (
     <Card className="p-5 flex flex-col gap-3">
-      <h2 className="font-heading text-brand-white text-base font-semibold">Rental contract</h2>
+      <h2 className="font-heading text-ink text-base font-semibold">Rental contract</h2>
       <div className="flex flex-col gap-1">
         {status('Renter', renterAt, contract.renterSignedBy)}
         {status('You (owner)', ownerAt, contract.ownerSignedBy)}
@@ -84,7 +84,7 @@ export default function OwnerContractSigning({ contractId, booking }) {
             <Checkbox
               checked={confirmed}
               onChange={(e) => setConfirmed(e.target.checked)}
-              label={<span className="text-brand-white">I have read and understood this agreement, and the details in it are correct.</span>}
+              label={<span className="text-ink">I have read and understood this agreement, and the details in it are correct.</span>}
             />
           )}
         </div>

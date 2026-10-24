@@ -13,12 +13,12 @@ export default function AvailabilitySwitch({ available, onToggle, pending = fals
   const labelId = useId();
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg bg-white/5 px-3 py-2">
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-2">
       <span className="flex flex-col">
-        <span id={labelId} className="text-xs font-medium text-brand-white">
+        <span id={labelId} className="text-xs font-medium text-ink">
           Available for booking
         </span>
-        <span className="text-[11px] text-brand-grey">{available ? 'On — renters can book it' : "Off — renters can't see it"}</span>
+        <span className="text-[11px] text-muted">{available ? 'On — renters can book it' : "Off — renters can't see it"}</span>
       </span>
       <button
         type="button"
@@ -28,7 +28,7 @@ export default function AvailabilitySwitch({ available, onToggle, pending = fals
         disabled={pending}
         onClick={() => onToggle(!available)}
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
-          available ? 'bg-brand-gold border-brand-gold' : 'bg-white/10 border-white/20'
+          available ? 'bg-accent border-accent' : 'bg-black/10 border-black/20'
         }`}
       >
         <span

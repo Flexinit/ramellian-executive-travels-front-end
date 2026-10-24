@@ -52,7 +52,7 @@ export default function ContractSigningPlace({ onSign, signing = false, error, o
       <SignaturePad tone="paper" label="Sign here" onChange={setSignature} />
       {offerSave && (
         <label className="flex items-center gap-2 text-[13px] text-slate-600 cursor-pointer">
-          <input type="checkbox" className="h-4 w-4 accent-[#C9A84C]" checked={keep} onChange={(e) => setKeep(e.target.checked)} />
+          <input type="checkbox" className="h-4 w-4 accent-[#16213E]" checked={keep} onChange={(e) => setKeep(e.target.checked)} />
           Save this signature for my next contracts
         </label>
       )}

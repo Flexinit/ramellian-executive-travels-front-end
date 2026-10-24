@@ -19,7 +19,7 @@ export default function NotFoundPage() {
         */}
         <h1 className="sr-only">Page Not Found</h1>
         <h2 className="sr-only">Error</h2>
-        <span className="font-heading text-brand-gold text-sm font-semibold tracking-widest uppercase">404</span>
+        <span className="font-heading text-accent text-sm font-semibold tracking-widest uppercase">404</span>
         <EmptyState
           icon={Compass}
           title="Page not found"

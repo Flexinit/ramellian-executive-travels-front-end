@@ -69,8 +69,8 @@ export default function AdminPayoutsPage() {
       <PageTitle title="Owner Payouts" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Owner Payouts</h1>
-          <p className="text-brand-grey text-sm mt-1.5">What each owner is owed for a paid booking. Mark it paid once the money is sent, with its reference.</p>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Owner Payouts</h1>
+          <p className="text-muted text-sm mt-1.5">What each owner is owed for a paid booking. Mark it paid once the money is sent, with its reference.</p>
         </div>
 
         <SegmentedControl
@@ -93,22 +93,22 @@ export default function AdminPayoutsPage() {
               <Card key={d.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0 flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-brand-white font-semibold">{d.vehicleTitle || 'Vehicle'}</span>
+                    <span className="text-ink font-semibold">{d.vehicleTitle || 'Vehicle'}</span>
                     <Badge label={LABEL[d.status] || d.status} variant={VARIANT[d.status] || 'neutral'} />
                   </div>
-                  <p className="text-sm text-brand-grey">
+                  <p className="text-sm text-muted">
                     To {d.ownerName || d.ownerEmail}{d.ownerName && d.ownerEmail ? ` (${d.ownerEmail})` : ''}{d.ownerPhone ? ` · ${d.ownerPhone}` : ''}
                   </p>
-                  <p className="text-xs text-brand-grey">
-                    {d.bookingId && <Link to={`/admin/bookings/${d.bookingId}`} className="text-brand-gold hover:underline focus-ring rounded">Booking</Link>}
+                  <p className="text-xs text-muted">
+                    {d.bookingId && <Link to={`/admin/bookings/${d.bookingId}`} className="text-accent hover:underline focus-ring rounded">Booking</Link>}
                     {d.createdAt && ` · created ${formatDateTime(d.createdAt)}`}
                     {d.triggeredAt && ` · ${d.status === 'FAILED' ? 'failed' : 'paid'} ${formatDateTime(d.triggeredAt)}${d.triggeredBy ? ` by ${d.triggeredBy}` : ''}`}
                     {d.reference && ` · ref ${d.reference}`}
                   </p>
-                  {d.notes && <p className="text-xs text-brand-grey italic">{d.notes}</p>}
+                  {d.notes && <p className="text-xs text-muted italic">{d.notes}</p>}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
-                  <span className="text-lg font-bold text-brand-white tabular-nums">{formatCurrency(d.amount ?? 0)}</span>
+                  <span className="text-lg font-bold text-ink tabular-nums">{formatCurrency(d.amount ?? 0)}</span>
                   {d.status === 'PENDING' && (
                     <>
                       <Button size="sm" onClick={() => open(d, 'trigger')}><CheckCircle2 size={14} aria-hidden="true" /> Mark paid</Button>
@@ -125,7 +125,7 @@ export default function AdminPayoutsPage() {
       <Modal isOpen={!!acting} onClose={() => setActing(null)} title={paying ? 'Mark payout as paid' : 'Mark payout as failed'}>
         {acting && (
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-brand-grey">
+            <p className="text-sm text-muted">
               {formatCurrency(acting.item.amount ?? 0)} to {acting.item.ownerName || acting.item.ownerEmail}.
             </p>
             <Input
@@ -135,7 +135,7 @@ export default function AdminPayoutsPage() {
               onChange={(e) => setReference(e.target.value)}
             />
             <Textarea label={paying ? 'Notes (optional)' : 'What went wrong'} name="notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-            {resolve.isError && <p role="alert" className="text-sm text-red-400">{apiErrorMessage(resolve.error, "Couldn't update the payout.")}</p>}
+            {resolve.isError && <p role="alert" className="text-sm text-red-600">{apiErrorMessage(resolve.error, "Couldn't update the payout.")}</p>}
             <div className="flex gap-3 justify-end">
               <Button onClick={() => setActing(null)}>Cancel</Button>
               <Button

@@ -63,7 +63,7 @@ export default function AdminPlatformSettingsPage() {
     <PageWrapper className="max-w-3xl">
       <PageTitle title="Platform Settings" />
       <div className="flex flex-col gap-6">
-        <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Platform Settings</h1>
+        <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Platform Settings</h1>
 
         <Card className="p-5">
           {isLoading ? (
@@ -75,8 +75,8 @@ export default function AdminPlatformSettingsPage() {
           ) : (
             <form onSubmit={submit} noValidate className="flex flex-col gap-5">
               <div>
-                <h2 className="font-heading text-brand-white text-base font-semibold">Commission rate</h2>
-                <p className="text-brand-grey text-sm mt-1">The platform's percentage on every booking.</p>
+                <h2 className="font-heading text-ink text-base font-semibold">Commission rate</h2>
+                <p className="text-muted text-sm mt-1">The platform's percentage on every booking.</p>
               </div>
               <Input
                 label="Commission rate (%)"
@@ -91,9 +91,9 @@ export default function AdminPlatformSettingsPage() {
                 error={errors.commissionRatePct}
               />
 
-              <div className="border-t border-white/10 pt-5">
-                <h2 className="font-heading text-brand-white text-base font-semibold">Payment processing fee</h2>
-                <p className="text-brand-grey text-sm mt-1">The Pesapal transaction fee, as a percentage of each payment.</p>
+              <div className="border-t border-black/10 pt-5">
+                <h2 className="font-heading text-ink text-base font-semibold">Payment processing fee</h2>
+                <p className="text-muted text-sm mt-1">The Pesapal transaction fee, as a percentage of each payment.</p>
               </div>
               <Input
                 label="Pesapal transaction fee (%)"
@@ -108,9 +108,9 @@ export default function AdminPlatformSettingsPage() {
                 error={errors.pesapalTransactionFeeRatePct}
               />
 
-              <div className="border-t border-white/10 pt-5">
-                <h2 className="font-heading text-brand-white text-base font-semibold">Delivery fee</h2>
-                <p className="text-brand-grey text-sm mt-1">
+              <div className="border-t border-black/10 pt-5">
+                <h2 className="font-heading text-ink text-base font-semibold">Delivery fee</h2>
+                <p className="text-muted text-sm mt-1">
                   A flat amount added to a booking when the renter asks for the vehicle to be delivered to them.
                   Renters who collect the vehicle themselves pay nothing extra. Set 0 for free delivery.
                 </p>
@@ -151,8 +151,8 @@ function PlatformPolicyCard() {
   return (
     <Card className="p-5 flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-brand-white text-base font-semibold">Standard booking policy</h2>
-        <p className="text-brand-grey text-sm mt-1">
+        <h2 className="font-heading text-ink text-base font-semibold">Standard booking policy</h2>
+        <p className="text-muted text-sm mt-1">
           Cancellation and date-moving rules for owners who haven't set their own. It applies to bookings made from
           now on.
         </p>

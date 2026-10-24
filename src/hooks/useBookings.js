@@ -141,3 +141,23 @@ export function useConfirmPayment() {
     onError: (error) => toast.error(apiErrorMessage(error, "Couldn't record that payment.")),
   });
 }
+
+/**
+ * Swaps the vehicle on a booking — `PUT /bookings/{id}/change-vehicle` `{ vehicleId, reason? }` → the updated
+ * `BookingResponse`. Offered to the renter, the vehicle's owner and administrators (ChangeVehicleModal) while the trip
+ * hasn't started; the backend decides who may actually do it and why not, and its message is shown if it refuses.
+ * Pass `{ bookingId, vehicleId, reason? }`.
+ */
+export function useChangeVehicle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, vehicleId, reason }) =>
+      apiPut(`/bookings/${bookingId}/change-vehicle`, { vehicleId, ...(reason?.trim() ? { reason: reason.trim() } : {}) }),
+    onSuccess: (updated, { bookingId }) => {
+      if (updated) queryClient.setQueryData(['bookings', bookingId], updated);
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast.success('Vehicle changed.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't change the vehicle on this booking.")),
+  });
+}

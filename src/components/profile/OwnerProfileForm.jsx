@@ -140,20 +140,20 @@ export default function OwnerProfileForm({ onSaved, submitLabel = 'Save Account 
       )}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium text-brand-white mb-1">Account type</legend>
+        <legend className="text-sm font-medium text-ink mb-1">Account type</legend>
         <div className="grid grid-cols-2 gap-3">
           {ACCOUNT_TYPE_OPTIONS.map((opt) => (
             <label
               key={opt.value}
-              className={`flex flex-col gap-0.5 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-brand-gold ${
-                accountType === opt.value ? 'border-brand-gold bg-brand-gold/10' : 'border-white/10 bg-white/5 hover:border-brand-gold/40'
+              className={`flex flex-col gap-0.5 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
+                accountType === opt.value ? 'border-accent bg-accent/10' : 'border-black/10 bg-black/5 hover:border-accent/40'
               }`}
             >
-              <span className="flex items-center gap-2 text-sm font-semibold text-brand-white">
-                <input type="radio" value={opt.value} className="accent-brand-gold" {...register('accountType')} />
+              <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                <input type="radio" value={opt.value} className="accent-accent" {...register('accountType')} />
                 {opt.label}
               </span>
-              <span className="text-xs text-brand-grey pl-6">{opt.hint}</span>
+              <span className="text-xs text-muted pl-6">{opt.hint}</span>
             </label>
           ))}
         </div>
@@ -171,8 +171,8 @@ export default function OwnerProfileForm({ onSaved, submitLabel = 'Save Account 
       )}
 
       <div className="flex flex-col gap-4">
-        <p className="text-sm font-medium text-brand-white">
-          Payouts <span className="text-brand-grey font-normal">(where your earnings are sent)</span>
+        <p className="text-sm font-medium text-ink">
+          Payouts <span className="text-muted font-normal">(where your earnings are sent)</span>
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Payout Provider" placeholder="e.g. MPESA" error={errors.payoutProvider?.message} register={register('payoutProvider')} />

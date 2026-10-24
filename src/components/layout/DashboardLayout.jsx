@@ -27,7 +27,7 @@ function MenuLink({ item, active, badgeCounts }) {
       aria-current={active ? 'page' : undefined}
       state={item.switchTo ? { switchTo: item.switchTo } : undefined}
       className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-colors focus-ring ${
-        active ? 'bg-brand-gold/15 text-brand-gold' : 'text-brand-grey hover:text-brand-white hover:bg-white/5'
+        active ? 'bg-white text-brand-navy font-semibold' : 'text-white/75 hover:text-white hover:bg-white/10'
       }`}
     >
       {Icon && <Icon size={16} aria-hidden="true" />}
@@ -35,7 +35,7 @@ function MenuLink({ item, active, badgeCounts }) {
       {item.badge && badgeCounts[item.badge] > 0 && (
         <span
           aria-label={`${badgeCounts[item.badge]} unread`}
-          className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-brand-gold text-brand-dark text-[11px] font-bold flex items-center justify-center"
+          className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-star text-brand-navy text-[11px] font-bold flex items-center justify-center"
         >
           {badgeCounts[item.badge] > 99 ? '99+' : badgeCounts[item.badge]}
         </span>
@@ -61,7 +61,7 @@ function MenuGroup({ label, icon: GroupIcon, containsActive, children }) {
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setChosen(!open)}
-        className="hidden md:flex w-full items-center justify-between rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-brand-grey hover:text-brand-white hover:bg-white/5 transition-colors focus-ring"
+        className="hidden md:flex w-full items-center justify-between rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/10 transition-colors focus-ring"
       >
         <span className="flex items-center gap-2">
           {GroupIcon && <GroupIcon size={15} aria-hidden="true" />}
@@ -78,7 +78,8 @@ function MenuGroup({ label, icon: GroupIcon, containsActive, children }) {
 
 /**
  * Sidebar + routed content shell for the dashboard, owner, and admin
- * sections (docs/menu-structure.md §6). The menu is one element that changes
+ * sections (docs/menu-structure.md §6), on Ramellian navy (white items, the current one a white pill with navy text;
+ * product owner 2026-10-25). The menu is one element that changes
  * shape with the screen — a vertical sidebar from `md` up, a horizontally
  * scrolling strip along the top on phones — so the same items are reachable
  * everywhere (it used to be hidden entirely below `md`). It opens with the signed-in person's
@@ -120,23 +121,23 @@ export default function DashboardLayout({ items = [], heading }) {
   }, [pathname]);
 
   return (
-    <div className="flex flex-col md:flex-row flex-1 bg-brand-dark">
+    <div className="flex flex-col md:flex-row flex-1 bg-canvas">
       {/* From md up the menu stays put under the top bar (h-20) while the page scrolls, scrolling on its own if taller. */}
-      <aside className="flex flex-col md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/10 px-4 md:px-5 py-3 md:py-7 md:sticky md:top-20 md:self-start md:h-[calc(100vh-5rem)] md:overflow-y-auto">
+      <aside className="flex flex-col md:w-64 shrink-0 bg-brand-navy border-b md:border-b-0 md:border-r border-brand-navy px-4 md:px-5 py-3 md:py-7 md:sticky md:top-20 md:self-start md:h-[calc(100vh-5rem)] md:overflow-y-auto">
         {user && (
           <Link
             to="/dashboard/profile"
             aria-label={`${displayName} — view your profile`}
-            className="hidden md:flex items-center gap-3 rounded-2xl p-2 -mx-2 hover:bg-white/5 transition-colors focus-ring"
+            className="hidden md:flex items-center gap-3 rounded-2xl p-2 -mx-2 hover:bg-white/10 transition-colors focus-ring"
           >
             <Avatar name={displayName} src={photoUrl} size="lg" />
             <span className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold text-brand-white truncate">{displayName}</span>
-              {roleLabel && <span className="text-xs text-brand-grey truncate">{roleLabel}</span>}
+              <span className="text-sm font-semibold text-white truncate">{displayName}</span>
+              {roleLabel && <span className="text-xs text-brand-gold truncate">{roleLabel}</span>}
             </span>
           </Link>
         )}
-        {heading && <p className="hidden md:block text-brand-grey text-xs uppercase tracking-widest mb-6 mt-4">{heading}</p>}
+        {heading && <p className="hidden md:block text-white/60 text-xs uppercase tracking-widest mb-6 mt-4">{heading}</p>}
 
         {/* On a phone the strip fades out at its right edge, so it's clear there is more to scroll to. */}
         <nav

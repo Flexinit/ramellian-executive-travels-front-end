@@ -50,7 +50,7 @@ export default function VehicleHandoverModal({ isOpen, onClose, bookingId, type,
           <Spinner size="lg" label="Checking payment status" />
         </div>
       ) : !paid ? (
-        <p className="text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+        <p className="text-sm text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
           This booking hasn&apos;t been paid for yet — the vehicle can&apos;t be collected until payment is confirmed.
         </p>
       ) : (

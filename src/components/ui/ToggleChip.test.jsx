@@ -9,11 +9,11 @@ describe('ToggleChip', () => {
   it('shows whether it is on through aria-pressed and the gold outline', () => {
     const { rerender } = render(<ToggleChip active={false}>Safari</ToggleChip>);
     expect(screen.getByRole('button', { name: 'Safari' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button')).not.toHaveClass('border-brand-gold');
+    expect(screen.getByRole('button')).not.toHaveClass('bg-accent');
 
     rerender(<ToggleChip active>Safari</ToggleChip>);
     expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button')).toHaveClass('border-brand-gold', 'text-brand-gold');
+    expect(screen.getByRole('button')).toHaveClass('bg-accent', 'text-on-accent');
   });
 
   it('calls onClick', async () => {

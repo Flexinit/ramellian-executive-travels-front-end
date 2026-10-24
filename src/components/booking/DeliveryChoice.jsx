@@ -28,7 +28,7 @@ export default function DeliveryChoice({ vehicle }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-brand-white">Getting the vehicle</span>
+      <span className="text-sm font-medium text-ink">Getting the vehicle</span>
       <SegmentedControl
         label="How will you get the vehicle?"
         options={[
@@ -39,7 +39,7 @@ export default function DeliveryChoice({ vehicle }) {
         onChange={(value) => setDraft({ deliveryRequested: value === 'deliver' })}
         size="sm"
       />
-      <p className="text-xs text-brand-grey" aria-live="polite">
+      <p className="text-xs text-muted" aria-live="polite">
         {draft.deliveryRequested ? `${feeText}, added to your total.` : 'No fee — you collect it yourself.'}
       </p>
     </div>

@@ -16,6 +16,7 @@ import { sessionContractId } from '../../lib/contracts';
 import { stripPhoneNumbers } from '../../lib/contactGuard';
 import { TRIP_TYPE_LABELS, BOOKING_MODES, BOOKING_STATUSES } from '../../lib/constants';
 import { formatDateRange, formatDateTime, formatTime, formatDate, formatCurrency, calculateTotalPrice, canRecordPickup as pickupDateReached } from '../../lib/utils';
+import { DetailList, DetailRow } from '../ui/DetailList';
 
 const RENTER_BASE_PATH = '/dashboard/bookings';
 
@@ -113,11 +114,11 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
           if (e.key === 'Enter') toggle();
         }}
         aria-expanded={expanded}
-        className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
+        className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
       >
-        <td className="stack-full px-4 py-3 text-sm text-brand-white">
+        <td className="stack-full px-4 py-3 text-sm text-ink">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-9 rounded-lg overflow-hidden shrink-0 bg-white/5">
+            <div className="w-12 h-9 rounded-lg overflow-hidden shrink-0 bg-black/5">
               {photoUrl ? (
                 <AuthImage
                   src={photoUrl}
@@ -134,33 +135,33 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
             <div className="min-w-0">
               <div className="truncate">{vehicle?.model || booking.vehicleModel || 'Vehicle'}</div>
               {(vehicle?.registrationNumber || booking.vehicleId) && (
-                <div className="text-xs text-brand-grey/70 truncate">{vehicle?.registrationNumber || booking.vehicleId}</div>
+                <div className="text-xs text-muted/70 truncate">{vehicle?.registrationNumber || booking.vehicleId}</div>
               )}
             </div>
           </div>
         </td>
-        <td data-label="Dates" className="px-4 py-3 text-sm text-brand-grey">
+        <td data-label="Dates" className="px-4 py-3 text-sm text-muted">
           <div>{formatDateRange(booking.startTime, booking.endTime)}</div>
-          <div className="text-xs text-brand-grey/70">
+          <div className="text-xs text-muted/70">
             {formatTime(booking.startTime)} – {formatTime(booking.endTime)}
           </div>
         </td>
         <td className="stack-end px-4 py-3">
           <BookingStatusBadge status={booking.status} />
         </td>
-        <td data-label="Cost" className="px-4 py-3 text-sm text-brand-white text-right">{formatCurrency(total)}</td>
+        <td data-label="Cost" className="px-4 py-3 text-sm text-ink text-right">{formatCurrency(total)}</td>
         {showContract && (
           <td data-label="Contract" className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
             {contractId ? (
               <ContractPdfActions contractId={contractId} signed label="Signed PDF" />
             ) : (
-              <span className="text-brand-grey text-sm">—</span>
+              <span className="text-muted text-sm">—</span>
             )}
           </td>
         )}
         {showReceipt && (
           <td data-label="Receipt" className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-            {everPaid ? <ReceiptActions booking={booking} vehicle={vehicle} /> : <span className="text-brand-grey text-sm">—</span>}
+            {everPaid ? <ReceiptActions booking={booking} vehicle={vehicle} /> : <span className="text-muted text-sm">—</span>}
           </td>
         )}
         {onAction && (
@@ -185,117 +186,59 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
       </tr>
 
       {expanded && (
-        <tr className="bg-white/[0.03]">
+        <tr className="bg-black/[0.03]">
           <td colSpan={detailColSpan} className="px-4 py-5">
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Booking Reference</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{booking.id}</dd>
-              </div>
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Vehicle</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{vehicle?.model || booking.vehicleModel || booking.vehicleId}</dd>
-              </div>
+            <DetailList className="sm:grid-cols-[minmax(0,max-content)_minmax(0,1fr)_minmax(0,max-content)_minmax(0,1fr)]">
+              <DetailRow label="Booking Reference">{booking.id}</DetailRow>
+              <DetailRow label="Vehicle">{vehicle?.model || booking.vehicleModel || booking.vehicleId}</DetailRow>
               {vehicle?.location && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Location</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{vehicle.location}</dd>
-                </div>
+                <DetailRow label="Location">{vehicle.location}</DetailRow>
               )}
               {vehicle?.registrationNumber && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Registration</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{vehicle.registrationNumber}</dd>
-                </div>
+                <DetailRow label="Registration">{vehicle.registrationNumber}</DetailRow>
               )}
               {isRenterView && vehicle?.ownerEmail && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Owner</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{vehicle.ownerEmail}</dd>
-                </div>
+                <DetailRow label="Owner">{vehicle.ownerEmail}</DetailRow>
               )}
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Pickup</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{formatDateTime(booking.startTime)}</dd>
-              </div>
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Drop-off</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{formatDateTime(booking.endTime)}</dd>
-              </div>
+              <DetailRow label="Pickup">{formatDateTime(booking.startTime)}</DetailRow>
+              <DetailRow label="Drop-off">{formatDateTime(booking.endTime)}</DetailRow>
               {booking.pickupLocation && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Pickup Location</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{booking.pickupLocation}</dd>
-                </div>
+                <DetailRow label="Pickup Location">{booking.pickupLocation}</DetailRow>
               )}
               {booking.dropoffLocation && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Drop-off Location</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{booking.dropoffLocation}</dd>
-                </div>
+                <DetailRow label="Drop-off Location">{booking.dropoffLocation}</DetailRow>
               )}
               {booking.numberOfDays != null && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Duration</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">
-                    {booking.numberOfDays} {booking.numberOfDays === 1 ? 'day' : 'days'}
-                  </dd>
-                </div>
+                <DetailRow label="Duration">{booking.numberOfDays} {booking.numberOfDays === 1 ? 'day' : 'days'}</DetailRow>
               )}
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Mode</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">
-                  {booking.bookingMode === BOOKING_MODES.CHAUFFEURED ? 'Chauffeured' : 'Self-Drive'}
-                </dd>
-              </div>
+              <DetailRow label="Mode">{booking.bookingMode === BOOKING_MODES.CHAUFFEURED ? 'Chauffeured' : 'Self-Drive'}</DetailRow>
               {booking.tripType && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Trip Type</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{TRIP_TYPE_LABELS[booking.tripType] || booking.tripType}</dd>
-                </div>
+                <DetailRow label="Trip Type">{TRIP_TYPE_LABELS[booking.tripType] || booking.tripType}</DetailRow>
               )}
               {booking.bookingMode === BOOKING_MODES.CHAUFFEURED && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Chauffeur</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{chauffeur || 'Not assigned'}</dd>
-                </div>
+                <DetailRow label="Chauffeur">{chauffeur || 'Not assigned'}</DetailRow>
               )}
               {!isRenterView && booking.renterEmail && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Renter</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">{booking.renterEmail}</dd>
-                </div>
+                <DetailRow label="Renter">{booking.renterEmail}</DetailRow>
               )}
               {hasOverstay && (
-                <div className="flex justify-between gap-4 sm:block">
-                  <dt className="text-brand-grey shrink-0">Overstay</dt>
-                  <dd className="text-brand-white text-right sm:text-left sm:mt-0.5">
-                    {booking.overstayDays ?? 0} {booking.overstayDays === 1 ? 'day' : 'days'}
-                    {booking.overstayAmount ? ` · ${formatCurrency(booking.overstayAmount)}` : ''}
-                  </dd>
-                </div>
+                <DetailRow label="Overstay">
+                  {booking.overstayDays ?? 0} {booking.overstayDays === 1 ? 'day' : 'days'}
+                  {booking.overstayAmount ? ` · ${formatCurrency(booking.overstayAmount)}` : ''}
+                </DetailRow>
               )}
-              <div className="flex justify-between gap-4 sm:block">
-                <dt className="text-brand-grey shrink-0">Total</dt>
-                <dd className="text-brand-white text-right sm:text-left sm:mt-0.5 font-semibold">{formatCurrency(total)}</dd>
-              </div>
+              <DetailRow label="Total" valueClassName="font-semibold">{formatCurrency(total)}</DetailRow>
               {renterNotes && (
-                <div className="sm:col-span-2 flex flex-col gap-1">
-                  <dt className="text-brand-grey">Notes</dt>
-                  <dd className="text-brand-white">{renterNotes}</dd>
-                </div>
+                <DetailRow label="Notes" stacked>{renterNotes}</DetailRow>
               )}
               {dispatcherNotes && (
-                <div className="sm:col-span-2 flex flex-col gap-1">
-                  <dt className="text-brand-grey">Owner's Note</dt>
-                  <dd className="text-brand-white">{dispatcherNotes}</dd>
-                </div>
+                <DetailRow label="Owner's Note" stacked>{dispatcherNotes}</DetailRow>
               )}
-            </dl>
+            </DetailList>
 
             {contractId && (
               <div className="flex flex-col gap-1.5 mt-5">
-                <span className="text-brand-grey text-sm">Contract</span>
+                <span className="text-muted text-sm">Contract</span>
                 <div className="flex gap-4">
                   <ContractPdfActions contractId={contractId} signed={false} label="Unsigned PDF" />
                   <ContractPdfActions contractId={contractId} signed label="Signed PDF" />
@@ -305,7 +248,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
 
             {everPaid && (
               <div className="flex flex-col gap-1.5 mt-5">
-                <span className="text-brand-grey text-sm">Receipt</span>
+                <span className="text-muted text-sm">Receipt</span>
                 <ReceiptActions booking={booking} vehicle={vehicle} />
               </div>
             )}
@@ -356,7 +299,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
                     Record Pickup
                   </Button>
                   {!pickupReady && (
-                    <span className="text-brand-grey text-[11px]">From {formatDate(booking.startTime)}</span>
+                    <span className="text-muted text-[11px]">From {formatDate(booking.startTime)}</span>
                   )}
                 </div>
               )}

@@ -70,7 +70,7 @@ const SECTIONS = [
       <p>
         You can update your profile, documents, and account type at any time. For anything else — a request
         to see, correct, or delete what's held about you — reach out through the{' '}
-        <Link to="/contact" className="text-brand-gold hover:text-brand-gold-light underline">Contact</Link> page.
+        <Link to="/contact" className="text-accent hover:text-accent-hover underline">Contact</Link> page.
       </p>
     ),
   },

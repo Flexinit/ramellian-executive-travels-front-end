@@ -50,7 +50,7 @@ export default function CircularCountdown({ startedAt, durationSeconds = 60, onE
       style={{ width: SIZE, height: SIZE }}
     >
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90" aria-hidden="true">
-        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="currentColor" strokeWidth={STROKE} className="text-white/10" />
+        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="currentColor" strokeWidth={STROKE} className="text-black/10" />
         <circle
           cx={SIZE / 2}
           cy={SIZE / 2}
@@ -61,12 +61,12 @@ export default function CircularCountdown({ startedAt, durationSeconds = 60, onE
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={CIRCUMFERENCE * (1 - fraction)}
-          className={`${urgent ? 'text-red-400' : 'text-brand-gold'} transition-[stroke-dashoffset] duration-300 ease-linear motion-reduce:transition-none`}
+          className={`${urgent ? 'text-red-600' : 'text-accent'} transition-[stroke-dashoffset] duration-300 ease-linear motion-reduce:transition-none`}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
-        <span className={`font-heading text-3xl font-bold tabular-nums ${urgent ? 'text-red-400' : 'text-brand-white'}`}>{remaining}</span>
-        <span className="text-xs text-brand-grey -mt-0.5">sec</span>
+        <span className={`font-heading text-3xl font-bold tabular-nums ${urgent ? 'text-red-600' : 'text-ink'}`}>{remaining}</span>
+        <span className="text-xs text-muted -mt-0.5">sec</span>
       </div>
     </div>
   );

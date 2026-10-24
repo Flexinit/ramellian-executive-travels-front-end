@@ -37,7 +37,7 @@ export default function TermsAcceptance({ who = 'renter', checked, onChange, err
                 e.preventDefault();
                 setReading(true);
               }}
-              className="text-brand-gold font-semibold underline hover:text-brand-gold-light focus-ring rounded"
+              className="text-accent font-semibold underline hover:text-accent-hover focus-ring rounded"
             >
               Read them
             </button>
@@ -46,11 +46,11 @@ export default function TermsAcceptance({ who = 'renter', checked, onChange, err
       />
       <Modal isOpen={reading} onClose={() => setReading(false)} title={who === 'owner' ? 'Terms for owners' : 'Rental terms'} size="lg">
         <div className="flex flex-col gap-5">
-          <RentalTermsList audiences={audiences} empty={<p className="text-sm text-brand-grey">The full terms are in the Terms of Service.</p>} />
-          <p className="text-sm text-brand-grey">
+          <RentalTermsList audiences={audiences} empty={<p className="text-sm text-muted">The full terms are in the Terms of Service.</p>} />
+          <p className="text-sm text-muted">
             Also read the full{' '}
-            <Link to="/terms" target="_blank" className="text-brand-gold underline">Terms of Service</Link> and{' '}
-            <Link to="/privacy" target="_blank" className="text-brand-gold underline">Privacy Policy</Link>.
+            <Link to="/terms" target="_blank" className="text-accent underline">Terms of Service</Link> and{' '}
+            <Link to="/privacy" target="_blank" className="text-accent underline">Privacy Policy</Link>.
           </p>
         </div>
       </Modal>

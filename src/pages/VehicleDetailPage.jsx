@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom';
 import ImageGallery from '../components/vehicles/ImageGallery';
 import VehicleInfoPanel from '../components/vehicles/VehicleInfoPanel';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
@@ -16,7 +15,6 @@ import { USER_ROLES } from '../lib/constants';
 import { useSetVehicleAvailability, useVehicle } from '../hooks/useVehicles';
 import { useAuthStore } from '../store/authStore';
 import { isOwnVehicle } from '../lib/vehicleOptions';
-import dianiReefResort from '../assets/destinations/diani-reef-resort.jpg';
 
 export default function VehicleDetailPage() {
   const { vehicleId } = useParams();
@@ -27,17 +25,17 @@ export default function VehicleDetailPage() {
 
   if (isLoading) {
     return (
-      <PageBackdrop image={dianiReefResort}>
+      <>
         <PageWrapper className="flex items-center justify-center min-h-[50vh]">
           <Spinner size="lg" label="Loading vehicle" />
         </PageWrapper>
-      </PageBackdrop>
+      </>
     );
   }
 
   if (isError || !vehicle) {
     return (
-      <PageBackdrop image={dianiReefResort}>
+      <>
         <PageWrapper>
           <BackLink to="/vehicles" label="Back to vehicles" className="mb-3" />
           <ErrorBanner
@@ -45,12 +43,12 @@ export default function VehicleDetailPage() {
             onRetry={refetch}
           />
         </PageWrapper>
-      </PageBackdrop>
+      </>
     );
   }
 
   return (
-    <PageBackdrop image={dianiReefResort}>
+    <>
       <PageWrapper className="!pt-6 lg:!pt-8">
       <PageTitle title="Vehicle Details" />
       <BackLink to="/vehicles" label="Back to vehicles" className="mb-3" />
@@ -60,23 +58,16 @@ export default function VehicleDetailPage() {
           which is what forced this whole page into one long scroll. */}
       {/* `min-w-0` on both columns: a grid column otherwise grows to its content's natural width, so a large
           photo pushed the gallery past the right edge (its Next arrow and photo count were cut off). */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-8 lg:gap-12 items-start">
-        {/* Photo and details side by side (stacked on a phone and a tablet, where the details column would be
-            too narrow), with Reviews right under them, so the whole vehicle — photo, name, features, price and
-            reviews — fits on one screen without scrolling. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-8 lg:gap-10 items-start">
+        {/* The design's Car Details order: the photo across the column, then the name, rating and features, then
+            the reviews. */}
         <div className="flex flex-col gap-6 min-w-0">
-          <div className="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6 xl:gap-10 items-start">
-            <div className="min-w-0">
-              <ImageGallery photos={vehicle.photos} alt={vehicle.model} tier={vehicle.tier} />
-            </div>
-            <div className="min-w-0">
-              <VehicleInfoPanel vehicle={vehicle} isOwner={isOwnVehicle(vehicle, user)} />
-            </div>
-          </div>
+          <ImageGallery photos={vehicle.photos} alt={vehicle.model} tier={vehicle.tier} />
+          <VehicleInfoPanel vehicle={vehicle} isOwner={isOwnVehicle(vehicle, user)} />
 
-          <section aria-labelledby="reviews-heading" className="flex flex-col gap-3 pt-6 border-t border-white/10">
-            <h2 id="reviews-heading" className="font-heading text-brand-white text-lg font-bold">
-              Reviews
+          <section aria-labelledby="reviews-heading" className="flex flex-col gap-3 pt-6 border-t border-black/10">
+            <h2 id="reviews-heading" className="font-heading text-ink text-base font-semibold">
+              Reviews{Array.isArray(reviews.data) && reviews.data.length > 0 ? ` (${reviews.data.length})` : ''}
             </h2>
             <ReviewList reviews={reviews.data} isLoading={reviews.isLoading} showComplaints={(user?.roles || []).includes(USER_ROLES.ADMIN)} emptyText="No reviews yet" />
           </section>
@@ -84,7 +75,7 @@ export default function VehicleDetailPage() {
 
         <div className="lg:sticky lg:top-24 min-w-0">
           {isOwnVehicle(vehicle, user) ? (
-            <div role="note" className="rounded-xl bg-brand-gold/10 border border-brand-gold/20 px-4 py-3 text-sm text-brand-white flex flex-col gap-3">
+            <div role="note" className="rounded-xl bg-accent/10 border border-accent/20 px-4 py-3 text-sm text-ink flex flex-col gap-3">
               <p>This is your vehicle, so you can't book it.</p>
               {typeof vehicle.available === 'boolean' && (
                 <AvailabilitySwitch
@@ -93,12 +84,12 @@ export default function VehicleDetailPage() {
                   onToggle={(next) => setAvailability.mutate({ vehicle, available: next })}
                 />
               )}
-              <Link to="/owner/vehicles" className="text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md w-fit">
+              <Link to="/owner/vehicles" className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md w-fit">
                 Manage it in My Vehicles
               </Link>
             </div>
           ) : vehicle.available === false ? (
-            <div role="note" className="rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-brand-grey">
+            <div role="note" className="rounded-xl bg-black/5 border border-black/10 px-4 py-3 text-sm text-muted">
               This vehicle isn't available for booking right now.
             </div>
           ) : (
@@ -108,6 +99,6 @@ export default function VehicleDetailPage() {
       </div>
 
       </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

@@ -45,7 +45,7 @@ export default function SetupGuideModal() {
         <button
           type="button"
           onClick={close}
-          className="self-start text-sm text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+          className="self-start text-sm text-muted hover:text-ink transition-colors focus-ring rounded-md"
         >
           Remind me later
         </button>

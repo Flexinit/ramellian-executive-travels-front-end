@@ -121,7 +121,7 @@ export default function ContractPage() {
         <ErrorBanner message="We couldn't find which booking this contract is for. Please start again from your booking." />
         <Link
           to={`/vehicles/${vehicleId}`}
-          className="text-brand-gold text-sm font-semibold hover:text-brand-gold-light focus-ring rounded-md"
+          className="text-accent text-sm font-semibold hover:text-accent-hover focus-ring rounded-md"
         >
           Back to vehicle
         </Link>
@@ -154,8 +154,8 @@ export default function ContractPage() {
         {unfulfilled && <BookingUnavailableNotice booking={booking} />}
 
         {alreadyPastContract && (
-          <div className="rounded-xl bg-white/5 border border-white/10 px-5 py-4 flex flex-col gap-3">
-            <p className="text-brand-grey text-sm">
+          <div className="rounded-xl bg-black/5 border border-black/10 px-5 py-4 flex flex-col gap-3">
+            <p className="text-muted text-sm">
               {booking?.status === 'CANCELLED'
                 ? 'This booking was cancelled.'
                 : "This booking's contract has already been taken care of."}

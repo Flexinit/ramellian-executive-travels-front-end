@@ -41,7 +41,7 @@ export default function AuthImage({ src, alt = '', fallback = null, ...imgProps 
   if (isAuthenticated) {
     if (blobUrl) return <img src={blobUrl} alt={alt} {...imgProps} />;
     if (isError) return fallback;
-    return <div role="img" aria-label={alt ? `Loading ${alt}` : 'Loading photo'} aria-busy="true" className={`${imgProps.className || ''} animate-pulse bg-white/5`} />;
+    return <div role="img" aria-label={alt ? `Loading ${alt}` : 'Loading photo'} aria-busy="true" className={`${imgProps.className || ''} animate-pulse bg-black/5`} />;
   }
 
   return plainFailed ? fallback : <img src={url} alt={alt} onError={() => setPlainFailed(true)} {...imgProps} />;

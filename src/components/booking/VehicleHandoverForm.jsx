@@ -52,7 +52,7 @@ export default function VehicleHandoverForm({ type, onSubmit, pending }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <p className="text-sm text-brand-grey">
+      <p className="text-sm text-muted">
         Record the vehicle&apos;s condition {type === 'pickup' ? 'as you collect it' : 'as you return it'}, then have
         the owner or their dispatcher sign below to confirm it&apos;s accurate.
       </p>
@@ -95,7 +95,7 @@ export default function VehicleHandoverForm({ type, onSubmit, pending }) {
       />
 
       <div className="flex flex-col gap-2">
-        <span className="text-sm text-brand-white font-medium">Damage noted?</span>
+        <span className="text-sm text-ink font-medium">Damage noted?</span>
         <div className="flex gap-2">
           <ToggleChip active={!damageNoted} onClick={() => setDamageNoted(false)}>
             No

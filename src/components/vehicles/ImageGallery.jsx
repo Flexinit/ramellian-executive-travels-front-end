@@ -32,10 +32,10 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
   if (images.length === 0) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="w-full aspect-[16/10] max-h-[55vh] rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+        <div className="w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-subtle">
           <GenericVehiclePlaceholder tier={tier} />
         </div>
-        <p className="text-brand-grey text-xs text-center">Photos coming soon for this vehicle.</p>
+        <p className="text-muted text-xs text-center">Photos coming soon for this vehicle.</p>
       </div>
     );
   }
@@ -52,7 +52,7 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
         aria-roledescription="carousel"
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        className="relative w-full aspect-[16/10] max-h-[55vh] rounded-2xl overflow-hidden bg-white/5 border border-white/10 focus-ring"
+        className="relative w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-subtle focus-ring"
       >
         {/*
           No `srcSet` here: the backend serves one URL per photo with no
@@ -76,7 +76,7 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
               type="button"
               onClick={() => go(-1)}
               aria-label="Previous photo"
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-brand-dark/70 text-brand-white hover:bg-brand-dark transition-colors focus-ring"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-surface/90 text-ink shadow-card hover:bg-surface transition-colors focus-ring"
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
@@ -84,11 +84,11 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
               type="button"
               onClick={() => go(1)}
               aria-label="Next photo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-brand-dark/70 text-brand-white hover:bg-brand-dark transition-colors focus-ring"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-surface/90 text-ink shadow-card hover:bg-surface transition-colors focus-ring"
             >
               <ChevronRight size={18} aria-hidden="true" />
             </button>
-            <span className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-brand-dark/70 text-brand-white text-xs">
+            <span className="absolute bottom-3 right-3 px-2 py-1 rounded-full bg-surface/90 text-ink text-xs shadow-card">
               {index + 1} / {images.length}
             </span>
           </>
@@ -106,7 +106,7 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
               aria-label={`Photo ${i + 1}`}
               onClick={() => setIndex(i)}
               className={`shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-colors focus-ring ${
-                i === index ? 'border-brand-gold' : 'border-transparent opacity-60 hover:opacity-100'
+                i === index ? 'border-accent' : 'border-transparent opacity-60 hover:opacity-100'
               }`}
             >
               <AuthImage src={img.url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />

@@ -36,8 +36,8 @@ export default function CountdownTimer({ expiresAt, onExpired }) {
   const isUrgent = seconds < 120;
 
   return (
-    <div className={`inline-flex items-center gap-1.5 font-mono text-sm font-semibold tabular-nums ${isUrgent ? 'text-red-400' : 'text-brand-gold'}`}>
-      <Timer size={14} className={isUrgent ? 'text-red-400' : 'text-brand-gold'} />
+    <div className={`inline-flex items-center gap-1.5 font-mono text-sm font-semibold tabular-nums ${isUrgent ? 'text-red-600' : 'text-accent'}`}>
+      <Timer size={14} className={isUrgent ? 'text-red-600' : 'text-accent'} />
       {mins}:{secs}
     </div>
   );

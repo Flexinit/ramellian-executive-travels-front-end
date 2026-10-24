@@ -163,6 +163,7 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     search({ pickupLocation: '' });
     renderAt('/vehicles/v1');
     await fillRoute();
+    await user.click(screen.getByRole('radio', { name: /self-drive/i })); // delivery is a self-drive choice
 
     expect(await screen.findByText(/no fee — you collect it yourself/i)).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: /^deliver$/i }));
@@ -175,6 +176,30 @@ describe('Booking straight from the vehicle, with what was searched for', () => 
     await user.click(screen.getByRole('button', { name: /add to booking/i }));
     expect(await screen.findByText('the basket')).toBeInTheDocument();
     expect(useCartStore.getState().items[0]).toMatchObject({ deliveryRequested: true, pickupLocation: 'Westlands, Sarit Centre' });
+  });
+
+  it('asks a chauffeured booking where to meet, but not how to get the vehicle', async () => {
+    serve();
+    search();
+    renderAt('/vehicles/v1');
+    await fillRoute();
+    expect(screen.queryByRole('radiogroup', { name: /how will you get the vehicle/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Pickup Location')).toBeInTheDocument();
+    expect(screen.getByLabelText('Drop-off Location')).toBeInTheDocument();
+  });
+
+  it('asks no pickup or drop-off place when the renter collects it themselves', async () => {
+    const user = userEvent.setup();
+    serve();
+    search();
+    renderAt('/vehicles/v1');
+    await fillRoute();
+    await user.click(screen.getByRole('radio', { name: /self-drive/i }));
+    expect(await screen.findByRole('radiogroup', { name: /how will you get the vehicle/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Pickup Location')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Drop-off Location')).not.toBeInTheDocument();
+    expect(screen.getByText(/you collect it from and return it to/i)).toBeInTheDocument();
+    expect(useBookingStore.getState().draft).toMatchObject({ pickupLocation: '', dropoffLocation: '' });
   });
 
   it('offers a Wedding on a General vehicle, and books it', async () => {
@@ -212,6 +237,8 @@ describe('VehicleDetailPage details', () => {
     renderAt('/vehicles/v1');
 
     expect(await screen.findByRole('heading', { name: 'Mercedes Benz' })).toBeInTheDocument();
+    // The key features show at once; the rest are one click away.
+    await userEvent.setup().click(screen.getByRole('button', { name: /show all [0-9]+ features/i }));
     expect(screen.getByText('Black')).toBeInTheDocument();
     expect(screen.getByText('8 seats')).toBeInTheDocument();
     expect(screen.getByText('Air Conditioning')).toBeInTheDocument();

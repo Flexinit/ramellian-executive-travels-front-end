@@ -72,9 +72,14 @@ you can click to fold or open (**Administration**, **Vehicles**, **Documents**, 
 The heading holding the page you're on is open by itself and the others are folded away; on a phone the strip
 stays flat. Menus for a single role aren't grouped. On a phone the menu is a strip along the top that you swipe
 sideways; it fades at its right edge when there's more to see, and it opens scrolled to the page you're on.
+Once you're signed in, a phone also shows a dark bar floating along the bottom of the screen with five shortcuts —
+**Home**, **Search** (Browse Vehicles), **Messages**, **Inbox** and **Profile**. The one you're on is lit up, and
+Messages and Inbox show how many unread items you have. It is extra to the menu, not a replacement for it.
 
 **How signing in works.** The login page asks only for your email and password — there is no "log in as"
-choice. The roles on your account decide where you land:
+choice. **Forgot password?** (under the password box) opens a page that emails you a 6-digit code: enter it with a
+new password (same rules as signing up) and you're taken back to Log In with your email already filled in. **Send
+the code again** sends a fresh one. The page never says whether an email has an account. The roles on your account decide where you land:
 
 | Who signs in | Lands on |
 | --- | --- |
@@ -170,7 +175,8 @@ it, one step at a time:
    enough, you never need both. For a National ID you add four photos: the front, the
    back, a **selfie holding the front** and a **selfie holding the back**. For a Passport
    you add two: the photo page and a **selfie holding the photo page**. (On a phone the
-   selfie buttons open the front camera.) The selfies let an administrator check the
+   selfie buttons open the front camera; on a computer they open a camera window using the webcam — allow the
+   camera when the browser asks — with **or upload a photo** underneath if you'd rather.) The selfies let an administrator check the
    document belongs to you. Your **ID number** (or passport number) is **read off the
    photo automatically** and can't be typed or changed. If it can't be read, you're asked
    to retake a flat, well-lit, in-focus photo. All the photos go to the reviewer together
@@ -210,7 +216,7 @@ the Profile page). If the server itself errors (an HTTP 500), you're told it's a
 problem on the server side rather than something you did. **Remind me later**
 closes the window for the rest of your session.
 
-**"Finish setting up" banner:** whether or not you close the window, a gold banner
+**"Finish setting up" banner:** whether or not you close the window, a grey banner
 under the navbar keeps reminding you while something is still missing — **Complete
 profile**, **Upload documents** (it lists what's missing), and, for car owners,
 **Add a vehicle**. Each prompt disappears on the page it links to, clears itself
@@ -272,14 +278,15 @@ verifying your email (which signs you in), and picks up where you left off.
    **Browsing (`/vehicles`):** the filter panel has **Available in** — every place vehicles are available,
    with how many are in each (click one to see only those; click again to clear) — and a **Price per day**
    slider with two handles for the lowest and highest price you'll pay (drag them, or use the arrow keys;
-   the results update when you let go). When the results are in more than one place they're shown place by
-   place, each under its own heading with a count — until you pick a **Sort by** option, which shows one list
-   in exactly that order.
+   the results update when you let go). The results are one grid — not split up by place — with each car's
+   place on its card; use **Available in** to narrow to a place. The grid follows the **Sort by** order.
+   **Searching from the home page:** give the **Pick-up Location** and your dates. Returning the car somewhere
+   else? Click **Return to a different location** under the search bar to add a **Return Location**
+   (**Return to the same place** removes it again).
    The search box and filters stay in view while you scroll the vehicles. The full-width search box stays
    pinned under the top bar. On a wide screen the filters are a column beside the results that stays put just
-   below it (scrolling on its own if it's taller than the screen); on a narrower screen a **Filters** button
-   sits beside the search box and opens the full panel right there, showing how many filters are on, e.g.
-   **Filters (2)**.
+   below it (scrolling on its own if it's taller than the screen); on a narrower screen a round filter button
+   sits beside the search box and opens the full panel right there, with a small count of how many filters are on.
    **Order (Sort by):** **Recommended**, the default, shows vehicles free for your dates first, then the
    highest rated, then those with photos, then the newest. **Newest** puts the most recently listed first.
    Price, Top Rated and Most Seats sort by just that. A vehicle listed in the last 7 days (counted from when
@@ -301,9 +308,12 @@ verifying your email (which signs you in), and picks up where you left off.
    - **Book now** — goes straight to checkout. If you're not signed in, **Create Account** is already open there
      (with **Log in** one tap away). Anything else already in your booking comes along too.
    - **Add to booking** — puts it in **Your Booking** (step 3) so you can add more vehicles first.
-   **Getting the vehicle:** choose **I'll collect** (no fee — you pick it up yourself) or **Deliver** (a flat
-   delivery fee, shown right there once your dates are chosen, is added to your total). For
-   delivery, the **Pickup Location** box becomes **Delivery Address**, and it's required. Your booking and
+   **Getting the vehicle** (self-drive only — a chauffeur brings the car, so a chauffeured booking doesn't ask):
+   choose **I'll collect** (no fee — you pick it up yourself) or **Deliver** (a flat delivery fee, shown right there
+   once your dates are chosen, is added to your total). If you collect it, there are no pickup or drop-off boxes:
+   you collect it from and return it to the vehicle's own location, which the form shows. For delivery, you give the
+   **Delivery Address** (required) and a **Drop-off Location**. A chauffeured booking asks for the **Pickup
+   Location** and **Drop-off Location** — where the chauffeur meets you and drops you off. Your booking and
    checkout show which you chose ("Getting the vehicle") and the fee. Administrators set the fee under
    **Platform Settings → Delivery fee** (0 means free delivery).
    Trip Type only offers what this particular vehicle is set up for (see its **Suited for** list). A vehicle
@@ -796,6 +806,11 @@ your permissions" above): an item is only shown if your account holds the permis
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
 - **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Paid** and
   **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what went wrong.
+- **Invoices** (`/admin/invoices`, administrators and super admins only) — draw up an invoice: who it's for, the
+  items (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an
+  optional discount. The invoice beside the form updates as you type; **Print / Save as PDF** prints just the
+  invoice once its required fields are filled in. Invoices aren't stored on the platform, so keep the PDF. The one
+  you're working on stays in your browser until you click **Start a new invoice**.
 - **Rental Terms** (`/admin/rental-terms`) — the platform's rental rules: add, edit, delete, and switch each one on
   or off, grouped by category and in your chosen order. Renters see the switched-on ones on the Terms page and from
   **Read the rental terms** at checkout.

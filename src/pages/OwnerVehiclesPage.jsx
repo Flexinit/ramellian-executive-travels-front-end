@@ -33,8 +33,8 @@ export default function OwnerVehiclesPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">My Vehicles</h1>
-            <p className="text-brand-grey text-sm mt-1">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">My Vehicles</h1>
+            <p className="text-muted text-sm mt-1">
               All your vehicles, whether or not renters can see them. Use the switch to pull one from renters — or put it back — in one click.
             </p>
           </div>

@@ -7,11 +7,11 @@ import { isBookingFlowPath } from '../../lib/utils';
 function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
   return (
     <div className="flex items-center gap-3 px-4 sm:px-6 py-2.5">
-      <Icon size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
-      <p className="flex-1 min-w-0 text-sm text-brand-white">{message}</p>
+      <Icon size={16} className="text-accent shrink-0" aria-hidden="true" />
+      <p className="flex-1 min-w-0 text-sm text-ink">{message}</p>
       <Link
         to={to}
-        className="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-brand-gold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+        className="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md"
       >
         {cta}
         <ArrowRight size={14} aria-hidden="true" />
@@ -20,7 +20,7 @@ function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss"
-        className="p-1 rounded-full text-brand-grey hover:text-brand-white hover:bg-white/10 transition-colors focus-ring"
+        className="p-1 rounded-full text-muted hover:text-ink hover:bg-black/10 transition-colors focus-ring"
       >
         <X size={14} aria-hidden="true" />
       </button>
@@ -55,7 +55,7 @@ export default function SetupPrompts() {
   if (isBookingFlowPath(pathname) || (!showProfile && !showDocuments && !showVehicle)) return null;
 
   return (
-    <div role="region" aria-label="Finish setting up your account" className="bg-brand-gold/10 border-b border-brand-gold/20">
+    <div role="region" aria-label="Finish setting up your account" className="bg-accent/10 border-b border-accent/20">
       {showProfile && (
         <PromptRow
           icon={UserCircle}

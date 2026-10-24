@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, BadgeCheck, Building2, Car, Check, IdCard, KeyRound, Mail, MapPin, MessageSquare, Pencil, Phone, ShieldCheck, Star, Trash2, UserCheck, UserX, Wallet, X,
 } from 'lucide-react';
+import { DetailList, DetailRow } from '../components/ui/DetailList';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Avatar from '../components/ui/Avatar';
@@ -30,15 +31,15 @@ function FactChip({ icon: Icon, label, on, onText = 'Yes', offText = 'No' }) {
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-        on ? 'border-green-500/30 bg-green-500/10' : 'border-white/10 bg-white/5'
+        on ? 'border-green-500/30 bg-green-500/10' : 'border-black/10 bg-black/5'
       }`}
     >
-      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${on ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-brand-grey'}`}>
+      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${on ? 'bg-green-500/20 text-green-600' : 'bg-black/10 text-muted'}`}>
         <Icon size={17} aria-hidden="true" />
       </span>
       <span className="flex flex-col">
-        <span className="text-xs text-brand-grey">{label}</span>
-        <span className={`flex items-center gap-1 text-sm font-semibold ${on ? 'text-green-400' : 'text-brand-white'}`}>
+        <span className="text-xs text-muted">{label}</span>
+        <span className={`flex items-center gap-1 text-sm font-semibold ${on ? 'text-green-600' : 'text-ink'}`}>
           {on ? <Check size={13} aria-hidden="true" /> : <X size={13} aria-hidden="true" />}
           {on ? onText : offText}
         </span>
@@ -53,19 +54,25 @@ function InfoCard({ icon: CardIcon, title, rows }) {
   if (shown.length === 0) return null;
   return (
     <Card className="p-5 flex flex-col gap-4">
-      <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-        <CardIcon size={17} className="text-brand-gold" aria-hidden="true" />
+      <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+        <CardIcon size={17} className="text-accent" aria-hidden="true" />
         {title}
       </h2>
-      <dl className="flex flex-col gap-3">
+      <DetailList>
         {shown.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex items-start gap-3 text-sm">
-            {Icon && <Icon size={15} className="mt-0.5 text-brand-grey shrink-0" aria-hidden="true" />}
-            <dt className="text-brand-grey w-32 shrink-0">{label}</dt>
-            <dd className="text-brand-white min-w-0 break-words">{value}</dd>
-          </div>
+          <DetailRow
+            key={label}
+            label={
+              <span className="inline-flex items-start gap-2">
+                {Icon && <Icon size={15} className="mt-0.5 shrink-0" aria-hidden="true" />}
+                {label}
+              </span>
+            }
+          >
+            {value}
+          </DetailRow>
         ))}
-      </dl>
+      </DetailList>
     </Card>
   );
 }
@@ -78,24 +85,24 @@ function PermissionsCard({ user }) {
   return (
     <Card className="p-5 flex flex-col gap-4 lg:col-span-2">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-          <KeyRound size={17} className="text-brand-gold" aria-hidden="true" />
+        <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+          <KeyRound size={17} className="text-accent" aria-hidden="true" />
           Permissions
         </h2>
-        <Link to="/admin/roles" className="text-xs font-semibold text-brand-gold hover:underline focus-ring rounded">
+        <Link to="/admin/roles" className="text-xs font-semibold text-accent hover:underline focus-ring rounded">
           Roles &amp; Permissions
         </Link>
       </div>
       <ul className="flex flex-wrap gap-1.5" aria-label="Permissions this person has">
         {all.map((name) => (
-          <li key={name} className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-brand-grey">
+          <li key={name} className="rounded-full border border-black/10 bg-black/5 px-2 py-0.5 text-[11px] text-muted">
             {name}
           </li>
         ))}
       </ul>
       {direct.length > 0 && (
-        <p className="text-xs text-brand-grey">
-          Given to them directly, not through a role: <span className="text-brand-white">{direct.join(', ')}</span>
+        <p className="text-xs text-muted">
+          Given to them directly, not through a role: <span className="text-ink">{direct.join(', ')}</span>
         </p>
       )}
     </Card>
@@ -116,8 +123,8 @@ function IdentityCard({ user }) {
 
   return (
     <Card className="p-5 flex flex-col gap-4 lg:col-span-2">
-      <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-        <IdCard size={17} className="text-brand-gold" aria-hidden="true" />
+      <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+        <IdCard size={17} className="text-accent" aria-hidden="true" />
         Identity on file
       </h2>
       {images.length > 0 ? (
@@ -128,18 +135,18 @@ function IdentityCard({ user }) {
                 type="button"
                 onClick={() => setZoom({ label, src })}
                 aria-label={`Open ${label} full size`}
-                className="block w-full rounded-xl border border-white/10 bg-black/20 overflow-hidden focus-ring hover:border-brand-gold/50 transition-colors"
+                className="block w-full rounded-xl border border-black/10 bg-subtle overflow-hidden focus-ring hover:border-accent/50 transition-colors"
               >
-                <AuthImage src={src} alt={label} className="h-28 w-full object-cover" fallback={<span className="flex h-28 items-center justify-center px-2 text-xs text-brand-grey">Couldn&apos;t load</span>} />
-                <span className="block px-2 py-1.5 text-xs text-brand-grey text-left">{label}</span>
+                <AuthImage src={src} alt={label} className="h-28 w-full object-cover" fallback={<span className="flex h-28 items-center justify-center px-2 text-xs text-muted">Couldn&apos;t load</span>} />
+                <span className="block px-2 py-1.5 text-xs text-muted text-left">{label}</span>
               </button>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-brand-grey">
+        <p className="text-sm text-muted">
           No identity pictures are attached to this profile. Documents people upload are checked under{' '}
-          <Link to="/admin/documents" className="text-brand-gold hover:underline focus-ring rounded">
+          <Link to="/admin/documents" className="text-accent hover:underline focus-ring rounded">
             Review Documents
           </Link>
           .
@@ -198,13 +205,13 @@ export default function AdminUserDetailPage() {
           All users
         </Button>
 
-        <Card className="p-5 sm:p-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between bg-gradient-to-br from-brand-gold/10 via-transparent to-transparent">
+        <Card className="p-5 sm:p-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between bg-gradient-to-br from-accent/10 via-transparent to-transparent">
           <div className="flex items-center gap-4 min-w-0">
             {user.profilePhotoUrl ? (
               <AuthImage
                 src={user.profilePhotoUrl}
                 alt={name}
-                className="h-20 w-20 rounded-full object-cover border border-brand-gold/40 shrink-0"
+                className="h-20 w-20 rounded-full object-cover border border-accent/40 shrink-0"
                 fallback={<Avatar name={name} size="xl" />}
               />
             ) : (
@@ -212,10 +219,10 @@ export default function AdminUserDetailPage() {
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold break-words">{name}</h1>
+                <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold break-words">{name}</h1>
                 <Badge label={user.enabled ? 'Active' : 'Disabled'} variant={user.enabled ? 'success' : 'danger'} />
               </div>
-              <p className="text-brand-grey text-sm mt-0.5 break-all">{user.email}</p>
+              <p className="text-muted text-sm mt-0.5 break-all">{user.email}</p>
               <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {roleBadges(user.roles).map((label) => (
                   <Badge key={label} label={label} variant="gold" />
@@ -250,7 +257,7 @@ export default function AdminUserDetailPage() {
             </Button>
           </div>
         </Card>
-        {isMe && <p className="text-xs text-brand-grey -mt-3">This is your own account — you can&apos;t disable or delete it, and changing your role could lock you out of the admin pages.</p>}
+        {isMe && <p className="text-xs text-muted -mt-3">This is your own account — you can&apos;t disable or delete it, and changing your role could lock you out of the admin pages.</p>}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" aria-label="At a glance">
           <FactChip icon={Mail} label="Email" on={user.emailVerified} onText="Verified" offText="Not verified" />
@@ -303,8 +310,8 @@ export default function AdminUserDetailPage() {
           <AdminUploadDocumentCard userId={user.id || userId} />
           {user.isCarOwner && (
             <Card className="p-5 flex flex-col gap-4 lg:col-span-2">
-              <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-                <Star size={17} className="text-brand-gold" aria-hidden="true" />
+              <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+                <Star size={17} className="text-accent" aria-hidden="true" />
                 What renters say
               </h2>
               <ReviewList reviews={ownerReviews.data} isLoading={ownerReviews.isLoading} showComplaints emptyText="No reviews of this owner yet" />
@@ -317,8 +324,8 @@ export default function AdminUserDetailPage() {
 
       <Modal isOpen={confirmingDelete} onClose={() => setConfirmingDelete(false)} title="Delete account">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
-            This can&apos;t be undone. Delete the account for <span className="text-brand-white">{name}</span>?
+          <p className="text-muted text-sm">
+            This can&apos;t be undone. Delete the account for <span className="text-ink">{name}</span>?
           </p>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setConfirmingDelete(false)}>Cancel</Button>

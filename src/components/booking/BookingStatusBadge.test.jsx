@@ -11,7 +11,7 @@ describe('BookingStatusBadge', () => {
     // icon+label flex wrapper — the text sits in the inner one, so its parent is the one to check.
     const badge = screen.getByText(/confirmed/i).closest('span').parentElement;
     expect(badge).toHaveClass('uppercase');
-    expect(badge).toHaveClass('bg-green-500/15'); // Badge's "success" variant
+    expect(badge).toHaveClass('bg-green-50'); // Badge's "success" variant
   });
 
   it('gives every status its own icon, not just colour', () => {

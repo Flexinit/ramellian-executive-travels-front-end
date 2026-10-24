@@ -17,8 +17,8 @@ export default function TripTypeSelect({ vehicle }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-brand-white">
-        Trip Type <span className="text-brand-grey font-normal">(optional)</span>
+      <span className="text-sm font-medium text-ink">
+        Trip Type <span className="text-muted font-normal">(optional)</span>
       </span>
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Trip type">
         {supported.map((type) => {

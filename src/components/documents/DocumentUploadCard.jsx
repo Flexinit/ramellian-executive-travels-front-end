@@ -52,8 +52,8 @@ export default function DocumentUploadCard({ type, title, description, document 
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-heading text-brand-white font-semibold">{title}</h3>
-          {description && <p className="text-brand-grey text-xs mt-1">{description}</p>}
+          <h3 className="font-heading text-ink font-semibold">{title}</h3>
+          {description && <p className="text-muted text-xs mt-1">{description}</p>}
         </div>
         {meta && (
           <Badge label={meta.label} variant={meta.variant} className="shrink-0" />
@@ -61,7 +61,7 @@ export default function DocumentUploadCard({ type, title, description, document 
       </div>
 
       {status === DOCUMENT_STATUSES.REJECTED && document?.rejectionReason && (
-        <p className="text-red-400 text-xs">{document.rejectionReason}</p>
+        <p className="text-red-600 text-xs">{document.rejectionReason}</p>
       )}
 
       <DocumentFilePreview document={document} />
@@ -75,26 +75,26 @@ export default function DocumentUploadCard({ type, title, description, document 
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           className={`relative rounded-xl border-2 border-dashed px-4 py-6 flex flex-col items-center justify-center gap-2 text-center transition-colors ${
-            dragOver ? 'border-brand-gold bg-brand-gold/5' : 'border-white/15 hover:border-brand-gold/40'
+            dragOver ? 'border-accent bg-accent/5' : 'border-black/15 hover:border-accent/40'
           }`}
         >
           {upload.isPending ? (
             <>
               <Spinner size="md" label="Uploading" />
-              <div className="w-full max-w-[180px] h-1.5 rounded-full bg-white/10 overflow-hidden mt-1">
+              <div className="w-full max-w-[180px] h-1.5 rounded-full bg-black/10 overflow-hidden mt-1">
                 <div
-                  className="h-full bg-brand-gold transition-all duration-200"
+                  className="h-full bg-accent transition-all duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-brand-grey text-xs">{progress}%</p>
+              <p className="text-muted text-xs">{progress}%</p>
             </>
           ) : (
             <>
-              <Upload size={22} className="text-brand-gold" aria-hidden="true" />
-              <p className="text-brand-white text-sm font-medium">Drop a file, or browse</p>
-              <p className="text-brand-grey text-xs">JPG, PNG or PDF</p>
-              <label className="mt-1 text-xs font-semibold text-brand-gold hover:text-brand-gold-light cursor-pointer focus-within:ring-2 focus-within:ring-brand-gold rounded-md px-1">
+              <Upload size={22} className="text-accent" aria-hidden="true" />
+              <p className="text-ink text-sm font-medium">Drop a file, or browse</p>
+              <p className="text-muted text-xs">JPG, PNG or PDF</p>
+              <label className="mt-1 text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer focus-within:ring-2 focus-within:ring-accent rounded-md px-1">
                 Choose file
                 <input
                   ref={inputRef}

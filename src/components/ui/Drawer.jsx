@@ -85,7 +85,7 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
             setJustDismissed(false);
             onReopen();
           }}
-          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 bg-brand-navy shadow-xl"
+          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 bg-surface shadow-xl"
         >
           <PanelRightOpen size={16} aria-hidden="true" /> Continue: {title}
         </Button>,
@@ -122,18 +122,18 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
         aria-labelledby="drawer-title"
         ref={panelRef}
         onClick={(e) => e.stopPropagation()}
-        className={`relative flex max-h-full w-full flex-col ${sizes[size]} bg-brand-navy/90 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl transition-transform duration-300 ease-out ${entered ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`relative flex max-h-full w-full flex-col ${sizes[size]} bg-surface/90 backdrop-blur-xl border border-black/15 rounded-2xl shadow-2xl transition-transform duration-300 ease-out ${entered ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-white/10">
-          <h2 id="drawer-title" className="font-heading text-lg font-semibold text-brand-white">
+        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-black/10">
+          <h2 id="drawer-title" className="font-heading text-lg font-semibold text-ink">
             {title}
           </h2>
           <button
             ref={closeBtnRef}
             onClick={handleDismiss}
             aria-label="Close"
-            className="p-1.5 rounded-lg text-brand-grey hover:text-brand-white hover:bg-white/10 transition focus-ring"
+            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-black/10 transition focus-ring"
           >
             <X size={18} />
           </button>

@@ -22,15 +22,15 @@ export default function BookingWarningsModal({ isOpen, onClose, warnings = [] })
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 shrink-0 rounded-full bg-amber-500/10 flex items-center justify-center">
-            <TriangleAlert size={18} className="text-amber-400" aria-hidden="true" />
+            <TriangleAlert size={18} className="text-amber-600" aria-hidden="true" />
           </div>
-          <p className="text-sm text-brand-grey leading-relaxed">
+          <p className="text-sm text-muted leading-relaxed">
             Your booking is confirmed, but there&apos;s still something to take care of before you can
             collect the vehicle:
           </p>
         </div>
 
-        <ul className="flex flex-col gap-1.5 text-sm text-brand-white pl-1">
+        <ul className="flex flex-col gap-1.5 text-sm text-ink pl-1">
           {warnings.map((item) => (
             <li key={item} className="flex items-start gap-2">
               <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 mt-2" aria-hidden="true" />

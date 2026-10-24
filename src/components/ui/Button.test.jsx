@@ -40,26 +40,35 @@ describe('Button', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('is the "Rent a Car" look by default: a gold-outline pill, never a solid fill', () => {
+  it('is the design system charcoal pill by default', () => {
     render(<Button>Book Now</Button>);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveClass('rounded-full', 'border', 'border-brand-gold', 'text-brand-gold', 'bg-transparent');
-    expect(btn).not.toHaveClass('bg-brand-gold');
+    expect(btn).toHaveClass('rounded-full', 'bg-accent', 'text-on-accent');
   });
 
-  it('has the size and weight of the navbar "Rent a Car" button', () => {
+  it('renders a white outlined pill for a quieter action', () => {
+    render(<Button variant="outline">Later</Button>);
+    expect(screen.getByRole('button')).toHaveClass('rounded-full', 'border-line', 'bg-surface', 'text-ink');
+  });
+
+  it('is semibold text-sm at the usual size', () => {
     render(<Button>Rent a Car</Button>);
     expect(screen.getByRole('button')).toHaveClass('text-sm', 'font-semibold', 'px-5', 'py-2.5');
   });
 
   it('renders a red outline for destructive actions', () => {
     render(<Button variant="danger">Delete</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-red-500', 'text-red-400', 'rounded-full');
+    expect(screen.getByRole('button')).toHaveClass('border-red-500', 'text-red-600', 'rounded-full');
   });
 
-  it('renders a dark outline for use on a gold surface', () => {
-    render(<Button variant="dark">On gold</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-brand-dark', 'text-brand-dark');
+  it('renders a white pill for use on a dark surface', () => {
+    render(<Button variant="dark">On dark</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-on-accent', 'text-accent');
+  });
+
+  it('renders the extra-small car-card pill', () => {
+    render(<Button size="xs">Book now</Button>);
+    expect(screen.getByRole('button')).toHaveClass('text-[11px]', 'rounded-full');
   });
 
   it('renders small size', () => {
@@ -89,7 +98,7 @@ describe('Button', () => {
     );
     const link = screen.getByRole('link', { name: 'Rent a Car' });
     expect(link).toHaveAttribute('href', '/vehicles');
-    expect(link).toHaveClass('rounded-full', 'border-brand-gold');
+    expect(link).toHaveClass('rounded-full', 'bg-accent');
     await user.click(link);
     expect(onClick).toHaveBeenCalledOnce();
   });

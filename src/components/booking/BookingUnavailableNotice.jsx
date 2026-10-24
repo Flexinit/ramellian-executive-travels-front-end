@@ -61,12 +61,12 @@ export default function BookingUnavailableNotice({ booking }) {
     <div role="alert" className="rounded-xl bg-red-500/10 border border-red-500/20 px-5 py-4 flex flex-col gap-3">
       <div className="flex items-start gap-3">
         <div className="w-9 h-9 shrink-0 rounded-full bg-red-500/15 flex items-center justify-center">
-          <AlertTriangle size={16} className="text-red-400" aria-hidden="true" />
+          <AlertTriangle size={16} className="text-red-600" aria-hidden="true" />
         </div>
         <div className="flex flex-col gap-1">
-          <h2 className="font-heading text-brand-white text-base font-semibold">{copy.heading}</h2>
-          <p className="text-brand-grey text-sm">{copy.body}</p>
-          {note && <p className="text-brand-white text-sm italic">&ldquo;{note}&rdquo;</p>}
+          <h2 className="font-heading text-ink text-base font-semibold">{copy.heading}</h2>
+          <p className="text-muted text-sm">{copy.body}</p>
+          {note && <p className="text-ink text-sm italic">&ldquo;{note}&rdquo;</p>}
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 flex-wrap">

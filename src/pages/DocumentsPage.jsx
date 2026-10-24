@@ -1,11 +1,9 @@
 import React from 'react';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import DocumentChecklist from '../components/documents/DocumentChecklist';
 import { useCurrentUser } from '../hooks/useProfile';
 import { ACCOUNT_TYPES } from '../lib/constants';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 
 /**
  * Upload the documents your account needs. Which ones are listed depends on
@@ -18,13 +16,13 @@ export default function DocumentsPage() {
   const { data: currentUser } = useCurrentUser();
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
       <PageWrapper>
         <PageTitle title="My Documents" />
         <div className="flex flex-col gap-6 max-w-2xl">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Documents</h1>
-            <p className="text-brand-grey text-sm mt-1">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Documents</h1>
+            <p className="text-muted text-sm mt-1">
               Upload and verify these to use your account. Approval usually takes a few hours.
               {currentUser && !currentUser.ownerType && (
                 <> Choose Individual or Business in your profile to see every document your account needs.</>
@@ -36,6 +34,6 @@ export default function DocumentsPage() {
           <DocumentChecklist accountType={currentUser?.ownerType} />
         </div>
       </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

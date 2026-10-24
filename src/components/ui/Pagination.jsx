@@ -31,8 +31,8 @@ export default function Pagination({ page, totalPages, onPage, from, to, total, 
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-sm text-brand-grey" aria-live="polite">
-        Showing <span className="text-brand-white font-medium">{from}–{to}</span> of <span className="text-brand-white font-medium">{total}</span> {noun}
+      <p className="text-sm text-muted" aria-live="polite">
+        Showing <span className="text-ink font-medium">{from}–{to}</span> of <span className="text-ink font-medium">{total}</span> {noun}
       </p>
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
@@ -42,12 +42,12 @@ export default function Pagination({ page, totalPages, onPage, from, to, total, 
         <ul className="hidden sm:flex items-center gap-1" aria-label="Pages">
           {pageWindow(page, totalPages).map((n, i) =>
             n === null ? (
-              <li key={`gap-${i}`} aria-hidden="true" className="px-1 text-brand-grey">
+              <li key={`gap-${i}`} aria-hidden="true" className="px-1 text-muted">
                 …
               </li>
             ) : n === page ? (
               <li key={n}>
-                <span aria-current="page" aria-label={`Page ${n}, current page`} className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-brand-gold px-2 text-sm font-semibold text-brand-dark">
+                <span aria-current="page" aria-label={`Page ${n}, current page`} className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-accent px-2 text-sm font-semibold text-on-accent">
                   {n}
                 </span>
               </li>
@@ -60,7 +60,7 @@ export default function Pagination({ page, totalPages, onPage, from, to, total, 
             )
           )}
         </ul>
-        <span className="text-sm text-brand-grey sm:hidden">
+        <span className="text-sm text-muted sm:hidden">
           Page {page} of {totalPages}
         </span>
         <Button size="sm" disabled={page >= totalPages} onClick={() => onPage(page + 1)} aria-label="Next page">

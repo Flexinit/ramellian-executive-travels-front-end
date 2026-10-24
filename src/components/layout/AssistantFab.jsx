@@ -13,7 +13,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
  * discoverable, always-in-view entry point to the assistant than the top-bar icon alone, too (which only
  * ever shows once signed in, and can scroll out of view or sit behind the mobile menu toggle). Deliberately
  * styled like a recognizable WhatsApp chat launcher (solid green, the WhatsApp glyph) rather than the
- * portal's usual gold-outline `Button` — this is the one widget meant to read as "chat with us", not as a
+ * portal's usual charcoal `Button` — this is the one widget meant to read as "chat with us", not as a
  * normal action.
  *
  * Opens the same conversation as `/assistant` in a panel right here, instead of navigating to a new page —
@@ -53,7 +53,7 @@ export default function AssistantFab() {
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-2xl">
+        <div className={`fixed ${isAuthenticated ? 'bottom-44 md:bottom-24' : 'bottom-24'} right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-black/10 bg-surface shadow-2xl`}>
           <div className="flex shrink-0 items-center justify-between gap-3 bg-[#25D366] px-4 py-3">
             <span className="inline-flex items-center gap-2 font-heading text-sm font-semibold text-white">
               <FaWhatsapp size={18} aria-hidden="true" />
@@ -73,7 +73,7 @@ export default function AssistantFab() {
               <AssistantThread />
             ) : (
               <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <p className="text-sm text-brand-grey">Log in or create an account to chat with our assistant.</p>
+                <p className="text-sm text-muted">Log in or create an account to chat with our assistant.</p>
                 <div className="flex gap-3">
                   <Button to="/auth/login" size="sm" onClick={() => setOpen(false)}>
                     Log In
@@ -94,7 +94,7 @@ export default function AssistantFab() {
         aria-label={open ? 'Minimize chat' : 'Chat with the assistant'}
         aria-expanded={open}
         tabIndex={tucked ? -1 : undefined}
-        className={`fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-300 hover:scale-105 focus-ring ${
+        className={`fixed ${isAuthenticated ? 'bottom-24 md:bottom-5' : 'bottom-5'} right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-300 hover:scale-105 focus-ring ${
           tucked ? 'translate-y-24 opacity-0 pointer-events-none' : ''
         }`}
       >

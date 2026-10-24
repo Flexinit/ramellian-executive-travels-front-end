@@ -35,7 +35,7 @@ export default function Tooltip({ content, children, position = 'top' }) {
         id={id}
         role="tooltip"
         style={{ visibility: visible ? 'visible' : 'hidden' }}
-        className={`absolute z-50 ${positions[position]} whitespace-nowrap rounded-lg bg-brand-dark border border-white/15 px-2.5 py-1.5 text-xs text-brand-white shadow-lg pointer-events-none`}
+        className={`absolute z-50 ${positions[position]} whitespace-nowrap rounded-lg bg-canvas border border-black/15 px-2.5 py-1.5 text-xs text-ink shadow-lg pointer-events-none`}
       >
         {content}
       </span>

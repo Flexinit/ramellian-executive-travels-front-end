@@ -34,40 +34,40 @@ export default function VehicleRow({ title, filters = {} }) {
   }
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-4">
+    <section aria-labelledby={headingId} className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 id={headingId} className="font-heading text-brand-white text-lg sm:text-xl font-semibold">{title}</h3>
+        <h3 id={headingId} className="font-heading text-ink text-base sm:text-lg font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
           <div className="hidden sm:flex items-center gap-2">
-            <Button size="icon" onClick={() => scrollBy(-1)} aria-label={`Scroll ${title} left`}>
+            <Button variant="outline" size="icon" onClick={() => scrollBy(-1)} aria-label={`Scroll ${title} left`}>
               <ChevronLeft size={16} aria-hidden="true" />
             </Button>
-            <Button size="icon" onClick={() => scrollBy(1)} aria-label={`Scroll ${title} right`}>
+            <Button variant="outline" size="icon" onClick={() => scrollBy(1)} aria-label={`Scroll ${title} right`}>
               <ChevronRight size={16} aria-hidden="true" />
             </Button>
           </div>
           <Link
             to={`/vehicles${query ? `?${query}` : ''}`}
             state={{ fromSearch: true }}
-            className="focus-ring rounded-md inline-flex items-center gap-1 text-sm text-brand-gold hover:underline"
+            className="focus-ring rounded-md inline-flex items-center gap-1 text-xs text-muted hover:text-ink"
           >
-            See all <span className="sr-only">{title}</span> <ArrowRight size={14} aria-hidden="true" />
+            See all <span className="sr-only">{title}</span> <ArrowRight size={12} aria-hidden="true" />
           </Link>
         </div>
       </div>
 
       <ul
         ref={scroller}
-        className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"
+        className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth pb-3 -mx-4 px-4 sm:mx-0 sm:px-0"
       >
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => (
-              <li key={i} className="snap-start shrink-0 w-[80%] sm:w-72">
+              <li key={i} className="snap-start shrink-0 w-[46%] sm:w-56">
                 <VehicleCardSkeleton />
               </li>
             ))
           : shown.map((vehicle) => (
-              <li key={vehicle.id} className="snap-start shrink-0 w-[80%] sm:w-72 flex">
+              <li key={vehicle.id} className="snap-start shrink-0 w-[46%] sm:w-56 flex">
                 <div className="w-full">
                   <VehicleCard vehicle={vehicle} />
                 </div>

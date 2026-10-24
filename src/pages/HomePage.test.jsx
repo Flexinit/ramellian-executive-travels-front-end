@@ -29,14 +29,14 @@ function renderHome() {
 }
 
 describe('HomePage', () => {
-  it('renders all sections in order: hero, services, fleet, how-it-works, trust, cta', () => {
+  it('renders all sections in order: hero, fleet, services, how-it-works, trust, cta', () => {
     const { container } = renderHome();
     const headings = Array.from(container.querySelectorAll('h1, h2')).map((h) => h.textContent);
 
     expect(headings).toEqual([
       'Executive Travel, Reimagined',
-      'Services Built for Every Journey',
       'A Vehicle for Every Occasion',
+      'Services Built for Every Journey',
       'Booking in Three Simple Steps',
       'Ready for your next executive journey?',
     ]);

@@ -39,17 +39,17 @@ export default function InsuranceStickerReview({ vehicle }) {
         src={src}
         alt={`Insurance sticker for ${vehicle.model}`}
         className="max-h-[70vh] max-w-full mx-auto rounded-lg"
-        fallback={<p className="text-sm text-red-400 text-center">Couldn&apos;t load the sticker photo.</p>}
+        fallback={<p className="text-sm text-red-600 text-center">Couldn&apos;t load the sticker photo.</p>}
       />
 
       <section aria-label="QR code check" className="flex flex-col gap-4 min-w-0">
-        <h3 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-          <QrCode size={17} className="text-brand-gold" aria-hidden="true" />
+        <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+          <QrCode size={17} className="text-accent" aria-hidden="true" />
           QR code check
         </h3>
 
         {isLoading && (
-          <p className="flex items-center gap-2 text-sm text-brand-grey" role="status">
+          <p className="flex items-center gap-2 text-sm text-muted" role="status">
             <Spinner size="sm" label="Reading the QR code" />
             Reading the QR code…
           </p>
@@ -58,7 +58,7 @@ export default function InsuranceStickerReview({ vehicle }) {
         {!isLoading && !found && (
           <div className="flex flex-col gap-2">
             <Badge label="No QR code found" variant="warning" className="self-start" />
-            <p className="text-sm text-brand-grey">
+            <p className="text-sm text-muted">
               A digital certificate should have a QR code. This photo has none that could be read — it may be blurry, cropped or not a
               digital certificate. Ask the owner for a clearer photo of the sticker.
             </p>
@@ -74,7 +74,7 @@ export default function InsuranceStickerReview({ vehicle }) {
                 variant={hasRegistration ? 'success' : 'neutral'}
               />
             </div>
-            <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-brand-white font-mono break-all select-all" aria-label="What the QR code says">
+            <p className="rounded-lg border border-black/10 bg-subtle px-3 py-2 text-xs text-ink font-mono break-all select-all" aria-label="What the QR code says">
               {found.text}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -92,13 +92,13 @@ export default function InsuranceStickerReview({ vehicle }) {
           </div>
         )}
 
-        <div className="rounded-lg bg-white/5 px-3 py-3 text-xs text-brand-grey flex gap-2">
-          {found ? <CircleHelp size={15} className="shrink-0 mt-0.5 text-brand-gold" aria-hidden="true" /> : <CircleCheck size={15} className="shrink-0 mt-0.5 text-brand-gold" aria-hidden="true" />}
+        <div className="rounded-lg bg-black/5 px-3 py-3 text-xs text-muted flex gap-2">
+          {found ? <CircleHelp size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" /> : <CircleCheck size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" />}
           <p>
             A QR code only shows the sticker has one. Whether the insurance is valid is decided by the Association of Kenya
-            Insurers&apos; verifier — <span className="text-brand-white">dmvic.com</span>, the AKI Vehicle Insurance Certificate app, or
-            USSD <span className="text-brand-white">*352#</span>. Check that it says <span className="text-brand-white">Genuine</span> (not
-            Invalid, Cancelled or Expired) for <span className="text-brand-white">{vehicle.registrationNumber}</span>.
+            Insurers&apos; verifier — <span className="text-ink">dmvic.com</span>, the AKI Vehicle Insurance Certificate app, or
+            USSD <span className="text-ink">*352#</span>. Check that it says <span className="text-ink">Genuine</span> (not
+            Invalid, Cancelled or Expired) for <span className="text-ink">{vehicle.registrationNumber}</span>.
           </p>
         </div>
       </section>

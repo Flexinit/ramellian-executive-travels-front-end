@@ -9,7 +9,7 @@ import HeroBackgroundSlideshow from './HeroBackgroundSlideshow';
  */
 export default function HeroSection() {
   return (
-    <section className="relative bg-brand-dark">
+    <section className="relative bg-canvas">
       {/*
         Sibling absolute layer with its own overflow-hidden, not a wrapper
         around the content below — critically, this means overflow-hidden
@@ -20,16 +20,16 @@ export default function HeroSection() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-14 sm:pb-16 flex flex-col items-center text-center gap-6">
         <span className="inline-flex items-center gap-2 text-brand-gold text-xs font-semibold tracking-widest uppercase">
-          <span className="w-6 h-px bg-brand-gold/60" aria-hidden="true" />
+          <span className="w-6 h-px bg-brand-gold" aria-hidden="true" />
           Chauffeur &amp; Self-Drive
-          <span className="w-6 h-px bg-brand-gold/60" aria-hidden="true" />
+          <span className="w-6 h-px bg-brand-gold" aria-hidden="true" />
         </span>
 
-        <h1 className="font-heading text-brand-white text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] max-w-2xl text-balance">
+        <h1 className="font-heading text-white text-3xl sm:text-4xl lg:text-5xl font-bold [text-shadow:0_2px_12px_rgba(0,0,0,0.35)] leading-[1.15] max-w-2xl text-balance">
           Executive Travel, <span className="text-brand-gold">Reimagined</span>
         </h1>
 
-        <p className="text-brand-grey text-base max-w-xl leading-relaxed">
+        <p className="text-white/90 text-base max-w-xl leading-relaxed [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]">
           Chauffeured luxury and self-drive rentals, booked in minutes.
         </p>
 

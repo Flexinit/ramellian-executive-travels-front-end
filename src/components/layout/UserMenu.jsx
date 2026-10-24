@@ -68,7 +68,7 @@ export default function UserMenu() {
         className="right-0 left-auto"
         header={
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-semibold text-brand-white truncate">{displayName}</span>
+            <span className="text-sm font-semibold text-ink truncate">{displayName}</span>
             {roleLabel && <Badge label={roleLabel} variant="gold" className="self-start" />}
           </div>
         }

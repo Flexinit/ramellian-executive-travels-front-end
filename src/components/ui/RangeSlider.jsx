@@ -4,11 +4,11 @@ import React, { useEffect, useId, useState } from 'react';
 const THUMB =
   'absolute inset-0 w-full h-6 appearance-none bg-transparent pointer-events-none m-0 focus:outline-none ' +
   '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 ' +
-  '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-gold [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brand-dark ' +
+  '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-on-accent ' +
   '[&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:shadow ' +
   '[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 ' +
-  '[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-brand-gold [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brand-dark ' +
-  '[&::-moz-range-thumb]:cursor-grab focus-visible:[&::-webkit-slider-thumb]:ring-2 focus-visible:[&::-webkit-slider-thumb]:ring-brand-gold/60';
+  '[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-on-accent ' +
+  '[&::-moz-range-thumb]:cursor-grab focus-visible:[&::-webkit-slider-thumb]:ring-2 focus-visible:[&::-webkit-slider-thumb]:ring-accent/60';
 
 /**
  * A two-handle range slider (e.g. a price range). Each handle is a real
@@ -53,19 +53,19 @@ export default function RangeSlider({ label, min, max, step = 1, value, onCommit
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className="flex items-baseline justify-between gap-3">
-        <span id={`${id}-label`} className="text-sm font-medium text-brand-white">
+        <span id={`${id}-label`} className="text-sm font-medium text-ink">
           {label}
         </span>
-        <span className="text-xs text-brand-gold tabular-nums" aria-live="polite">
+        <span className="text-xs text-accent tabular-nums" aria-live="polite">
           {format(draft.min)} – {format(draft.max)}
         </span>
       </div>
 
       <div role="group" aria-labelledby={`${id}-label`} className="relative h-6">
-        <div aria-hidden="true" className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-white/15" />
+        <div aria-hidden="true" className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-black/15" />
         <div
           aria-hidden="true"
-          className="absolute top-1/2 -translate-y-1/2 h-1 rounded-full bg-brand-gold"
+          className="absolute top-1/2 -translate-y-1/2 h-1 rounded-full bg-accent"
           style={{ left: `${pct(draft.min)}%`, right: `${100 - pct(draft.max)}%` }}
         />
         <input
@@ -96,7 +96,7 @@ export default function RangeSlider({ label, min, max, step = 1, value, onCommit
         />
       </div>
 
-      <div className="flex justify-between text-[11px] text-brand-white/70 tabular-nums" aria-hidden="true">
+      <div className="flex justify-between text-[11px] text-ink/70 tabular-nums" aria-hidden="true">
         <span>{format(min)}</span>
         <span>{format(max)}</span>
       </div>

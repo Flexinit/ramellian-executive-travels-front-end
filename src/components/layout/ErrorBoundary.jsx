@@ -33,8 +33,8 @@ export default class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-[50vh] flex items-center justify-center px-4 py-16">
           <div className="flex flex-col items-center text-center gap-4 max-w-sm">
-            <h2 className="font-heading text-brand-white text-xl font-bold">Something went wrong</h2>
-            <p className="text-brand-grey text-sm">
+            <h2 className="font-heading text-ink text-xl font-bold">Something went wrong</h2>
+            <p className="text-muted text-sm">
               This page hit an unexpected error. You can try again, or head back to the homepage.
             </p>
             <Button onClick={this.handleReset}>

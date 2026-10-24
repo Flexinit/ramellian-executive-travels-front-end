@@ -40,9 +40,9 @@ export default function DropdownMenu({ isOpen, onClose, items = [], className = 
     <div
       ref={panelRef}
       role="menu"
-      className={`absolute left-0 top-full mt-3 min-w-[240px] rounded-2xl border border-white/10 bg-brand-navy shadow-card py-2.5 z-40 origin-top animate-panel-in ${className}`}
+      className={`absolute left-0 top-full mt-3 min-w-[240px] rounded-2xl border border-black/10 bg-surface shadow-card py-2.5 z-40 origin-top animate-panel-in ${className}`}
     >
-      {header && <div className="px-4 pb-2.5 mb-1.5 border-b border-white/10">{header}</div>}
+      {header && <div className="px-4 pb-2.5 mb-1.5 border-b border-black/10">{header}</div>}
       {items.map((item) => {
         const Icon = item.icon;
         const content = (
@@ -52,7 +52,7 @@ export default function DropdownMenu({ isOpen, onClose, items = [], className = 
           </>
         );
         const itemClassName =
-          'flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-brand-white hover:bg-white/5 hover:text-brand-gold transition-colors focus-ring text-left rounded-lg mx-1.5 w-[calc(100%-0.75rem)]';
+          'flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-ink hover:bg-black/5 hover:text-accent transition-colors focus-ring text-left rounded-lg mx-1.5 w-[calc(100%-0.75rem)]';
 
         if (item.to) {
           return (

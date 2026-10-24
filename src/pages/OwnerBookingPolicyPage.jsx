@@ -24,15 +24,15 @@ export default function OwnerBookingPolicyPage() {
       <PageTitle title="Booking Policy" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Booking Policy</h1>
-          <p className="text-brand-grey text-sm mt-1.5">
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Booking Policy</h1>
+          <p className="text-muted text-sm mt-1.5">
             When renters can cancel and get their money back, and whether they can move their dates. It applies to
             bookings made from now on, and it's written into each rental contract.
           </p>
         </div>
 
         {!hasOwn && !loading && (
-          <p className="text-sm text-brand-white rounded-xl bg-brand-gold/10 border border-brand-gold/20 px-4 py-3">
+          <p className="text-sm text-ink rounded-xl bg-accent/10 border border-accent/20 px-4 py-3">
             You haven't set your own policy, so your bookings follow the platform's standard one, shown below. Change
             anything and save to make it yours.
           </p>

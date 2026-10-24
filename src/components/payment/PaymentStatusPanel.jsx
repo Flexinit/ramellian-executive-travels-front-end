@@ -84,11 +84,11 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
         <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-          <CheckCircle2 size={20} className="text-emerald-400" aria-hidden="true" />
+          <CheckCircle2 size={20} className="text-emerald-600" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-brand-white font-semibold">Payment successful</p>
-          <p className="text-brand-grey text-sm mt-1">Next, sign your contract to confirm the booking.</p>
+          <p className="text-ink font-semibold">Payment successful</p>
+          <p className="text-muted text-sm mt-1">Next, sign your contract to confirm the booking.</p>
         </div>
         {booking && <ReceiptActions booking={booking} vehicle={vehicle} />}
       </div>
@@ -99,11 +99,11 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
         <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-          <XCircle size={20} className="text-red-400" aria-hidden="true" />
+          <XCircle size={20} className="text-red-600" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-brand-white font-semibold">Payment failed</p>
-          <p className="text-brand-grey text-sm mt-1">Your payment wasn't completed. You can try again.</p>
+          <p className="text-ink font-semibold">Payment failed</p>
+          <p className="text-muted text-sm mt-1">Your payment wasn't completed. You can try again.</p>
         </div>
         {onRetry && (
           <Button size="sm" loading={retrying} disabled={retrying} onClick={onRetry}>
@@ -118,12 +118,12 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
         <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-          <Clock size={20} className="text-amber-400" aria-hidden="true" />
+          <Clock size={20} className="text-amber-600" aria-hidden="true" />
         </div>
         <div>
-          <p className="text-brand-white font-semibold">{errorMessage ? "Couldn't check your payment" : 'Still confirming your payment'}</p>
-          {errorMessage && <p role="alert" className="text-red-400 text-sm mt-1">{errorMessage}</p>}
-          <p className="text-brand-grey text-sm mt-1">
+          <p className="text-ink font-semibold">{errorMessage ? "Couldn't check your payment" : 'Still confirming your payment'}</p>
+          {errorMessage && <p role="alert" className="text-red-600 text-sm mt-1">{errorMessage}</p>}
+          <p className="text-muted text-sm mt-1">
             {errorMessage ? '' : <>This is taking longer than usual — we haven&apos;t heard back yet.{' '}</>}
             {redirectUrl
               ? "If you haven't finished paying yet, continue to payment below. Already paid? Check again."
@@ -156,8 +156,8 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
         <div>
-          <p className="text-brand-white font-semibold">You're ready to pay</p>
-          <p className="text-brand-grey text-sm mt-1">
+          <p className="text-ink font-semibold">You're ready to pay</p>
+          <p className="text-muted text-sm mt-1">
             {secondsLeft > 0
               ? `Taking you to complete payment securely in ${secondsLeft}s. If nothing happens, click below to continue.`
               : "Taking you to complete payment securely. If nothing happens, click below to continue."}
@@ -173,7 +173,7 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
   return (
     <div className="flex flex-col items-center gap-3 text-center py-2">
       <Spinner size="lg" label="Checking payment status" />
-      <p className="text-brand-grey text-sm">Waiting for your payment to be confirmed…</p>
+      <p className="text-muted text-sm">Waiting for your payment to be confirmed…</p>
       {/* No cached redirectUrl for this browser to offer above (a resumed session, a different device, or
           sessionStorage lost it) — rather than leaving this spinner with zero manual options until polling
           exhausts in PAYMENT_POLL_MAX_ATTEMPTS × PAYMENT_POLL_INTERVAL_MS (~30s), the same two actions the

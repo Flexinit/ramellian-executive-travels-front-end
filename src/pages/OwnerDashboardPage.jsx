@@ -72,33 +72,33 @@ export default function OwnerDashboardPage() {
         <div className="flex flex-col gap-6">
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">
+              <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">
                 Welcome{currentUser?.firstName ? `, ${currentUser.firstName}` : ''}
               </h1>
               <Badge label="Car Owner" variant="gold" />
             </div>
-            <p className="text-brand-grey text-sm mt-1">Here's an overview of your fleet.</p>
+            <p className="text-muted text-sm mt-1">Here's an overview of your fleet.</p>
           </div>
 
           <Card className="p-5 flex items-center gap-4 w-fit">
-            <div className="w-11 h-11 rounded-xl bg-brand-gold/10 flex items-center justify-center shrink-0">
-              <Car size={20} className="text-brand-gold" aria-hidden="true" />
+            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+              <Car size={20} className="text-accent" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-brand-grey text-xs">Vehicles Listed</p>
-              <p className="font-heading text-brand-white text-2xl font-bold">{myVehicles.length}</p>
+              <p className="text-muted text-xs">Vehicles Listed</p>
+              <p className="font-heading text-ink text-2xl font-bold">{myVehicles.length}</p>
             </div>
           </Card>
 
           {myVehicles.length > 0 && (
             <section aria-labelledby="my-vehicles-heading" className="flex flex-col gap-3">
               <div className="flex items-center justify-between gap-3">
-                <h2 id="my-vehicles-heading" className="font-heading text-brand-white text-lg font-semibold">
+                <h2 id="my-vehicles-heading" className="font-heading text-ink text-lg font-semibold">
                   My Vehicles
                 </h2>
                 <Link
                   to="/owner/vehicles"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-gold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md"
                 >
                   View all
                   <ArrowRight size={14} aria-hidden="true" />
@@ -147,10 +147,10 @@ export default function OwnerDashboardPage() {
       <div className="flex flex-col gap-8">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2.5 flex-wrap">
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Let's get your fleet set up</h1>
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Let's get your fleet set up</h1>
             <Badge label="Car Owner" variant="gold" />
           </div>
-          <p className="text-brand-grey text-sm mt-1">A few quick steps and your first vehicle will be live.</p>
+          <p className="text-muted text-sm mt-1">A few quick steps and your first vehicle will be live.</p>
         </div>
 
         <StepIndicator steps={STEPS} currentStep={currentStep} />
@@ -168,8 +168,8 @@ export default function OwnerDashboardPage() {
         {!profileComplete && (
           <Card className="p-6 sm:p-8 flex flex-col gap-5">
             <div>
-              <h2 className="font-heading text-brand-white text-lg font-semibold">Complete Your Profile</h2>
-              <p className="text-brand-grey text-sm mt-1">Choose Individual or Business and we'll ask for the details that match.</p>
+              <h2 className="font-heading text-ink text-lg font-semibold">Complete Your Profile</h2>
+              <p className="text-muted text-sm mt-1">Choose Individual or Business and we'll ask for the details that match.</p>
             </div>
             <OwnerProfileForm submitLabel="Save & Continue" />
           </Card>
@@ -177,10 +177,10 @@ export default function OwnerDashboardPage() {
 
         {profileComplete && !documentComplete && (
           <Card className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
-            <CheckCircle2 size={28} className="text-emerald-400" aria-hidden="true" />
+            <CheckCircle2 size={28} className="text-emerald-600" aria-hidden="true" />
             <div>
-              <h2 className="font-heading text-brand-white text-lg font-semibold">Profile complete</h2>
-              <p className="text-brand-grey text-sm mt-1">
+              <h2 className="font-heading text-ink text-lg font-semibold">Profile complete</h2>
+              <p className="text-muted text-sm mt-1">
                 Next — verify your identity by uploading a National ID or passport so renters
                 can trust your listings. Businesses can add a registration or tax certificate too, if they have one.
               </p>
@@ -197,10 +197,10 @@ export default function OwnerDashboardPage() {
 
         {profileComplete && documentComplete && !vehicleComplete && (
           <Card className="p-6 sm:p-8 flex flex-col items-center text-center gap-4">
-            <CheckCircle2 size={28} className="text-emerald-400" aria-hidden="true" />
+            <CheckCircle2 size={28} className="text-emerald-600" aria-hidden="true" />
             <div>
-              <h2 className="font-heading text-brand-white text-lg font-semibold">Identity verified</h2>
-              <p className="text-brand-grey text-sm mt-1">
+              <h2 className="font-heading text-ink text-lg font-semibold">Identity verified</h2>
+              <p className="text-muted text-sm mt-1">
                 Last step — add your first vehicle and upload its photos so renters can find it.
               </p>
             </div>

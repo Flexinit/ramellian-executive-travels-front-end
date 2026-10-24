@@ -19,7 +19,7 @@ const SPOKE_ANGLES = [
 function Wheel({ cx, cy }) {
   return (
     <g className="animate-spin" style={{ transformOrigin: `${cx}px ${cy}px`, animationDuration: '0.9s' }}>
-      <circle cx={cx} cy={cy} r={20} fill="#16213E" stroke="#C9A84C" strokeWidth={3} />
+      <circle cx={cx} cy={cy} r={20} fill="#16213E" stroke="#16213E" strokeWidth={3} />
       {SPOKE_ANGLES.map((s, i) => (
         <line
           key={i}
@@ -41,7 +41,7 @@ function Wheel({ cx, cy }) {
  * Full-screen splash shown on first load — a Rolls-Royce Cullinan-style
  * silhouette (long flat hood, upright Parthenon grille, round headlamp,
  * tall SUV cabin with a near-vertical rear/tailgate) drawn as an outline
- * only — gold strokes, no solid fill — with two spinning wheels. The
+ * only — navy strokes, no solid fill — with two spinning wheels. The
  * wordmark is set directly on the car's door panel rather than as separate
  * text underneath. Stays up until the page has actually finished loading
  * (images, fonts, styles — via the `load` event) rather than a fixed
@@ -87,39 +87,39 @@ export default function PageLoader() {
       role="status"
       aria-live="polite"
       aria-hidden={fading}
-      className={`fixed inset-0 z-[100] bg-brand-dark flex flex-col items-center justify-center transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[100] bg-canvas flex flex-col items-center justify-center transition-opacity duration-300 ${
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
       <span className="sr-only">Loading Ramellian Executive Travels…</span>
 
       <svg width="280" height="170" viewBox="0 0 300 170" aria-hidden="true">
-        <ellipse cx="163" cy="132" rx="125" ry="7" fill="#C9A84C" opacity="0.1" />
+        <ellipse cx="163" cy="132" rx="125" ry="7" fill="#16213E" opacity="0.1" />
 
         {/* Body — taller, SUV-proportioned; outline only, no fill */}
-        <rect x="20" y="62" width="240" height="36" rx="6" fill="none" stroke="#C9A84C" strokeWidth="3" />
+        <rect x="20" y="62" width="240" height="36" rx="6" fill="none" stroke="#16213E" strokeWidth="3" />
 
         {/* Long flat hood — Rolls-Royce keeps its long-bonnet language even on the SUV */}
-        <path d="M167,62 L178,50 L245,50 L258,62 Z" fill="none" stroke="#C9A84C" strokeWidth="2.5" />
+        <path d="M167,62 L178,50 L245,50 L258,62 Z" fill="none" stroke="#16213E" strokeWidth="2.5" />
 
         {/* Cullinan's signature near-vertical rear (tailgate), flat roof, and raked windshield */}
-        <path d="M60,62 L64,26 Q66,22 72,22 L145,22 Q152,23 156,30 L167,52" fill="none" stroke="#C9A84C" strokeWidth="2.5" />
+        <path d="M60,62 L64,26 Q66,22 72,22 L145,22 Q152,23 156,30 L167,52" fill="none" stroke="#16213E" strokeWidth="2.5" />
 
         {/* Upright "Parthenon" grille at the leading edge */}
-        <rect x="256" y="54" width="11" height="34" rx="1" fill="none" stroke="#C9A84C" strokeWidth="2" />
+        <rect x="256" y="54" width="11" height="34" rx="1" fill="none" stroke="#16213E" strokeWidth="2" />
         {[259, 262, 265].map((x) => (
-          <line key={x} x1={x} y1="57" x2={x} y2="83" stroke="#C9A84C" strokeWidth="1" opacity="0.6" />
+          <line key={x} x1={x} y1="57" x2={x} y2="83" stroke="#16213E" strokeWidth="1" opacity="0.6" />
         ))}
 
         {/* Round headlamp */}
-        <circle cx="248" cy="64" r="5" fill="none" stroke="#C9A84C" strokeWidth="1.5" />
+        <circle cx="248" cy="64" r="5" fill="none" stroke="#16213E" strokeWidth="1.5" />
 
         {/* Wordmark, set on the door panel between the wheels like a coachline badge */}
         <text
           x="162"
           y="87"
           textAnchor="middle"
-          fill="#C9A84C"
+          fill="#16213E"
           fontSize="14"
           fontWeight="700"
           letterSpacing="1.5"
@@ -135,7 +135,7 @@ export default function PageLoader() {
           x="163"
           y="155"
           textAnchor="middle"
-          fill="#8A8A9A"
+          fill="#6B6B6B"
           fontSize="11"
           fontWeight="600"
           letterSpacing="3"
@@ -145,7 +145,7 @@ export default function PageLoader() {
         </text>
       </svg>
 
-      <span className="text-brand-grey/70 text-xs -mt-2">Preparing your journey…</span>
+      <span className="text-muted/70 text-xs -mt-2">Preparing your journey…</span>
     </div>
   );
 }

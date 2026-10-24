@@ -30,13 +30,13 @@ export default function SignaturePad({ onChange, tone = 'dark', label = 'Your Si
 
   return (
     <div className="flex flex-col gap-2">
-      <span className={`text-sm font-medium ${paper ? 'text-slate-700' : 'text-brand-white'}`} id="signature-label">
+      <span className={`text-sm font-medium ${paper ? 'text-slate-700' : 'text-ink'}`} id="signature-label">
         {label}
       </span>
-      <div className={`rounded-xl border bg-white overflow-hidden ${paper ? 'border-slate-300 border-dashed' : 'border-white/10'}`}>
+      <div className={`rounded-xl border bg-white overflow-hidden ${paper ? 'border-slate-300 border-dashed' : 'border-black/10'}`}>
         <SignatureCanvas
           ref={sigRef}
-          penColor="#1A1A2E"
+          penColor="#16213E"
           onEnd={handleEnd}
           canvasProps={{
             role: 'img',
@@ -49,7 +49,7 @@ export default function SignaturePad({ onChange, tone = 'dark', label = 'Your Si
         type="button"
         onClick={handleClear}
         disabled={empty}
-        className={`self-start inline-flex items-center gap-1.5 text-xs ${paper ? 'text-slate-500 hover:text-slate-900' : 'text-brand-grey hover:text-brand-white'} disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md`}
+        className={`self-start inline-flex items-center gap-1.5 text-xs ${paper ? 'text-slate-500 hover:text-slate-900' : 'text-muted hover:text-ink'} disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md`}
       >
         <RotateCcw size={12} aria-hidden="true" />
         Clear

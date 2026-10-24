@@ -63,8 +63,8 @@ export default function AdminAnnouncementsPage() {
       <PageTitle title="Announcements" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Announcements</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Announcements</h1>
+          <p className="text-muted text-sm mt-1">
             Write once and send to a whole group. People get it as a message from you in their Messages, not as a pop-up — the backend has no
             broadcast feature, so it is sent to each person one at a time. You can also send it by email (below).
           </p>
@@ -91,7 +91,7 @@ export default function AdminAnnouncementsPage() {
                 disabled={sending}
                 className="w-full sm:w-64"
               />
-              <p className="text-sm text-brand-grey -mt-2" aria-live="polite">
+              <p className="text-sm text-muted -mt-2" aria-live="polite">
                 {isLoading ? 'Counting…' : `${plural(recipients.length, 'person', 'people')} — every ${audience === 'ALL' ? 'account' : 'account in this group'} that is switched on, except yours.`}
               </p>
 
@@ -117,18 +117,18 @@ export default function AdminAnnouncementsPage() {
         {clean.text && recipients.length > 0 && (
           <Card className="p-5 sm:p-6 flex flex-col gap-4" role="region" aria-labelledby="email-heading">
             <div>
-              <h2 id="email-heading" className="flex items-center gap-2 font-heading text-brand-white text-lg font-semibold">
-                <Mail size={18} className="text-brand-gold" aria-hidden="true" />
+              <h2 id="email-heading" className="flex items-center gap-2 font-heading text-ink text-lg font-semibold">
+                <Mail size={18} className="text-accent" aria-hidden="true" />
                 Also send by email
               </h2>
-              <p className="text-brand-grey text-sm mt-1">
+              <p className="text-muted text-sm mt-1">
                 The backend can&apos;t send email itself, so this opens <em>your</em> email app with the message written and everyone in Bcc (nobody sees anyone
                 else&apos;s address) — you press Send there. It is sent from your own email address, not the portal&apos;s.
               </p>
             </div>
             <Input label="Email subject" name="subject" value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={150} />
             {mail.tooLong ? (
-              <p className="text-sm text-red-300" role="alert">
+              <p className="text-sm text-red-700" role="alert">
                 This message is too long to put in an email link. Copy the addresses and paste your message into a new email instead.
               </p>
             ) : (
@@ -148,7 +148,7 @@ export default function AdminAnnouncementsPage() {
                 <Copy size={14} aria-hidden="true" />
                 Copy all {plural(addresses.length, 'address', 'addresses')}
               </Button>
-              {mail.links.length > 1 && <span className="text-xs text-brand-grey">An email link can only hold so many addresses, so the list is split into {mail.links.length} emails.</span>}
+              {mail.links.length > 1 && <span className="text-xs text-muted">An email link can only hold so many addresses, so the list is split into {mail.links.length} emails.</span>}
             </div>
           </Card>
         )}
@@ -157,7 +157,7 @@ export default function AdminAnnouncementsPage() {
           <Card className="p-5 sm:p-6 flex flex-col gap-4" aria-live="polite">
             {sending ? (
               <>
-                <p className="text-brand-white text-sm font-medium" role="status">
+                <p className="text-ink text-sm font-medium" role="status">
                   Sending… {progress.sent + progress.failed.length} of {progress.total}
                 </p>
                 <div
@@ -166,9 +166,9 @@ export default function AdminAnnouncementsPage() {
                   aria-valuemin={0}
                   aria-valuemax={progress.total}
                   aria-valuenow={progress.sent + progress.failed.length}
-                  className="h-2 rounded-full bg-white/10 overflow-hidden"
+                  className="h-2 rounded-full bg-black/10 overflow-hidden"
                 >
-                  <div className="h-full bg-brand-gold transition-all" style={{ width: `${((progress.sent + progress.failed.length) / Math.max(1, progress.total)) * 100}%` }} />
+                  <div className="h-full bg-accent transition-all" style={{ width: `${((progress.sent + progress.failed.length) / Math.max(1, progress.total)) * 100}%` }} />
                 </div>
                 <Button size="sm" variant="danger" className="self-start" onClick={cancel}>
                   Stop sending
@@ -176,18 +176,18 @@ export default function AdminAnnouncementsPage() {
               </>
             ) : (
               <>
-                <p className="flex items-center gap-2 text-brand-white font-medium" role="status">
-                  <CheckCircle2 size={18} className="text-green-400" aria-hidden="true" />
+                <p className="flex items-center gap-2 text-ink font-medium" role="status">
+                  <CheckCircle2 size={18} className="text-green-600" aria-hidden="true" />
                   {progress.stopped ? 'Stopped. ' : ''}Sent to {plural(progress.sent, 'person', 'people')}
                   {progress.stopped ? ` of ${progress.total}` : ''}.
                 </p>
                 {progress.failed.length > 0 && (
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm text-red-300">{plural(progress.failed.length, 'message', 'messages')} could not be sent:</p>
-                    <ul className="text-xs text-brand-grey flex flex-col gap-1" aria-label="Messages that could not be sent">
+                    <p className="text-sm text-red-700">{plural(progress.failed.length, 'message', 'messages')} could not be sent:</p>
+                    <ul className="text-xs text-muted flex flex-col gap-1" aria-label="Messages that could not be sent">
                       {progress.failed.map(({ user, reason }) => (
                         <li key={user.id}>
-                          <span className="text-brand-white break-all">{userDisplayName(user)}</span> — {reason}
+                          <span className="text-ink break-all">{userDisplayName(user)}</span> — {reason}
                         </li>
                       ))}
                     </ul>
@@ -215,7 +215,7 @@ export default function AdminAnnouncementsPage() {
         )}
 
         {!sending && !finished && recipients.length === 0 && !isLoading && !isError && (
-          <p className="flex items-center gap-2 text-sm text-brand-grey">
+          <p className="flex items-center gap-2 text-sm text-muted">
             <Megaphone size={15} aria-hidden="true" />
             Nobody is in this group yet.
           </p>
@@ -224,14 +224,14 @@ export default function AdminAnnouncementsPage() {
 
       <Modal isOpen={confirming} onClose={() => setConfirming(false)} title="Send this announcement?">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
-            It will go to <span className="text-brand-white font-medium">{plural(recipients.length, 'person', 'people')}</span> ({audienceLabel}). This can&apos;t be
+          <p className="text-muted text-sm">
+            It will go to <span className="text-ink font-medium">{plural(recipients.length, 'person', 'people')}</span> ({audienceLabel}). This can&apos;t be
             taken back.
           </p>
-          <p className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-brand-white whitespace-pre-line break-words max-h-48 overflow-y-auto" aria-label="What will be sent">
+          <p className="rounded-lg border border-black/10 bg-subtle px-3 py-2 text-sm text-ink whitespace-pre-line break-words max-h-48 overflow-y-auto" aria-label="What will be sent">
             {clean.text}
           </p>
-          {clean.removedPhone && <p className="text-xs text-brand-grey">A phone number in your text was removed.</p>}
+          {clean.removedPhone && <p className="text-xs text-muted">A phone number in your text was removed.</p>}
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setConfirming(false)}>Back</Button>
             <Button onClick={() => start()}>Send now</Button>

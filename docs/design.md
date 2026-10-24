@@ -164,10 +164,10 @@ App
 │   ├── HomePage
 │   │   ├── HeroSection
 │   │   │   └── FareEstimatorWidget
+│   │   ├── FeaturedVehiclesSection   (right after the search, like the design's "Best Cars")
+│   │   │   └── VehicleRow (×4: Available now, Just added, Chauffeured, Self-Drive)
 │   │   ├── ServicesSection
 │   │   │   └── ServiceCard (×6)
-│   │   ├── FeaturedVehiclesSection
-│   │   │   └── VehicleRow (×3: Available now, Chauffeured, Self-Drive)
 │   │   ├── HowItWorksSection
 │   │   │   └── StepCard (×3)
 │   │   └── TrustSection
@@ -245,14 +245,15 @@ App
 
 | Component | Props | Notes |
 |---|---|---|
-| `Button` | `variant` (default / danger / dark), `size` (sm/md/lg/icon), `loading`, `disabled`, `to` / `href` (render as a link), `onClick`, `type`, `children` | The one button for the whole portal, and it has one look: the navbar "Rent a Car" gold-outline pill. There is no filled or text-only version (`danger` is the same pill in red, `dark` the same pill in ink for a gold surface). Every button and link that looks like a button uses it — never hand-style a `<button>`/`<Link>`. |
+| `Button` | `variant` (default / outline / danger / dark), `size` (xs/sm/md/lg/icon), `loading`, `disabled`, `to` / `href` (render as a link), `onClick`, `type`, `children` | The one button for the whole portal — the Figma design system's solid charcoal pill ("Book Now"). `outline` is the same pill in white with a grey outline, for a quieter action beside a main one; `danger` is the pill outlined in red; `dark` is a white pill for a charcoal surface. There is no text-only version. Every button and link that looks like a button uses it — never hand-style a `<button>`/`<Link>`. |
 | `RangeSlider` | `label`, `min`, `max`, `step`, `value` `{min,max}`, `onCommit`, `format` | Two-handle slider (price range); keyboard accessible; reports once when a handle is let go |
-| `ToggleChip` | `active`, `onClick`, `size` (sm/md), `children` | On/off pill (filters, trip types, booking modes); gold outline + soft tint when on |
-| `SegmentedControl` | `options[]`, `value`, `onChange`, `label`, `kind` (radio/tab), `size` | Pick-one switch (booking mode, fleet tier) |
-| `Input` | `label`, `name`, `type`, `error`, `hint`, `register` (RHF) | Wraps label + input + error |
-| `Textarea` | `label`, `name`, `maxLength`, `error`, `register` | Shows character count |
-| `Select` | `label`, `name`, `options[]`, `error`, `register` | Accessible `<select>` |
-| `Card` | `children`, `className` | Neutral container |
+| `ToggleChip` | `active`, `onClick`, `size` (sm/md), `children` | On/off pill (filters, trip types, booking modes); solid charcoal when on, white with a grey outline when off (the design's filter pill) |
+| `SegmentedControl` | `options[]`, `value`, `onChange`, `label`, `kind` (radio/tab), `size` | Pick-one switch (booking mode, fleet tier) — the design's "Filter Cars Type" switch: selected is the solid accent (navy) pill; an option may carry an `icon` |
+| `Input` | `label`, `name`, `type`, `error`, `hint`, `register` (RHF) | The design's outlined field: white, grey outline, label set into the top border; error/hint below |
+| `Textarea` | `label`, `name`, `maxLength`, `error`, `register` | Same outlined field as Input; shows character count |
+| `Select` | `label`, `name`, `options[]`, `error`, `register` | Accessible `<select>`, same outlined field as Input, with a chevron |
+| `Card` | `children`, `className` | White card: hairline outline, 14px corners (`rounded-card`), soft shadow |
+| `DetailList` / `DetailRow` | `size` (sm/xs); row: `label`, `stacked`, `hidden`, `divider`, `valueClassName` | The one way to show label/value details (booking dates, locations, price lines, totals, handover readings, audit fields). Two columns: labels, then every value **left-aligned** just beside them — never pushed to the far edge. `stacked` for free text, `divider` for a line above (a Total). |
 | `Badge` | `label`, `variant` (success/warning/danger/info/neutral) | Status pill |
 | `Modal` | `isOpen`, `onClose`, `title`, `children` | Focus-trapped overlay |
 | `Spinner` | `size`, `color` | Loading indicator |
@@ -263,7 +264,10 @@ App
 | `Avatar` | `name`, `src`, `size` | Initials fallback |
 | `Divider` | `label` | Section separator |
 | `Tooltip` | `content`, `children` | Hover info |
-| `StepIndicator` | `steps[]`, `currentStep` | Wizard progress |
+| `StepIndicator` | `steps[]`, `currentStep`, `onStepClick` | Wizard progress — the design's step bar: small dots on a thin line, names underneath (done = navy dot with a check, current = ringed dot, to come = faded) |
+| `AuthCard` (components/auth) | `children` | The see-through frosted card on the sign-in pages (white tint + strong blur); inside it grey text is darker and field labels sit inside the box (`.auth-glass` rules in index.css) |
+| `WebcamCapture` | `isOpen`, `onClose`, `onCapture(file)`, `title`, `hint`; `prefersWebcamWindow()` | Takes a photo with a computer's camera (the ID selfie): mirrored live preview, Take photo → Retake / Use this photo; the saved photo is not mirrored. Phones keep their own camera via `capture` |
+| `FeatureTile` / `FeatureGrid` | tile: `icon`, `label`, `value`; grid: `label` | The design's "Car features" tile, compact: icon in a white circle on the left, label and bold value beside it; 2/3/4 across. Grid `initialCount` shows that many first with "Show all N features". On first view the tiles fade up and a gold highlight sweeps across them once (`motion-safe`); hover lifts a tile and turns its icon gold |
 | `CountdownTimer` | `expiresAt`, `onExpired` | Booking expiry |
 | `PriceDisplay` | `amount`, `period` | `KES 12,000 / day` |
 
@@ -296,7 +300,7 @@ App
 
 ### Fonts: `src/theme/fonts.js`
 
-The one place the fonts are chosen — **Plus Jakarta Sans** for headings and text. `tailwind.config.js` builds the
+The one place the fonts are chosen — **Roboto** for headings and text (the Figma design system's typeface). `tailwind.config.js` builds the
 `font-heading` / `font-body` classes from it, `vite.config.js` puts the matching Google Fonts link into
 `index.html` (where `<!-- app-fonts -->` stands), and `PageLoader` reads it for its lettering. To switch, change
 `heading` / `body` there to any Google Fonts family name and restart `npm run dev`.
@@ -309,21 +313,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-dark':       '#1A1A2E',
-        'brand-navy':       '#16213E',
-        'brand-gold':       '#C9A84C',
-        'brand-gold-light': '#E8C97A',
-        'brand-white':      '#F5F5F5',
-        'brand-grey':       '#8A8A9A',
+        canvas:         '#F8F8F8', // page background
+        surface:        '#FFFFFF', // cards, panels, the menu
+        subtle:         '#EDEDED', // quiet fills: chips, feature tiles, image wells
+        line:           '#D7D7D7', // field and card outlines
+        ink:            '#000000', // main text
+        muted:          '#6B6B6B', // secondary text — the design's #7F7F7F darkened to 5.3:1 for readability
+        icon:           '#767676', // outline icons
+        accent:         '#16213E', // buttons, selected state, links — Ramellian navy
+        'accent-hover': '#25365F',
+        'on-accent':    '#FFFFFF', // text on an accent fill
+        overlay:        '#131927', // dark bands
+        star:           '#C9A84C', // rating stars, unread counts (Ramellian gold)
+        'brand-navy':   '#16213E', // Ramellian navy: tab bar, closing banner, hero scrim, letterhead
+        'brand-gold':   '#C9A84C', // Ramellian gold for lines, dots, fills — never small text
+        'brand-gold-deep': '#8C6D1F', // gold for text on white (section labels)
       },
       fontFamily: {
         heading: fontStack(FONTS.heading),   // fonts are set in src/theme/fonts.js
         body:    fontStack(FONTS.body),
       },
       boxShadow: {
-        card: '0 4px 24px 0 rgba(0,0,0,0.18)',
-        glow: '0 0 16px 0 rgba(201,168,76,0.35)',
+        card: '0 4px 10px 0 rgba(0,0,0,0.06)',
+        lift: '0 4px 9.8px 0 rgba(0,0,0,0.25)', // floating bars, the phone tab bar
       },
+      borderRadius: { card: '14px', tile: '10px' },
     },
   },
   plugins: [],
@@ -333,13 +347,31 @@ export default {
 ### Design Tokens in Practice
 
 ```
-Background pages:    bg-brand-dark
-Background sections: bg-brand-navy
-Primary CTA:         bg-brand-gold text-brand-dark hover:bg-brand-gold-light
-Secondary CTA:       border border-brand-gold text-brand-gold hover:bg-brand-gold/10
-Body text:           text-brand-white
-Muted text:          text-brand-grey
-Card surface:        bg-white/5 or bg-brand-navy
+Background pages:    bg-canvas
+Cards / panels:      bg-surface border border-subtle rounded-card shadow-card   (use Card)
+Primary CTA:         Button (bg-accent text-on-accent hover:bg-accent-hover)
+Secondary CTA:       Button variant="outline" (bg-surface border-line text-ink)
+Selected state:      bg-accent text-on-accent (menu item, chip, segment)
+Body text:           text-ink
+Muted text:          text-muted
+Quiet tile / well:   bg-subtle rounded-tile
+Lines on the page:   border-black/10 (or border-line for fields)
+```
+
+Source: the Figma community file *Car Rental App UI & UX Design* ("Qent"), DESIGN SYSTEM page — colours, the
+Roboto type scale, the pill button, the outlined input, the "Filter Cars Type" switch and the phone "Bottom
+Navigation". Phones (below `md`) also get that floating charcoal tab bar (`components/layout/MobileTabBar.jsx`)
+for a signed-in person — Home, Search, Messages, Inbox, Profile — alongside the left menu, never instead of it.
+
+```text
+Status colours on the light page use the -600/-700 shades (text-red-600, text-green-700…), never -300/-400.
+Ramellian colours are mixed in sparingly: buttons and selected states are navy (accent); gold marks section labels,
+the hero's highlighted word, today and the picked range in the date picker, the current phone tab, and the
+letterhead. Gold is never used for something that can't be chosen.
+
+Background photos: the home hero shows its photo at full colour under a navy gradient with white text (the
+slideshow holds still under "reduce motion"); the log-in and sign-up screens (AuthBackdrop) keep a lighter photo behind their card. Every other page follows
+the design system: the plain `canvas` page with white cards, no photo. Hero photos must be wide and high-resolution (~1500px+ across).
 ```
 
 ---

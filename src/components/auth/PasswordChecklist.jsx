@@ -12,7 +12,7 @@ export default function PasswordChecklist({ password = '' }) {
       {PASSWORD_RULES.map((rule) => {
         const ok = rule.test(password);
         return (
-          <li key={rule.key} className={`flex items-center gap-1.5 ${ok ? 'text-emerald-400' : 'text-brand-grey'}`}>
+          <li key={rule.key} className={`flex items-center gap-1.5 ${ok ? 'text-emerald-600' : 'text-muted'}`}>
             {ok ? <Check size={12} aria-hidden="true" /> : <Circle size={10} aria-hidden="true" />}
             <span>{rule.label}</span>
             <span className="sr-only">{ok ? '(done)' : '(still needed)'}</span>

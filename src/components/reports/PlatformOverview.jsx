@@ -15,11 +15,11 @@ function Section({ title, children, note }) {
   const id = `${title.replace(/\W+/g, '-').toLowerCase()}-heading`;
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
-      <h2 id={id} className="font-heading text-brand-white text-lg font-semibold">
+      <h2 id={id} className="font-heading text-ink text-lg font-semibold">
         {title}
       </h2>
       {children}
-      {note && <p className="text-brand-grey text-xs">{note}</p>}
+      {note && <p className="text-muted text-xs">{note}</p>}
     </section>
   );
 }
@@ -60,16 +60,16 @@ export function SignedInSection() {
           />
           <Card className="p-5">
             {recent.length === 0 ? (
-              <p className="text-sm text-brand-grey">{signIns.isLoading ? 'Loading…' : 'Nobody has signed in during the last hour.'}</p>
+              <p className="text-sm text-muted">{signIns.isLoading ? 'Loading…' : 'Nobody has signed in during the last hour.'}</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-white/5" aria-label="People signed in recently">
+              <ul className="flex flex-col divide-y divide-black/5" aria-label="People signed in recently">
                 {recent.slice(0, 10).map((person) => (
                   <li key={person.email} className="flex items-center justify-between gap-3 py-2 text-sm">
-                    <span className="text-brand-white break-all">{person.email}</span>
-                    <span className="text-brand-grey text-xs shrink-0">{minutesAgo(person.at, now)}</span>
+                    <span className="text-ink break-all">{person.email}</span>
+                    <span className="text-muted text-xs shrink-0">{minutesAgo(person.at, now)}</span>
                   </li>
                 ))}
-                {recent.length > 10 && <li className="pt-2 text-xs text-brand-grey">and {recent.length - 10} more</li>}
+                {recent.length > 10 && <li className="pt-2 text-xs text-muted">and {recent.length - 10} more</li>}
               </ul>
             )}
           </Card>
@@ -100,7 +100,7 @@ export function PeopleSection() {
           <StatTile icon={ShieldCheck} label="Admins" value={u.roles.admins} loading={users.isLoading} detail={`${u.twoFactor} with two-factor on`} />
         </div>
       )}
-      <p className="text-brand-grey text-xs">An account counts under every role it holds, so the role numbers can add up to more than the total.</p>
+      <p className="text-muted text-xs">An account counts under every role it holds, so the role numbers can add up to more than the total.</p>
     </Section>
   );
 }
@@ -132,14 +132,14 @@ export function VehiclesSection() {
           </div>
           {v.locations.length > 0 && (
             <Card className="p-5">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-brand-white mb-3">
-                <MapPin size={15} className="text-brand-gold" aria-hidden="true" />
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-ink mb-3">
+                <MapPin size={15} className="text-accent" aria-hidden="true" />
                 Vehicles by place
               </h3>
               <ul className="flex flex-wrap gap-2" aria-label="Vehicles by place">
                 {v.locations.slice(0, 8).map((place) => (
-                  <li key={place.name} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-brand-grey">
-                    {place.name} <span className="text-brand-white font-semibold ml-1">{place.count}</span>
+                  <li key={place.name} className="rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs text-muted">
+                    {place.name} <span className="text-ink font-semibold ml-1">{place.count}</span>
                   </li>
                 ))}
               </ul>

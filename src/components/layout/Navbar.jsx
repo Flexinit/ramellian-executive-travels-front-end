@@ -30,20 +30,21 @@ export default function Navbar() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
   return (
-    <header className="sticky top-0 z-30 bg-brand-dark/95 backdrop-blur-md border-b border-white/10">
+    <header className="sticky top-0 z-30 bg-canvas/95 backdrop-blur-md border-b border-black/10">
       <div
         className={`h-20 flex items-center gap-3 sm:gap-6 ${
           isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
         }`}
       >
-        {/* Signed in: the logo fills the same 16rem-wide column as the left menu below it (same padding and divider), so it sits exactly at the top of the menu. */}
+        {/* Signed in: the logo fills the same 16rem-wide navy column as the left menu below it, so menu and logo read as one
+            navy strip down the left. */}
         <Link
           to="/"
           className={`focus-ring rounded-lg shrink-0 ${
-            isAuthenticated ? 'md:w-64 md:h-full md:flex md:items-center md:pl-5 md:rounded-none md:border-r md:border-white/10' : ''
+            isAuthenticated ? 'md:w-64 md:h-full md:flex md:items-center md:pl-5 md:rounded-none md:bg-brand-navy' : ''
           }`}
         >
-          <Logo size="md" compactOnTinyScreens />
+          <Logo size="md" compactOnTinyScreens invertFromMd={isAuthenticated} />
         </Link>
 
         <div className="hidden lg:flex items-center gap-8 ml-auto">
@@ -69,7 +70,7 @@ export default function Navbar() {
             )}
           </div>
 
-          <span aria-hidden="true" className="h-6 w-px bg-white/15" />
+          <span aria-hidden="true" className="h-6 w-px bg-black/15" />
 
           <nav aria-label="Primary" className="flex items-center gap-8">
             {NAV_LINKS.map((link) => (

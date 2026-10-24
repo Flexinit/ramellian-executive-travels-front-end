@@ -141,7 +141,7 @@ const SECTIONS = [
     heading: '11. Contact',
     body: (
       <p>
-        Questions about these Terms can be sent through the <Link to="/contact" className="text-brand-gold hover:text-brand-gold-light underline">Contact</Link> page.
+        Questions about these Terms can be sent through the <Link to="/contact" className="text-accent hover:text-accent-hover underline">Contact</Link> page.
       </p>
     ),
   },
@@ -152,8 +152,8 @@ function RentalTermsSection() {
   if (!terms.length) return null;
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-heading text-brand-white text-lg font-semibold">Rental terms</h2>
-      <p className="text-brand-grey text-sm">Renters accept the terms for Everyone and Renters before booking; owners accept the ones for Everyone and Owners before listing a car.</p>
+      <h2 className="font-heading text-ink text-lg font-semibold">Rental terms</h2>
+      <p className="text-muted text-sm">Renters accept the terms for Everyone and Renters before booking; owners accept the ones for Everyone and Owners before listing a car.</p>
       <RentalTermsList />
     </section>
   );

@@ -36,8 +36,8 @@ export default function FleetPage() {
       <PageTitle title="Our Fleet" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Our Fleet</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Our Fleet</h1>
+          <p className="text-muted text-sm mt-1">
             Browse every vehicle we offer &mdash; pick your dates when you&apos;re ready to book.
           </p>
         </div>

@@ -15,11 +15,11 @@ const ROWS = [
  */
 export default function FeaturedVehiclesSection() {
   return (
-    <section id="fleet" aria-labelledby="featured-heading" className="bg-brand-navy/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col gap-8">
+    <section id="fleet" aria-labelledby="featured-heading" className="bg-surface">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col gap-8">
         <div className="flex flex-col items-center text-center gap-1.5">
-          <span className="text-brand-gold text-xs font-semibold tracking-widest uppercase">Our Fleet</span>
-          <h2 id="featured-heading" className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">
+          <span className="text-brand-gold-deep text-xs font-semibold tracking-widest uppercase">Our Fleet</span>
+          <h2 id="featured-heading" className="font-heading text-ink text-2xl sm:text-3xl font-bold">
             A Vehicle for Every Occasion
           </h2>
         </div>

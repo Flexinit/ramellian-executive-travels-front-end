@@ -3,6 +3,7 @@ import { KeyRound, FlagOff, AlertTriangle, MapPin, Gauge, Fuel, PenLine } from '
 import { useHandovers } from '../../hooks/useVehicleHandover';
 import { FUEL_LEVEL_LABELS } from '../../lib/constants';
 import { formatDateTime } from '../../lib/utils';
+import { DetailList, DetailRow } from '../ui/DetailList';
 
 const TYPE_META = {
   PICKUP: { label: 'Pickup', icon: KeyRound },
@@ -15,55 +16,41 @@ function HandoverRecord({ handover }) {
   const Icon = meta.icon;
 
   return (
-    <div className="flex flex-col gap-2.5 py-3 border-t border-white/10 first:border-t-0 first:pt-0">
+    <div className="flex flex-col gap-2.5 py-3 border-t border-black/10 first:border-t-0 first:pt-0">
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-white">
-          <Icon size={15} className="text-brand-gold" aria-hidden="true" />
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
+          <Icon size={15} className="text-accent" aria-hidden="true" />
           {meta.label}
         </span>
-        <span className="text-xs text-brand-grey">{formatDateTime(handover.handoverTime)}</span>
+        <span className="text-xs text-muted">{formatDateTime(handover.handoverTime)}</span>
       </div>
 
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-        <div className="flex items-center gap-1.5 text-brand-grey">
-          <Gauge size={13} aria-hidden="true" />
-          Odometer
-        </div>
-        <dd className="text-brand-white text-right">{handover.odometerReading ?? '—'} km</dd>
-
-        <div className="flex items-center gap-1.5 text-brand-grey">
-          <Fuel size={13} aria-hidden="true" />
-          Fuel level
-        </div>
-        <dd className="text-brand-white text-right">{FUEL_LEVEL_LABELS[handover.fuelLevel] || handover.fuelLevel || '—'}</dd>
-
-        {handover.location && (
-          <>
-            <div className="flex items-center gap-1.5 text-brand-grey">
-              <MapPin size={13} aria-hidden="true" />
-              Location
-            </div>
-            <dd className="text-brand-white text-right">{handover.location}</dd>
-          </>
-        )}
-      </dl>
+      <DetailList>
+        <DetailRow label={<span className="inline-flex items-center gap-1.5"><Gauge size={13} aria-hidden="true" />Odometer</span>}>{handover.odometerReading ?? '—'} km</DetailRow>
+        <DetailRow label={<span className="inline-flex items-center gap-1.5"><Fuel size={13} aria-hidden="true" />Fuel level</span>}>
+          {FUEL_LEVEL_LABELS[handover.fuelLevel] || handover.fuelLevel || '—'}
+        </DetailRow>
+        <DetailRow label={<span className="inline-flex items-center gap-1.5"><MapPin size={13} aria-hidden="true" />Location</span>} hidden={!handover.location}>
+          {handover.location}
+        </DetailRow>
+      </DetailList>
 
       {handover.conditionNotes && (
-        <p className="text-sm text-brand-grey">
-          <span className="text-brand-white">Condition notes: </span>
+        <p className="text-sm text-muted">
+          <span className="text-ink">Condition notes: </span>
           {handover.conditionNotes}
         </p>
       )}
 
       {handover.damageNoted && (
-        <p className="text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 flex items-start gap-1.5">
+        <p className="text-sm text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 flex items-start gap-1.5">
           <AlertTriangle size={14} className="shrink-0 mt-0.5" aria-hidden="true" />
           <span>Damage noted: {handover.damageDescription || 'no further description given.'}</span>
         </p>
       )}
 
       {handover.signedBy && (
-        <p className="text-xs text-brand-grey inline-flex items-center gap-1.5">
+        <p className="text-xs text-muted inline-flex items-center gap-1.5">
           <PenLine size={12} aria-hidden="true" />
           Signed by {handover.signedBy}
           {handover.signedAt ? ` · ${formatDateTime(handover.signedAt)}` : ''}
@@ -92,8 +79,8 @@ export default function HandoverHistory({ bookingId }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="text-sm font-semibold text-brand-white">Vehicle Handover</h2>
-      <div className="bg-brand-navy border border-white/10 rounded-2xl px-5">
+      <h2 className="text-sm font-semibold text-ink">Vehicle Handover</h2>
+      <div className="bg-surface border border-black/10 rounded-2xl px-5">
         {handovers.map((h) => (
           <HandoverRecord key={h.id} handover={h} />
         ))}

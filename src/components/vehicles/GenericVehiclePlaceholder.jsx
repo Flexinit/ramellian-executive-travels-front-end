@@ -46,7 +46,7 @@ function VanSilhouette(props) {
  * Fallback illustration shown wherever a vehicle has no uploaded photo yet
  * (a normal state for a fresh listing, not an error) — a generic line-art
  * car rather than a broken-image icon or an empty box. Deliberately muted
- * (low-opacity gold on a soft gradient) so it reads clearly as a
+ * (a faint grey outline on the light grey image panel) so it reads clearly as a
  * placeholder, never mistaken for an actual photo of the vehicle.
  *
  * @param {'STANDARD'|'EXECUTIVE'} [tier] — picks a van vs. sedan silhouette
@@ -57,9 +57,9 @@ export default function GenericVehiclePlaceholder({ tier, className = '' }) {
 
   return (
     <div
-      className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent ${className}`}
+      className={`w-full h-full flex items-center justify-center bg-subtle ${className}`}
     >
-      <Silhouette className="w-2/3 h-2/3 text-brand-gold/30" />
+      <Silhouette className="w-1/2 h-1/2 text-black/20" />
     </div>
   );
 }

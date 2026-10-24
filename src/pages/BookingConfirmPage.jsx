@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react';
-import PageBackdrop from '../components/layout/PageBackdrop';
-import coastalLodge from '../assets/destinations/coastal-lodge.jpg';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle2, ArrowRight, LayoutDashboard, Car } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
@@ -42,7 +40,7 @@ export default function BookingConfirmPage() {
   }, [bookingId, completeBooking, completeGroup]);
 
   return (
-    <PageBackdrop image={coastalLodge}>
+    <>
     <PageWrapper className="max-w-md mx-auto min-h-[70vh] flex flex-col items-center justify-center text-center gap-6">
       <PageTitle title="Booking Confirmed" />
       <Link to="/" className="focus-ring rounded-lg">
@@ -50,12 +48,12 @@ export default function BookingConfirmPage() {
       </Link>
 
       <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-        <CheckCircle2 size={30} className="text-emerald-400" aria-hidden="true" />
+        <CheckCircle2 size={30} className="text-emerald-600" aria-hidden="true" />
       </div>
 
       <div>
-        <h1 className="font-heading text-brand-white text-2xl font-bold">Booking Confirmed</h1>
-        <p className="text-brand-grey text-sm mt-2">
+        <h1 className="font-heading text-ink text-2xl font-bold">Booking Confirmed</h1>
+        <p className="text-muted text-sm mt-2">
           Your payment and signed contract are in — your chauffeur or vehicle will be ready as booked.
         </p>
       </div>
@@ -63,7 +61,7 @@ export default function BookingConfirmPage() {
       <CountdownTimer expiresAt={Date.now() - 1000} onExpired={() => {}} />
 
       {remaining > 0 && (
-        <div className="flex flex-col gap-3 w-full rounded-xl bg-brand-gold/10 border border-brand-gold/20 p-4 text-sm text-brand-white">
+        <div className="flex flex-col gap-3 w-full rounded-xl bg-accent/10 border border-accent/20 p-4 text-sm text-ink">
           <p>
             {remaining === 1 ? '1 more vehicle is' : `${remaining} more vehicles are`} still in your booking.
           </p>
@@ -82,6 +80,6 @@ export default function BookingConfirmPage() {
         </Button>
       </div>
     </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

@@ -34,7 +34,7 @@ export function IdentityKindChooser({ kind, onChoose, disabled = false }) {
 export function IdentityNumberStatus({ spec, ocr }) {
   if (ocr.status === 'reading') {
     return (
-      <p className="flex items-center gap-2 text-brand-grey text-xs">
+      <p className="flex items-center gap-2 text-muted text-xs">
         <Spinner size="sm" label="Reading" /> Reading your {spec.numberLabel.toLowerCase()} from the photo…
       </p>
     );
@@ -42,15 +42,15 @@ export function IdentityNumberStatus({ spec, ocr }) {
   if (ocr.status === 'read') {
     return (
       <div className="flex flex-col gap-0.5">
-        <span className="text-sm font-medium text-brand-white">{spec.numberLabel}</span>
-        <p className="text-brand-white text-sm font-mono tracking-wide" aria-label={spec.numberLabel}>{ocr.number}</p>
-        <p className="text-brand-grey text-xs">Read from your photo. If it's wrong, retake a clearer photo.</p>
+        <span className="text-sm font-medium text-ink">{spec.numberLabel}</span>
+        <p className="text-ink text-sm font-mono tracking-wide" aria-label={spec.numberLabel}>{ocr.number}</p>
+        <p className="text-muted text-xs">Read from your photo. If it's wrong, retake a clearer photo.</p>
       </div>
     );
   }
   if (ocr.status === 'failed') {
     return (
-      <p role="alert" className="text-red-400 text-xs">
+      <p role="alert" className="text-red-600 text-xs">
         We couldn't read the {spec.numberLabel.toLowerCase()} from that photo. Retake it flat, well lit and in focus,
         with the whole {spec.label === 'Passport' ? 'photo page' : 'card'} in the frame.
       </p>
@@ -80,8 +80,8 @@ export default function IdentityDocumentCard({ documents = [], currentIdNumber =
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-heading text-brand-white font-semibold">Identity Document</h3>
-          <p className="text-brand-grey text-xs mt-1">
+          <h3 className="font-heading text-ink font-semibold">Identity Document</h3>
+          <p className="text-muted text-xs mt-1">
             Required — a National ID or a Passport, whichever you have (one is enough), plus a selfie holding it so we
             know it's yours.
           </p>
@@ -90,12 +90,12 @@ export default function IdentityDocumentCard({ documents = [], currentIdNumber =
       </div>
 
       {existing && (
-        <p className="flex items-center gap-2 text-brand-grey text-xs">
+        <p className="flex items-center gap-2 text-muted text-xs">
           <StatusIcon size={14} aria-hidden="true" /> {DOCUMENT_TYPE_LABELS[existing.type]} uploaded
         </p>
       )}
       {status === DOCUMENT_STATUSES.REJECTED && existing?.rejectionReason && (
-        <p className="text-red-400 text-xs">{existing.rejectionReason}</p>
+        <p className="text-red-600 text-xs">{existing.rejectionReason}</p>
       )}
 
       <DocumentFilePreview document={existing} />
@@ -119,12 +119,12 @@ export default function IdentityDocumentCard({ documents = [], currentIdNumber =
           </div>
 
           <IdentityNumberStatus spec={spec} ocr={ocr} />
-          {capture.error && <p role="alert" className="text-red-400 text-xs">{capture.error}</p>}
+          {capture.error && <p role="alert" className="text-red-600 text-xs">{capture.error}</p>}
 
           {busy ? (
             <div className="flex flex-col items-center gap-2 py-2">
               <Spinner size="md" label="Uploading" />
-              <p className="text-brand-grey text-xs">
+              <p className="text-muted text-xs">
                 {capture.phase === 'composing' ? 'Combining your photos…' : capture.phase === 'saving' ? `Saving your ${spec.numberLabel.toLowerCase()}…` : `${capture.progress}%`}
               </p>
             </div>

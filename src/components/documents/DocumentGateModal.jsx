@@ -11,6 +11,7 @@ import { useIdentityCapture } from '../../hooks/useIdentityCapture';
 import { composeFrontBack } from '../../lib/composeFrontBack';
 import { currentIdentityDocument } from '../../lib/identity';
 import { IdentityKindChooser, IdentityNumberStatus } from './IdentityDocumentCard';
+import WebcamCapture, { prefersWebcamWindow } from '../ui/WebcamCapture';
 
 const IDENTITY = 'IDENTITY';
 
@@ -20,12 +21,15 @@ function canUploadDoc(doc) {
 
 /**
  * One photo's picker — the sole focus of its step, so it's shown large rather than as a small thumbnail.
- * With `selfie`, a phone opens its front camera.
+ * With `selfie`, a phone opens its front camera; a computer opens the camera window (`WebcamCapture`), with
+ * uploading a photo as the fallback.
  */
 function PhotoStep({ file, onPick, selfie = false }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [url, setUrl] = useState(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const webcam = selfie && prefersWebcamWindow();
 
   useEffect(() => {
     if (!file) {
@@ -50,29 +54,37 @@ function PhotoStep({ file, onPick, selfie = false }) {
         onPick(e.dataTransfer.files?.[0]);
       }}
       className={`rounded-xl border-2 border-dashed h-48 flex flex-col items-center justify-center gap-2 text-center transition-colors overflow-hidden ${
-        dragOver ? 'border-brand-gold bg-brand-gold/5' : 'border-white/15 hover:border-brand-gold/40'
+        dragOver ? 'border-accent bg-accent/5' : 'border-black/15 hover:border-accent/40'
       }`}
     >
       {url ? (
         <img src={url} alt="Selected photo" className="w-full h-full object-contain" />
       ) : (
         <>
-          {selfie ? <Camera size={22} className="text-brand-gold" aria-hidden="true" /> : <Upload size={22} className="text-brand-gold" aria-hidden="true" />}
-          <p className="text-brand-white text-sm font-medium">{selfie ? 'Take a selfie holding it' : 'Drop a photo, or browse'}</p>
-          <p className="text-brand-grey text-xs">JPG or PNG</p>
+          {selfie ? <Camera size={22} className="text-accent" aria-hidden="true" /> : <Upload size={22} className="text-accent" aria-hidden="true" />}
+          <p className="text-ink text-sm font-medium">{selfie ? 'Take a selfie holding it' : 'Drop a photo, or browse'}</p>
+          <p className="text-muted text-xs">JPG or PNG</p>
         </>
       )}
-      <label className="mt-1 text-xs font-semibold text-brand-gold hover:text-brand-gold-light cursor-pointer focus-within:ring-2 focus-within:ring-brand-gold rounded-md px-1">
-        {url ? 'Choose a different photo' : 'Choose photo'}
+      {webcam && (
+        <Button size="sm" className="mt-1" onClick={() => setCameraOpen(true)}>
+          <Camera size={14} aria-hidden="true" /> {url ? 'Retake with the camera' : 'Take selfie with the camera'}
+        </Button>
+      )}
+      <label className={`mt-1 ${webcam ? 'text-[11px] font-medium text-muted hover:text-ink' : 'text-xs font-semibold text-accent hover:text-accent-hover'} cursor-pointer focus-within:ring-2 focus-within:ring-accent rounded-md px-1`}>
+        {webcam ? 'or upload a photo' : url ? 'Choose a different photo' : 'Choose photo'}
         <input
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png"
-          capture={selfie ? 'user' : undefined}
+          capture={selfie && !webcam ? 'user' : undefined}
           className="sr-only"
           onChange={(e) => onPick(e.target.files?.[0])}
         />
       </label>
+      {webcam && (
+        <WebcamCapture isOpen={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={onPick} hint="Hold your ID or passport up next to your face, with the side being photographed facing the camera." />
+      )}
     </div>
   );
 }
@@ -210,10 +222,10 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
       <div className="flex flex-col gap-5">
         {stepIndex === 0 && phase === 'collect' && (
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 shrink-0 rounded-full bg-brand-gold/10 flex items-center justify-center">
-              <ShieldCheck size={18} className="text-brand-gold" aria-hidden="true" />
+            <div className="w-10 h-10 shrink-0 rounded-full bg-accent/10 flex items-center justify-center">
+              <ShieldCheck size={18} className="text-accent" aria-hidden="true" />
             </div>
-            <p className="text-sm text-brand-grey leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               We verify a renter's identity on every booking — it protects you and the vehicle's owner if
               anything goes wrong during the rental.
               {needsLicense && " Since you chose self-drive, we'll also need your driving licence."}
@@ -226,23 +238,23 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             {docs.length > 0 ? (
               <>
-                <CheckCircle2 size={32} className="text-emerald-400" aria-hidden="true" />
-                <p className="text-brand-white text-sm font-medium">Uploaded — now pending review.</p>
-                <p className="text-brand-grey text-xs">
+                <CheckCircle2 size={32} className="text-emerald-600" aria-hidden="true" />
+                <p className="text-ink text-sm font-medium">Uploaded — now pending review.</p>
+                <p className="text-muted text-xs">
                   We'll review it shortly (usually a few hours). Come back and pay once it's approved — nothing here is lost.
                 </p>
               </>
             ) : missing.length > 0 ? (
-              <ul className="flex flex-col gap-1.5 text-sm text-brand-white pl-1 text-left self-stretch">
+              <ul className="flex flex-col gap-1.5 text-sm text-ink pl-1 text-left self-stretch">
                 {missing.map((item) => (
                   <li key={item} className="flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-brand-gold shrink-0" aria-hidden="true" />
+                    <span className="w-1 h-1 rounded-full bg-accent shrink-0" aria-hidden="true" />
                     {item}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-brand-grey text-sm">Nothing left to upload right now.</p>
+              <p className="text-muted text-sm">Nothing left to upload right now.</p>
             )}
             <Button onClick={onClose} className="mt-1">Close</Button>
           </div>
@@ -253,18 +265,18 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
                 <span
                   key={i}
                   aria-hidden="true"
-                  className={`h-1.5 flex-1 rounded-full ${i < stepIndex ? 'bg-brand-gold' : i === stepIndex ? 'bg-brand-gold/50' : 'bg-white/10'}`}
+                  className={`h-1.5 flex-1 rounded-full ${i < stepIndex ? 'bg-accent' : i === stepIndex ? 'bg-accent/50' : 'bg-black/10'}`}
                 />
               ))}
             </div>
-            <p className="text-brand-grey text-xs">
+            <p className="text-muted text-xs">
               Step {stepIndex + 1} of {steps.length} — {docLabel}
             </p>
 
             {uploading ? (
               <div className="flex flex-col items-center gap-2 py-6">
                 <Spinner size="lg" label="Uploading" />
-                <p className="text-brand-grey text-xs">
+                <p className="text-muted text-xs">
                   {identity.phase === 'saving'
                     ? `Saving your ${identity.spec.numberLabel.toLowerCase()}…`
                     : uploadProgress > 0
@@ -276,13 +288,13 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
               <>
                 {step.kind === 'choose' ? (
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-brand-white">Which do you have?</p>
-                    <p className="text-brand-grey text-xs">One is enough — a National ID or a Passport.</p>
+                    <p className="text-sm font-medium text-ink">Which do you have?</p>
+                    <p className="text-muted text-xs">One is enough — a National ID or a Passport.</p>
                     <IdentityKindChooser kind={identity.kind} onChoose={identity.chooseKind} />
                   </div>
                 ) : step.kind === 'shot' ? (
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-brand-white">{step.shot.label}</p>
+                    <p className="text-sm font-medium text-ink">{step.shot.label}</p>
                     <PhotoStep
                       file={identity.shots[step.shot.key]}
                       selfie={step.shot.selfie}
@@ -296,7 +308,7 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm font-medium text-brand-white">Photo of the {step.side} of your Driving Licence</p>
+                    <p className="text-sm font-medium text-ink">Photo of the {step.side} of your Driving Licence</p>
                     <PhotoStep
                       file={licence[step.side]}
                       onPick={(file) => {
@@ -307,8 +319,8 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
                     />
                   </div>
                 )}
-                {fieldError && <p role="alert" className="text-red-400 text-xs">{fieldError}</p>}
-                {(error || identity.error) && <p role="alert" className="text-red-400 text-xs">{error || identity.error}</p>}
+                {fieldError && <p role="alert" className="text-red-600 text-xs">{fieldError}</p>}
+                {(error || identity.error) && <p role="alert" className="text-red-600 text-xs">{error || identity.error}</p>}
               </>
             )}
 
@@ -321,11 +333,11 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
           </>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
-          <Link to="/dashboard/documents" className="text-brand-gold text-xs font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md">
+        <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-3">
+          <Link to="/dashboard/documents" className="text-accent text-xs font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md">
             Manage all my documents
           </Link>
-          {!done && <button type="button" onClick={onClose} className="text-brand-grey text-xs hover:text-brand-white transition-colors focus-ring rounded-md">Not now</button>}
+          {!done && <button type="button" onClick={onClose} className="text-muted text-xs hover:text-ink transition-colors focus-ring rounded-md">Not now</button>}
         </div>
       </div>
     </Modal>

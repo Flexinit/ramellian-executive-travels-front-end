@@ -234,35 +234,26 @@ describe('VehiclesPage — vehicles available by location', () => {
     expect(chips).toEqual(['Nairobi CBD (2)', 'Mombasa (1)', 'Roysambu division (1)']);
   });
 
-  it('shows the vehicles place by place when they are in more than one', async () => {
+  it('shows one grid across every place — no section per place — with the place shown on each card', async () => {
     server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json(CARS)));
     renderWithUrl();
 
-    const nairobi = await screen.findByRole('region', { name: /nairobi cbd/i });
-    expect(within(nairobi).getByRole('heading', { name: /nairobi cbd/i })).toHaveTextContent('2 vehicles');
-    expect(within(nairobi).getAllByRole('heading', { level: 3 }).map((h) => h.textContent).sort()).toEqual(['Toyota Noah', 'Toyota Prado']);
-    expect(screen.getByRole('region', { name: /mombasa/i })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: /roysambu/i })).toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Toyota Prado' });
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(CARS.length);
+    expect(screen.getAllByText(/nairobi cbd/i).length).toBeGreaterThan(0);
   });
 
-  it('shows one list in the chosen order once a sort is picked, instead of grouping by place', async () => {
+  it('follows a chosen sort exactly', async () => {
     // The backend sorts price_desc; here it already sends them dearest first, across three places.
     const byPrice = [...CARS].sort((a, b) => b.pricePerDay - a.pricePerDay);
     server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json(byPrice)));
     renderWithUrl('/vehicles?sort=price_desc');
 
     await screen.findByRole('heading', { name: 'Toyota Prado' });
-    expect(screen.queryByRole('region', { name: /nairobi cbd/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
       'Toyota Prado', 'Mercedes Benz', 'Subaru Forester', 'Toyota Noah',
     ]);
-  });
-
-  it('shows a plain list when everything is in one place', async () => {
-    server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json([CARS[0]])));
-    renderWithUrl();
-    await screen.findByRole('heading', { name: 'Mercedes Benz' });
-    expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
 
   it('picking a place filters to it, and picking it again clears the filter', async () => {

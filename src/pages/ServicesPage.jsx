@@ -68,9 +68,9 @@ export default function ServicesPage() {
       <PageTitle title="Our Services" />
       <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center text-center gap-2">
-          <span className="text-brand-gold text-xs font-semibold tracking-widest uppercase">What We Offer</span>
-          <h1 className="font-heading text-brand-white text-3xl sm:text-4xl font-bold">Our Services</h1>
-          <p className="text-brand-grey text-sm max-w-xl">
+          <span className="text-brand-gold-deep text-xs font-semibold tracking-widest uppercase">What We Offer</span>
+          <h1 className="font-heading text-ink text-3xl sm:text-4xl font-bold">Our Services</h1>
+          <p className="text-muted text-sm max-w-xl">
             Six ways Ramellian gets you where you need to be — chauffeured or self-drive.
           </p>
         </div>
@@ -82,20 +82,20 @@ export default function ServicesPage() {
               id={service.id}
               className="scroll-mt-24 p-6 sm:p-8 flex flex-col sm:flex-row gap-5 sm:gap-8"
             >
-              <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-brand-gold/20 to-brand-gold/5 border border-brand-gold/20 flex items-center justify-center">
-                <service.icon size={22} className="text-brand-gold" aria-hidden="true" />
+              <div className="shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 flex items-center justify-center">
+                <service.icon size={22} className="text-accent" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-2">
-                <h2 className="font-heading text-brand-white text-xl font-bold">{service.title}</h2>
-                <p className="text-brand-grey text-sm font-medium">{service.summary}</p>
-                <p className="text-brand-grey text-sm leading-relaxed">{service.details}</p>
+                <h2 className="font-heading text-ink text-xl font-bold">{service.title}</h2>
+                <p className="text-muted text-sm font-medium">{service.summary}</p>
+                <p className="text-muted text-sm leading-relaxed">{service.details}</p>
               </div>
             </Card>
           ))}
         </div>
 
         <div className="flex flex-col items-center text-center gap-3 pt-2">
-          <p className="text-brand-grey text-sm">Don&apos;t see exactly what you need?</p>
+          <p className="text-muted text-sm">Don&apos;t see exactly what you need?</p>
           <Button
             to="/contact?type=quote"
           >

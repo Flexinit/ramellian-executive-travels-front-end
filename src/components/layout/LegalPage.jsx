@@ -17,16 +17,16 @@ export default function LegalPage({ title, intro, sections, children }) {
       <PageTitle title={title} />
       <div className="flex flex-col gap-8">
         <div>
-          <h1 className="font-heading text-brand-white text-3xl font-bold">{title}</h1>
-          {intro && <p className="text-brand-grey text-sm mt-2 leading-relaxed">{intro}</p>}
+          <h1 className="font-heading text-ink text-3xl font-bold">{title}</h1>
+          {intro && <p className="text-muted text-sm mt-2 leading-relaxed">{intro}</p>}
         </div>
 
 
         <div className="flex flex-col gap-7">
           {sections.map((s) => (
             <section key={s.heading} className="flex flex-col gap-2">
-              <h2 className="font-heading text-brand-white text-lg font-semibold">{s.heading}</h2>
-              <div className="text-brand-grey text-sm leading-relaxed flex flex-col gap-2.5">{s.body}</div>
+              <h2 className="font-heading text-ink text-lg font-semibold">{s.heading}</h2>
+              <div className="text-muted text-sm leading-relaxed flex flex-col gap-2.5">{s.body}</div>
             </section>
           ))}
         </div>

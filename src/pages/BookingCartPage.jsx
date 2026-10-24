@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
 import { CarFront, Pencil, Trash2, ArrowRight, Plus } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import BookingProgress from '../components/booking/BookingProgress';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
@@ -14,7 +13,6 @@ import EmptyState from '../components/ui/EmptyState';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { bookingQuoteQuery } from '../hooks/useBooking';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 
 /**
  * The renter's selection — every vehicle they've added, each with its own dates and its price worked out from
@@ -44,7 +42,7 @@ export default function BookingCartPage() {
 
   if (items.length === 0) {
     return (
-      <PageBackdrop image={nairobiSkyline}>
+      <>
         <PageWrapper className="max-w-2xl mx-auto">
           <PageTitle title="Your Booking" />
           <EmptyState
@@ -54,20 +52,20 @@ export default function BookingCartPage() {
             action={{ label: 'Browse vehicles', onClick: () => navigate('/vehicles') }}
           />
         </PageWrapper>
-      </PageBackdrop>
+      </>
     );
   }
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
     <PageWrapper className="max-w-5xl mx-auto">
       <PageTitle title="Your Booking" />
       <div className="flex flex-col gap-6">
         <BookingProgress current="selection" />
 
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Your Booking</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl font-bold">Your Booking</h1>
+          <p className="text-muted text-sm mt-1">
             Check the vehicles and dates. You can add another vehicle, or book what you have.
           </p>
         </div>
@@ -101,7 +99,7 @@ export default function BookingCartPage() {
                   }
                   note={
                     item.bookingId ? (
-                      <p className="text-brand-gold text-xs">Booking started — continue from checkout to review its contract and pay.</p>
+                      <p className="text-accent text-xs">Booking started — continue from checkout to review its contract and pay.</p>
                     ) : null
                   }
                 />
@@ -129,7 +127,7 @@ export default function BookingCartPage() {
 
       <Modal isOpen={!!pendingRemove} onClose={() => setPendingRemove(null)} title="Remove from your booking">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
+          <p className="text-muted text-sm">
             Remove {pendingItem?.vehicle?.model}? Its booking has already started, so it stays in My Bookings —
             cancel it there if you no longer want it at all.
           </p>
@@ -144,7 +142,7 @@ export default function BookingCartPage() {
 
       <Modal isOpen={confirmClear} onClose={() => setConfirmClear(false)} title="Clear your booking">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
+          <p className="text-muted text-sm">
             Remove every vehicle from your booking?{' '}
             {hasStarted && 'Any booking already started stays in My Bookings — cancel it there if you no longer want it. '}
             This can&apos;t be undone here.
@@ -158,6 +156,6 @@ export default function BookingCartPage() {
         </div>
       </Modal>
     </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

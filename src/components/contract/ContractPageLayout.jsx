@@ -16,8 +16,8 @@ export default function ContractPageLayout({ back, title, intro, children }) {
       <div className="flex flex-col gap-4 lg:sticky lg:top-24">
         {back}
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">{title}</h1>
-          {intro && <p className="text-brand-grey text-sm mt-1.5 leading-relaxed">{intro}</p>}
+          <h1 className="font-heading text-ink text-2xl font-bold">{title}</h1>
+          {intro && <p className="text-muted text-sm mt-1.5 leading-relaxed">{intro}</p>}
         </div>
       </div>
       <div className="flex flex-col gap-6 min-w-0">{children}</div>

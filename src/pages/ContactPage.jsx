@@ -6,7 +6,6 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
-import PageBackdrop from '../components/layout/PageBackdrop';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -15,7 +14,6 @@ import Select from '../components/ui/Select';
 import Button from '../components/ui/Button';
 import DraftNotice from '../components/ui/DraftNotice';
 import { useFormDraft } from '../hooks/useFormDraft';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 
 /**
  * Placeholder brand contact details — swap for Ramellian's real phone
@@ -89,14 +87,14 @@ export default function ContactPage() {
   }
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
       <PageWrapper>
       <PageTitle title="Contact Us" />
       <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center text-center gap-2">
-          <span className="text-brand-gold text-xs font-semibold tracking-widest uppercase">Get In Touch</span>
-          <h1 className="font-heading text-brand-white text-3xl sm:text-4xl font-bold">Contact Us</h1>
-          <p className="text-brand-grey text-sm max-w-xl">
+          <span className="text-brand-gold-deep text-xs font-semibold tracking-widest uppercase">Get In Touch</span>
+          <h1 className="font-heading text-ink text-3xl sm:text-4xl font-bold">Contact Us</h1>
+          <p className="text-muted text-sm max-w-xl">
             Questions, custom quotes, or corporate accounts — reach us any way that&apos;s convenient.
           </p>
         </div>
@@ -108,7 +106,7 @@ export default function ContactPage() {
                 href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-emerald-600/10 border border-emerald-500/30 hover:bg-emerald-600/20 text-emerald-400 rounded-xl px-4 py-3 transition-colors focus-ring"
+                className="inline-flex items-center gap-3 bg-emerald-600/10 border border-emerald-500/30 hover:bg-emerald-600/20 text-emerald-600 rounded-xl px-4 py-3 transition-colors focus-ring"
               >
                 <MessageCircle size={20} aria-hidden="true" />
                 <span className="text-sm font-semibold">Chat with us on WhatsApp</span>
@@ -116,13 +114,13 @@ export default function ContactPage() {
 
               <div className="flex flex-col gap-3 text-sm">
                 <div className="flex items-start gap-3">
-                  <Phone size={16} className="text-brand-gold mt-0.5 shrink-0" aria-hidden="true" />
+                  <Phone size={16} className="text-accent mt-0.5 shrink-0" aria-hidden="true" />
                   <div className="flex flex-col">
                     {PHONE_NUMBERS.map((phone) => (
                       <a
                         key={phone}
                         href={`tel:${phone.replace(/\s+/g, '')}`}
-                        className="text-brand-white hover:text-brand-gold transition-colors focus-ring rounded-md w-fit"
+                        className="text-ink hover:text-accent transition-colors focus-ring rounded-md w-fit"
                       >
                         {phone}
                       </a>
@@ -130,17 +128,17 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
+                  <Mail size={16} className="text-accent shrink-0" aria-hidden="true" />
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="min-w-0 break-all text-brand-white hover:text-brand-gold transition-colors focus-ring rounded-md"
+                    className="min-w-0 break-all text-ink hover:text-accent transition-colors focus-ring rounded-md"
                   >
                     {SUPPORT_EMAIL}
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
-                  <span className="text-brand-grey">Nairobi, Kenya</span>
+                  <MapPin size={16} className="text-accent shrink-0" aria-hidden="true" />
+                  <span className="text-muted">Nairobi, Kenya</span>
                 </div>
               </div>
             </Card>
@@ -188,6 +186,6 @@ export default function ContactPage() {
         </div>
       </div>
       </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

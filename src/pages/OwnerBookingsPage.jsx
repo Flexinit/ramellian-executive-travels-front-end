@@ -20,7 +20,7 @@ export default function OwnerBookingsPage() {
     <PageWrapper>
       <PageTitle title="Fleet Bookings" />
       <div className="flex flex-col gap-6">
-        <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Fleet Bookings</h1>
+        <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Fleet Bookings</h1>
         <BookingStatusTabs value={filters.status} onChange={(status) => setFilter('status', status)} counts={counts} />
         <BookingFilters filters={filters} setFilter={setFilter} showStatus={false} />
         <BookingTable

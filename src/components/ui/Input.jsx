@@ -2,7 +2,8 @@ import React, { useId, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 /**
- * Accessible text input with label, error, and hint support.
+ * Accessible text input with label, error, and hint support — the design system's outlined field, its label set
+ * into the top border.
  * Pass `register` from React Hook Form to bind validation. A `type="password"` field gets an eye button to show or
  * hide what's typed (it starts hidden).
  *
@@ -33,16 +34,16 @@ export default function Input({
   const [shown, setShown] = useState(false);
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      <label htmlFor={id} className="text-sm font-medium text-brand-white">
+    <div className={`flex flex-col gap-1 pt-2 ${className}`}>
+      <div className="relative">
+      <label htmlFor={id} className="field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,theme(colors.surface)_50%)]">
         {label}
         {required && (
-          <span aria-hidden="true" className="text-brand-gold">
+          <span aria-hidden="true" className="text-accent">
             {' '}*
           </span>
         )}
       </label>
-      <div className="relative">
       <input
         id={id}
         name={name}
@@ -50,9 +51,9 @@ export default function Input({
         aria-required={required || undefined}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={hasDesc ? descId : undefined}
-        className={`w-full rounded-lg bg-white/5 border px-3 py-2.5 text-brand-white placeholder-brand-grey text-sm
-          focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition
-          ${error ? 'border-red-500' : 'border-white/10 hover:border-brand-gold/50'} ${isPassword ? 'pr-11' : ''}`}
+        className={`field-control w-full rounded-tile bg-surface border px-4 text-ink placeholder-muted text-sm
+          focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition h-12
+          ${error ? 'border-red-500' : 'border-line hover:border-accent/60'} ${isPassword ? 'pr-11' : ''}`}
         {...(register || {})}
         {...rest}
       />
@@ -64,14 +65,14 @@ export default function Input({
           aria-pressed={shown}
           aria-controls={id}
           title={shown ? 'Hide password' : 'Show password'}
-          className="absolute inset-y-0 right-0 flex items-center px-3 text-brand-grey hover:text-brand-white focus-ring rounded-r-lg"
+          className="absolute inset-y-0 right-0 flex items-center px-3 text-muted hover:text-ink focus-ring rounded-r-lg"
         >
           {shown ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
         </button>
       )}
       </div>
       {hasDesc && (
-        <p id={descId} className={`text-xs ${error ? 'text-red-400' : 'text-brand-grey'}`}>
+        <p id={descId} className={`text-xs ${error ? 'text-red-600' : 'text-muted'}`}>
           {error || hint}
         </p>
       )}

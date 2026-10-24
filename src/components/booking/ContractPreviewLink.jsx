@@ -26,7 +26,7 @@ export default function ContractPreviewLink({ ownerId }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 self-start text-brand-gold text-sm font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+        className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
       >
         <FileText size={14} aria-hidden="true" />
         Preview rental terms
@@ -51,7 +51,7 @@ export default function ContractPreviewLink({ ownerId }) {
         )}
         {preview.isSuccess && (
           <>
-            <p className="text-brand-grey text-xs -mt-2 mb-3">
+            <p className="text-muted text-xs -mt-2 mb-3">
               A preview only — you&apos;ll read and accept the terms for your specific booking just before you pay.
             </p>
             <ContractViewer contractText={preview.data?.content} />

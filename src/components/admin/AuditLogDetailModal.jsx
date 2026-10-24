@@ -5,6 +5,7 @@ import Spinner from '../ui/Spinner';
 import { useAuditLog } from '../../hooks/useAuditLogs';
 import { actionLabel, auditStatusVariant } from '../../lib/auditLog';
 import { formatDateTime } from '../../lib/utils';
+import { DetailList, DetailRow } from '../ui/DetailList';
 
 const rows = (entry) =>
   [
@@ -36,18 +37,15 @@ export default function AuditLogDetailModal({ scope, id, onClose }) {
           <Spinner size="lg" label="Loading entry" />
         </div>
       )}
-      {isError && <p className="text-sm text-red-400">Couldn&apos;t load this entry.</p>}
+      {isError && <p className="text-sm text-red-600">Couldn&apos;t load this entry.</p>}
       {entry && (
         <div className="flex flex-col gap-4">
           <Badge label={entry.status || 'Unknown'} variant={auditStatusVariant(entry.status)} className="self-start" />
-          <dl className="flex flex-col gap-3">
+          <DetailList>
             {rows(entry).map(([label, value]) => (
-              <div key={label} className="flex gap-4 text-sm">
-                <dt className="text-brand-grey w-24 shrink-0">{label}</dt>
-                <dd className="text-brand-white min-w-0 break-words">{value}</dd>
-              </div>
+              <DetailRow key={label} label={label}>{value}</DetailRow>
             ))}
-          </dl>
+          </DetailList>
         </div>
       )}
     </Modal>

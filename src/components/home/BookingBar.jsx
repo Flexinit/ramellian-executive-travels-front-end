@@ -1,7 +1,7 @@
 import React, { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MapPin, LocateFixed, Loader2, Search } from 'lucide-react';
+import { MapPin, LocateFixed, Loader2, Search, Plus, Minus } from 'lucide-react';
 import DateRangePicker, {
   DEFAULT_START_TIME,
   DEFAULT_END_TIME,
@@ -10,6 +10,7 @@ import DateRangePicker, {
 import { buildQueryString } from '../../lib/utils';
 import { BOOKING_MODES } from '../../lib/constants';
 import SegmentedControl from '../ui/SegmentedControl';
+import { SelfDriveIcon, ChauffeurIcon } from '../ui/TripModeIcons';
 import Button from '../ui/Button';
 
 /** Wraps the callback-based Geolocation API in a promise. */
@@ -50,10 +51,10 @@ async function reverseGeocode(latitude, longitude) {
 function BarField({ icon: Icon, label, renderInput, className = '' }) {
   const id = useId();
   return (
-    <div className={`flex-1 min-w-0 flex items-center gap-2.5 px-4 sm:px-5 py-3 ${className}`}>
-      <Icon size={16} className="text-brand-gold shrink-0" aria-hidden="true" />
+    <div className={`flex-1 min-w-0 flex items-center gap-2.5 px-4 sm:px-5 py-3 text-left ${className}`}>
+      <Icon size={16} className="text-accent shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <label htmlFor={id} className="text-[10px] font-semibold uppercase tracking-wider text-brand-grey">
+        <label htmlFor={id} className="text-[11px] font-bold uppercase tracking-wider text-ink">
           {label}
         </label>
         {renderInput(id)}
@@ -63,7 +64,7 @@ function BarField({ icon: Icon, label, renderInput, className = '' }) {
 }
 
 const fieldInputClass =
-  'w-full bg-transparent border-0 p-0 text-sm text-brand-white placeholder-brand-grey/50 focus:outline-none focus:ring-0 [color-scheme:dark]';
+  'w-full bg-transparent border-0 p-0 text-sm text-ink placeholder-muted focus:outline-none focus:ring-0 [color-scheme:light]';
 
 /** A text field with an inline "use current location" button, shared by pickup and return. */
 function LocationField({ id, value, onChange, placeholder, locating, onLocate }) {
@@ -83,7 +84,7 @@ function LocationField({ id, value, onChange, placeholder, locating, onLocate })
         disabled={locating}
         aria-label="Use my current location"
         title="Use my current location"
-        className="shrink-0 p-1 -m-1 rounded-full text-brand-grey hover:text-brand-gold transition-colors focus-ring disabled:opacity-60"
+        className="shrink-0 p-1 -m-1 rounded-full text-muted hover:text-accent transition-colors focus-ring disabled:opacity-60"
       >
         {locating ? (
           <Loader2 size={15} className="animate-spin" aria-hidden="true" />
@@ -97,8 +98,8 @@ function LocationField({ id, value, onChange, placeholder, locating, onLocate })
 
 const Divider = () => (
   <>
-    <div className="hidden lg:block w-px my-2.5 bg-white/10" aria-hidden="true" />
-    <div className="block lg:hidden h-px mx-4 bg-white/10" aria-hidden="true" />
+    <div className="hidden lg:block w-px my-2.5 bg-black/10" aria-hidden="true" />
+    <div className="block lg:hidden h-px mx-4 bg-black/10" aria-hidden="true" />
   </>
 );
 
@@ -119,6 +120,9 @@ export default function BookingBar() {
   const navigate = useNavigate();
   const [location, setLocation] = useState('');
   const [returnLocation, setReturnLocation] = useState('');
+  // Most people return the car where they got it, so the bar asks for one place; a second box for returning
+  // somewhere else appears only when asked for (and is emptied if they change their mind).
+  const [returnElsewhere, setReturnElsewhere] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: null,
     endDate: null,
@@ -171,31 +175,14 @@ export default function BookingBar() {
         size="sm"
         className="self-center sm:self-start"
         options={[
-          { value: BOOKING_MODES.SELF_DRIVE, label: 'Self-Drive' },
-          { value: BOOKING_MODES.CHAUFFEURED, label: 'Chauffeured' },
+          { value: BOOKING_MODES.SELF_DRIVE, label: 'Self-Drive', icon: SelfDriveIcon },
+          { value: BOOKING_MODES.CHAUFFEURED, label: 'Chauffeured', icon: ChauffeurIcon },
         ]}
         value={mode}
         onChange={setMode}
       />
 
-      <div className="w-full bg-brand-navy border border-white/10 rounded-2xl lg:rounded-full shadow-card flex flex-col lg:flex-row lg:items-stretch">
-        <BarField
-          icon={MapPin}
-          label="Return Location"
-          renderInput={(id) => (
-            <LocationField
-              id={id}
-              value={returnLocation}
-              onChange={(e) => setReturnLocation(e.target.value)}
-              placeholder="Same as pick-up"
-              locating={locatingReturn}
-              onLocate={() => useCurrentLocation(setReturnLocation, setLocatingReturn)}
-            />
-          )}
-        />
-
-        <Divider />
-
+      <div className="w-full bg-surface border border-black/10 rounded-2xl lg:rounded-full shadow-card flex flex-col lg:flex-row lg:items-stretch">
         <BarField
           icon={MapPin}
           label="Pick-up Location"
@@ -204,7 +191,7 @@ export default function BookingBar() {
               id={id}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. JKIA Terminal 1"
+              placeholder="Where? e.g. JKIA Terminal 1"
               locating={locating}
               onLocate={() => useCurrentLocation(setLocation, setLocating)}
             />
@@ -212,6 +199,27 @@ export default function BookingBar() {
         />
 
         <Divider />
+
+        {returnElsewhere && (
+          <>
+            <BarField
+              icon={MapPin}
+              label="Return Location"
+              renderInput={(id) => (
+                <LocationField
+                  id={id}
+                  value={returnLocation}
+                  onChange={(e) => setReturnLocation(e.target.value)}
+                  placeholder="e.g. Diani Beach"
+                  locating={locatingReturn}
+                  onLocate={() => useCurrentLocation(setReturnLocation, setLocatingReturn)}
+                />
+              )}
+            />
+
+            <Divider />
+          </>
+        )}
 
         <DateRangePicker
           value={dateRange}
@@ -226,6 +234,19 @@ export default function BookingBar() {
           </Button>
         </div>
       </div>
+
+      <button
+        type="button"
+        aria-expanded={returnElsewhere}
+        onClick={() => {
+          if (returnElsewhere) setReturnLocation('');
+          setReturnElsewhere(!returnElsewhere);
+        }}
+        className="self-center sm:self-start inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.45)] focus-ring rounded-md px-1"
+      >
+        {returnElsewhere ? <Minus size={14} aria-hidden="true" /> : <Plus size={14} aria-hidden="true" />}
+        {returnElsewhere ? 'Return to the same place' : 'Return to a different location'}
+      </button>
     </form>
   );
 }

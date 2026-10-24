@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 
 /**
- * Accessible textarea with character counter.
+ * Accessible textarea with character counter — the same outlined field as Input, with its label in the top border.
  *
  * @param {string} label
  * @param {string} name
@@ -43,17 +43,11 @@ export default function Textarea({
   });
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`}>
-      <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-sm font-medium text-brand-white">
-          {label}
-        </label>
-        {maxLength !== undefined && (
-          <span id={countId} className="text-xs text-brand-grey" aria-live="polite">
-            {length} / {maxLength}
-          </span>
-        )}
-      </div>
+    <div className={`flex flex-col gap-1 pt-2 ${className}`}>
+      <div className="relative">
+      <label htmlFor={id} className="field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,theme(colors.surface)_50%)]">
+        {label}
+      </label>
       <textarea
         id={id}
         name={name}
@@ -61,9 +55,9 @@ export default function Textarea({
         maxLength={maxLength}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error || hint ? descId : maxLength !== undefined ? countId : undefined}
-        className={`w-full rounded-lg bg-white/5 border px-3 py-2.5 text-brand-white placeholder-brand-grey text-sm resize-none
-          focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition
-          ${error ? 'border-red-500' : 'border-white/10 hover:border-brand-gold/50'}`}
+        className={`field-control w-full rounded-tile bg-surface border px-4 text-ink placeholder-muted text-sm
+          focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition py-3 resize-none
+          ${error ? 'border-red-500' : 'border-line hover:border-accent/60'}`}
         {...(register || {})}
         ref={(el) => {
           elementRef.current = el;
@@ -72,8 +66,14 @@ export default function Textarea({
         onChange={handleChange}
         {...rest}
       />
+      </div>
+      {maxLength !== undefined && (
+        <span id={countId} className="self-end text-xs text-muted" aria-live="polite">
+          {length} / {maxLength}
+        </span>
+      )}
       {(error || hint) && (
-        <p id={descId} role={hint && !error ? 'status' : undefined} className={`text-xs ${error ? 'text-red-400' : 'text-brand-gold'}`}>
+        <p id={descId} role={hint && !error ? 'status' : undefined} className={`text-xs ${error ? 'text-red-600' : 'text-muted'}`}>
           {error || hint}
         </p>
       )}

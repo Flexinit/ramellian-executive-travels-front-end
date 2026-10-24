@@ -84,30 +84,30 @@ export default function NewMessageModal({ isOpen, onClose, toId }) {
         ) : (
           <fieldset className="flex flex-col gap-1.5">
             <legend className="sr-only">Who to message</legend>
-            {isLoading && <p className="text-sm text-brand-grey">Loading…</p>}
-            {!isLoading && shown.length === 0 && <p className="text-sm text-brand-grey">No one matches.</p>}
+            {isLoading && <p className="text-sm text-muted">Loading…</p>}
+            {!isLoading && shown.length === 0 && <p className="text-sm text-muted">No one matches.</p>}
             {shown.map((u) => {
               const selected = u.id === recipientId;
               const name = userDisplayName(u);
               return (
                 <label
                   key={u.id}
-                  className={`flex items-center gap-3 rounded-xl border px-3 py-2 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-brand-gold ${
-                    selected ? 'border-brand-gold bg-brand-gold/10' : 'border-white/10 hover:border-brand-gold/50 hover:bg-white/5'
+                  className={`flex items-center gap-3 rounded-xl border px-3 py-2 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
+                    selected ? 'border-accent bg-accent/10' : 'border-black/10 hover:border-accent/50 hover:bg-black/5'
                   }`}
                 >
                   <input type="radio" name="recipient" value={u.id} checked={selected} onChange={() => setRecipientId(u.id)} className="sr-only" aria-label={`${name}, ${u.email}`} />
                   <Avatar name={name} size="sm" />
                   <span className="flex-1 min-w-0 flex flex-col">
-                    <span className="text-sm text-brand-white truncate">{name}</span>
-                    <span className="text-xs text-brand-grey truncate">{u.email}</span>
+                    <span className="text-sm text-ink truncate">{name}</span>
+                    <span className="text-xs text-muted truncate">{u.email}</span>
                   </span>
                   <Badge label={roleBadges(u.roles)[0]} variant="gold" />
-                  {selected && <Check size={16} className="text-brand-gold shrink-0" aria-hidden="true" />}
+                  {selected && <Check size={16} className="text-accent shrink-0" aria-hidden="true" />}
                 </label>
               );
             })}
-            {matches.length > SHOWN && <p className="text-xs text-brand-grey">Showing {SHOWN} of {matches.length} — type more to narrow it down.</p>}
+            {matches.length > SHOWN && <p className="text-xs text-muted">Showing {SHOWN} of {matches.length} — type more to narrow it down.</p>}
           </fieldset>
         )}
 
@@ -122,7 +122,7 @@ export default function NewMessageModal({ isOpen, onClose, toId }) {
         />
 
         {error && (
-          <p role="alert" className="text-sm text-red-400">
+          <p role="alert" className="text-sm text-red-600">
             {error}
           </p>
         )}

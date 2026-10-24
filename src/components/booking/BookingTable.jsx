@@ -56,12 +56,12 @@ export default function BookingTable({ bookings, isLoading, basePath, actionLabe
       <Card className="table-scroll">
         <table className="stack-table w-full text-left">
           <thead>
-            <tr className="border-b border-white/10">
+            <tr className="border-b border-black/10">
               {columns.map((col) => (
                 <th
                   key={col}
                   scope="col"
-                  className={`px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider ${
+                  className={`px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider ${
                     col === 'Cost' || col === 'Chauffeur' || col === 'Contract' || col === 'Receipt' ? 'text-right' : ''
                   }`}
                 >
@@ -70,7 +70,7 @@ export default function BookingTable({ bookings, isLoading, basePath, actionLabe
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-black/5">
             {pages.pageItems.map((b) => (
               <BookingRow key={b.id} booking={b} basePath={basePath} actionLabel={actionLabel} onAction={onAction} showContract={showContract} showReceipt={showReceipt} />
             ))}

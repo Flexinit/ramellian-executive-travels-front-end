@@ -36,7 +36,7 @@ export default function AdminReportsPage() {
     <PageWrapper>
       <PageTitle title="Platform Reports" />
       <div className="flex flex-col gap-6">
-        <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Platform Reports</h1>
+        <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Platform Reports</h1>
         <SegmentedControl kind="tab" label="Report section" value={tab} onChange={setTab} options={TABS} />
 
         {tab === 'activity' && <SignedInSection />}
@@ -44,7 +44,7 @@ export default function AdminReportsPage() {
         {tab === 'vehicles' && <VehiclesSection />}
         {tab === 'revenue' && (
           <section aria-labelledby="revenue-heading" className="flex flex-col gap-4">
-            <h2 id="revenue-heading" className="font-heading text-brand-white text-lg font-semibold">
+            <h2 id="revenue-heading" className="font-heading text-ink text-lg font-semibold">
               Bookings and revenue
             </h2>
             <ReportSummaryCards report={report} isLoading={isLoading} kind="admin" />
@@ -53,7 +53,7 @@ export default function AdminReportsPage() {
         )}
         {tab === 'bookings' && (
           <section aria-labelledby="bookings-heading" className="flex flex-col gap-4">
-            <h2 id="bookings-heading" className="font-heading text-brand-white text-lg font-semibold">
+            <h2 id="bookings-heading" className="font-heading text-ink text-lg font-semibold">
               Bookings
             </h2>
             <ReportTable rows={reportBookings(report)} isLoading={isLoading} basePath="/admin/bookings" />

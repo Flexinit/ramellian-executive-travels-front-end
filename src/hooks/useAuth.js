@@ -318,3 +318,23 @@ export function useResendVerification() {
     },
   });
 }
+
+/**
+ * Step 1 of resetting a forgotten password (`POST /auth/forgot-password`, body `{ email }`): the backend emails a
+ * 6-digit code. It answers the same whether or not the email has an account, so the page never says which.
+ */
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: ({ email }) => apiPost('/auth/forgot-password', { email }),
+  });
+}
+
+/**
+ * Step 2 (`POST /auth/reset-password`, body `{ email, code, newPassword }` — code exactly 6 characters, new password
+ * 8–72): sets the new password. The person then logs in with it.
+ */
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({ email, code, newPassword }) => apiPost('/auth/reset-password', { email, code, newPassword }),
+  });
+}

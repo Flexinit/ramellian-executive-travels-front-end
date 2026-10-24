@@ -45,10 +45,10 @@ describe('CircularCountdown', () => {
   it('turns red for the last 10 seconds', () => {
     const { container } = start();
     const ring = () => container.querySelectorAll('circle')[1];
-    expect(ring().getAttribute('class')).toContain('text-brand-gold');
+    expect(ring().getAttribute('class')).toContain('text-accent');
 
     act(() => vi.advanceTimersByTime(52_000));
-    expect(ring().getAttribute('class')).toContain('text-red-400');
+    expect(ring().getAttribute('class')).toContain('text-red-600');
   });
 
   it('calls onExpire exactly once at zero and stops at 0', () => {

@@ -45,6 +45,6 @@ describe('CountdownTimer', () => {
   it('applies urgent styling when under 2 minutes', () => {
     const expiresAt = Date.now() + 90 * 1000; // 90 seconds
     const { container } = render(<CountdownTimer expiresAt={expiresAt} onExpired={vi.fn()} />);
-    expect(container.firstChild).toHaveClass('text-red-400');
+    expect(container.firstChild).toHaveClass('text-red-600');
   });
 });

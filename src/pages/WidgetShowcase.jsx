@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SelfDriveIcon, ChauffeurIcon } from '../components/ui/TripModeIcons';
 import { Car, MapPin, Star } from 'lucide-react';
 
 import Button       from '../components/ui/Button';
@@ -22,6 +23,8 @@ import Tooltip      from '../components/ui/Tooltip';
 import StepIndicator from '../components/ui/StepIndicator';
 import CountdownTimer from '../components/ui/CountdownTimer';
 import PriceDisplay from '../components/ui/PriceDisplay';
+import { DetailList, DetailRow } from '../components/ui/DetailList';
+import FeatureTile, { FeatureGrid } from '../components/ui/FeatureTile';
 import ContractDocument from '../components/contract/ContractDocument';
 import { withPlatformClause } from '../lib/contractBoilerplate';
 import contractTemplate from '../../docs/contract-templates/vehicle-rental-agreement.md?raw';
@@ -40,7 +43,7 @@ const SAMPLE_CONTRACT = fillContractText(
 
 const Section = ({ title, children }) => (
   <section className="mb-12">
-    <h2 className="font-heading text-brand-gold text-xl font-semibold mb-6 pb-2 border-b border-white/10">
+    <h2 className="font-heading text-accent text-xl font-semibold mb-6 pb-2 border-b border-black/10">
       {title}
     </h2>
     <div className="flex flex-wrap gap-4 items-start">{children}</div>
@@ -67,14 +70,14 @@ export default function WidgetShowcase() {
   const expiry = Date.now() + 14 * 60 * 1000; // 14 minutes from now
 
   return (
-    <div className="flex-1 bg-brand-dark px-6 py-10 max-w-5xl mx-auto">
+    <div className="flex-1 bg-canvas px-6 py-10 max-w-5xl mx-auto">
 
       {/* Header */}
       <div className="mb-10 flex items-center gap-4">
         <Logo size="lg" />
         <div>
-          <h1 className="font-heading text-3xl text-brand-white font-bold">Widget Showcase</h1>
-          <p className="text-brand-grey text-sm mt-1">Phase 1 — UI Primitive Library</p>
+          <h1 className="font-heading text-3xl text-ink font-bold">Widget Showcase</h1>
+          <p className="text-muted text-sm mt-1">Phase 1 — UI Primitive Library</p>
         </div>
       </div>
 
@@ -106,7 +109,7 @@ export default function WidgetShowcase() {
         <ToggleChip active={false}>Wedding</ToggleChip>
         <SegmentedControl
           label="Booking mode"
-          options={[{ value: 'SELF', label: 'Self-Drive' }, { value: 'CHAUFFEURED', label: 'Chauffeured' }]}
+          options={[{ value: 'SELF', label: 'Self-Drive', icon: SelfDriveIcon }, { value: 'CHAUFFEURED', label: 'Chauffeured', icon: ChauffeurIcon }]}
           value={segment}
           onChange={setSegment}
         />
@@ -127,7 +130,7 @@ export default function WidgetShowcase() {
         <Spinner size="sm" />
         <Spinner size="md" />
         <Spinner size="lg" />
-        <span className="text-brand-white"><TypingDots /></span>
+        <span className="text-ink"><TypingDots /></span>
       </Section>
 
       {/* Logo & Avatar */}
@@ -142,6 +145,31 @@ export default function WidgetShowcase() {
         <Avatar name="Jane Doe" src="https://i.pravatar.cc/48?u=jane" size="md" />
       </Section>
 
+      {/* FeatureTile */}
+      <Section title="Feature Tiles">
+        <div className="w-full max-w-lg">
+          <FeatureGrid label="Car features">
+            <FeatureTile icon={SelfDriveIcon} label="Driving" value="Self-Drive" />
+            <FeatureTile icon={ChauffeurIcon} label="Driving" value="Chauffeured" />
+            <FeatureTile icon={SelfDriveIcon} label="Capacity" value="5 seats" />
+          </FeatureGrid>
+        </div>
+      </Section>
+
+      {/* DetailList */}
+      <Section title="Detail List">
+        <div className="w-full max-w-lg">
+          <DetailList>
+            <DetailRow label="Dates">17 Oct 2026, 09:00 AM – 17 Oct 2026, 05:00 PM</DetailRow>
+            <DetailRow label="Trip Type">General</DetailRow>
+            <DetailRow label="Getting the vehicle">You collect it — no fee</DetailRow>
+            <DetailRow label="Pickup Location">Eastleigh</DetailRow>
+            <DetailRow label="Notes" stacked>Please call on arrival at the gate.</DetailRow>
+            <DetailRow label="Total" divider valueClassName="font-semibold">KES 12,000</DetailRow>
+          </DetailList>
+        </div>
+      </Section>
+
       {/* PriceDisplay */}
       <Section title="Price Display">
         <PriceDisplay amount={8000}  size="sm" />
@@ -154,9 +182,9 @@ export default function WidgetShowcase() {
       {/* CountdownTimer */}
       <Section title="Countdown Timer">
         <div className="flex flex-col gap-2">
-          <p className="text-brand-grey text-xs">14 min (normal)</p>
+          <p className="text-muted text-xs">14 min (normal)</p>
           <CountdownTimer expiresAt={expiry} onExpired={() => {}} />
-          <p className="text-brand-grey text-xs mt-2">Under 2 min (urgent — renders in red)</p>
+          <p className="text-muted text-xs mt-2">Under 2 min (urgent — renders in red)</p>
           <CountdownTimer expiresAt={Date.now() + 90 * 1000} onExpired={() => {}} />
         </div>
       </Section>
@@ -166,7 +194,7 @@ export default function WidgetShowcase() {
         <div className="w-full max-w-md flex flex-col gap-6">
           {[0, 1, 2].map((step) => (
             <div key={step}>
-              <p className="text-brand-grey text-xs mb-2">Step {step + 1} active</p>
+              <p className="text-muted text-xs mb-2">Step {step + 1} active</p>
               <StepIndicator steps={bookingSteps} currentStep={step} />
             </div>
           ))}
@@ -190,20 +218,20 @@ export default function WidgetShowcase() {
         <Card className="p-5 w-72">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="font-heading text-brand-white font-semibold">Toyota Prado</h3>
-              <div className="flex items-center gap-1 text-brand-grey text-xs mt-0.5">
+              <h3 className="font-heading text-ink font-semibold">Toyota Prado</h3>
+              <div className="flex items-center gap-1 text-muted text-xs mt-0.5">
                 <MapPin size={11} />
                 <span>Nairobi CBD</span>
               </div>
             </div>
             <Badge label="Executive" variant="gold" />
           </div>
-          <div className="flex items-center gap-1 text-brand-gold text-xs mb-3">
+          <div className="flex items-center gap-1 text-accent text-xs mb-3">
             <Star size={11} fill="currentColor" />
             <span className="font-semibold">5.0</span>
-            <span className="text-brand-grey">(24 trips)</span>
+            <span className="text-muted">(24 trips)</span>
           </div>
-          <div className="flex items-center gap-2 text-brand-grey text-xs mb-4">
+          <div className="flex items-center gap-2 text-muted text-xs mb-4">
             <Car size={11} />
             <span>Diesel · Automatic · 5 seats</span>
           </div>
@@ -214,20 +242,20 @@ export default function WidgetShowcase() {
         <Card className="p-5 w-72">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <h3 className="font-heading text-brand-white font-semibold">Toyota Noah</h3>
-              <div className="flex items-center gap-1 text-brand-grey text-xs mt-0.5">
+              <h3 className="font-heading text-ink font-semibold">Toyota Noah</h3>
+              <div className="flex items-center gap-1 text-muted text-xs mt-0.5">
                 <MapPin size={11} />
                 <span>Westlands</span>
               </div>
             </div>
             <Badge label="Standard" variant="neutral" />
           </div>
-          <div className="flex items-center gap-1 text-brand-gold text-xs mb-3">
+          <div className="flex items-center gap-1 text-accent text-xs mb-3">
             <Star size={11} fill="currentColor" />
             <span className="font-semibold">4.8</span>
-            <span className="text-brand-grey">(41 trips)</span>
+            <span className="text-muted">(41 trips)</span>
           </div>
-          <div className="flex items-center gap-2 text-brand-grey text-xs mb-4">
+          <div className="flex items-center gap-2 text-muted text-xs mb-4">
             <Car size={11} />
             <span>Petrol · Automatic · 7 seats</span>
           </div>
@@ -295,12 +323,12 @@ export default function WidgetShowcase() {
           title="Confirm Your Booking"
         >
           <div className="flex flex-col gap-4">
-            <p className="text-brand-grey text-sm">
-              You are about to book a <span className="text-brand-white font-medium">Toyota Prado</span> for
-              3 days from <span className="text-brand-white font-medium">01 Oct 2026</span>.
+            <p className="text-muted text-sm">
+              You are about to book a <span className="text-ink font-medium">Toyota Prado</span> for
+              3 days from <span className="text-ink font-medium">01 Oct 2026</span>.
             </p>
-            <div className="flex items-center justify-between py-3 border-y border-white/10">
-              <span className="text-brand-grey text-sm">Total</span>
+            <div className="flex items-center justify-between py-3 border-y border-black/10">
+              <span className="text-muted text-sm">Total</span>
               <PriceDisplay amount={45000} period="/ 3 days" size="sm" />
             </div>
             <div className="flex gap-3 justify-end">

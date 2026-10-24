@@ -8,9 +8,11 @@ import React from 'react';
  * @param {boolean} wordmarkOnly — hide image, show text only
  * @param {boolean} compactOnTinyScreens — on the narrowest phones (under 360px) show only the mark, not the
  *   wordmark, so a full header row still fits (the top bar)
+ * @param {boolean} [invertFromMd] — from `md` up, white wordmark and gold subtitle, for the navy column the logo sits in
+ *   above the signed-in left menu (on a phone it's still on the white top bar, so it stays dark there)
  * @param {string} className
  */
-export default function Logo({ size = 'md', wordmarkOnly = false, compactOnTinyScreens = false, className = '' }) {
+export default function Logo({ size = 'md', wordmarkOnly = false, compactOnTinyScreens = false, invertFromMd = false, className = '' }) {
   const containerSizes = {
     sm: 'h-8',
     md: 'h-10',
@@ -40,11 +42,11 @@ export default function Logo({ size = 'md', wordmarkOnly = false, compactOnTinyS
         />
       )}
       <div className={`flex flex-col leading-tight ${compactOnTinyScreens && !wordmarkOnly ? 'max-[359px]:hidden' : ''}`}>
-        <span className={`font-heading font-bold text-brand-gold ${textSizes[size]}`}>
+        <span className={`font-heading font-bold text-accent ${invertFromMd ? 'md:text-white' : ''} ${textSizes[size]}`}>
           RAMELLIAN
         </span>
         {size !== 'sm' && (
-          <span className="text-[10px] font-body font-medium text-brand-grey tracking-widest uppercase">
+          <span className={`text-[10px] font-body font-medium text-muted tracking-widest uppercase ${invertFromMd ? 'md:text-brand-gold' : ''}`}>
             Executive Travels
           </span>
         )}

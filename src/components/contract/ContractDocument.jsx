@@ -155,7 +155,7 @@ export default function ContractDocument({ contractText, reference, agreementDat
     >
       {/* Letterhead — the dark brand band with the logo and the company's full name. */}
       <header className="px-6 sm:px-10 pt-6 pb-4 border-b-4 border-[#C9A84C] flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#1A1A2E] px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#16213E] px-5 py-4">
           <div className="flex items-center gap-3">
             <img src="/brand-logo-1024-transparent.png" alt="" className="h-11 w-11 object-contain" />
             <div className="flex flex-col">
@@ -193,7 +193,7 @@ export default function ContractDocument({ contractText, reference, agreementDat
           {staged && (
           <div className="mt-2 flex gap-1" aria-hidden="true">
             {stages.map((_, i) => (
-              <span key={i} className={`h-1 flex-1 rounded-full ${i <= at ? 'bg-[#C9A84C]' : 'bg-slate-200'}`} />
+              <span key={i} className={`h-1 flex-1 rounded-full ${i <= at ? 'bg-[#16213E]' : 'bg-slate-200'}`} />
             ))}
           </div>
           )}

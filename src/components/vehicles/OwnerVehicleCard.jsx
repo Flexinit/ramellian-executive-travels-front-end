@@ -72,30 +72,30 @@ export default function OwnerVehicleCard({
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   return (
-    <Card className="p-5 flex flex-col gap-3 hover:border-brand-gold/40 transition-colors">
+    <Card className="p-5 flex flex-col gap-3 hover:border-accent/40 transition-colors">
       {photo && (
-        <div className="aspect-[16/9] rounded-lg overflow-hidden bg-white/5 -mt-1">
+        <div className="aspect-[16/9] rounded-lg overflow-hidden bg-black/5 -mt-1">
           <AuthImage
             src={photo}
             alt={`${model}`}
             className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"
-            fallback={<div className="w-full h-full flex items-center justify-center"><Car size={28} className="text-brand-gold/60" aria-hidden="true" /></div>}
+            fallback={<div className="w-full h-full flex items-center justify-center"><Car size={28} className="text-accent/60" aria-hidden="true" /></div>}
           />
         </div>
       )}
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-brand-gold/10 flex items-center justify-center shrink-0">
-          <Car size={18} className="text-brand-gold" aria-hidden="true" />
+        <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+          <Car size={18} className="text-accent" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           <Link to={`/vehicles/${id}`} className="focus-ring rounded-md">
-            <Heading className="font-heading text-brand-white font-semibold leading-snug hover:text-brand-gold transition-colors truncate">
+            <Heading className="font-heading text-ink font-semibold leading-snug hover:text-accent transition-colors truncate">
               {model}
             </Heading>
           </Link>
-          {registrationNumber && <p className="text-brand-grey text-xs mt-0.5">{registrationNumber}</p>}
+          {registrationNumber && <p className="text-muted text-xs mt-0.5">{registrationNumber}</p>}
         </div>
         {isBookedNow(bookings) ? (
           <Badge label="Booked now" variant="warning" />
@@ -110,7 +110,7 @@ export default function OwnerVehicleCard({
         <div
           role="note"
           className={`rounded-lg px-3 py-2 text-xs flex flex-col gap-1 ${
-            approvalOf(vehicle) === 'REJECTED' ? 'bg-red-500/10 text-red-300' : 'bg-yellow-500/10 text-yellow-300'
+            approvalOf(vehicle) === 'REJECTED' ? 'bg-red-500/10 text-red-700' : 'bg-yellow-500/10 text-yellow-700'
           }`}
         >
           <span className="flex items-center gap-2">
@@ -122,13 +122,13 @@ export default function OwnerVehicleCard({
       )}
 
       {location && (
-        <div className="flex items-center gap-1.5 text-brand-grey text-xs">
+        <div className="flex items-center gap-1.5 text-muted text-xs">
           <MapPin size={12} aria-hidden="true" />
           <span>{location}</span>
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-brand-grey text-xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted text-xs">
         {fuelType && (
           <span className="inline-flex items-center gap-1">
             <Fuel size={12} aria-hidden="true" />
@@ -159,21 +159,21 @@ export default function OwnerVehicleCard({
             Insured
           </span>
         )}
-        <span className="inline-flex items-center gap-1 text-brand-gold">
+        <span className="inline-flex items-center gap-1 text-accent">
           <Star size={12} fill="currentColor" aria-hidden="true" />
           {ratingOrDefault(rating).toFixed(1)}
         </span>
       </div>
 
       {insuranceVerificationStickerPhoto && (
-        <div className="flex items-center gap-2 text-xs text-brand-grey">
-          <div className="w-14 h-10 rounded-md overflow-hidden bg-white/5 shrink-0">
+        <div className="flex items-center gap-2 text-xs text-muted">
+          <div className="w-14 h-10 rounded-md overflow-hidden bg-black/5 shrink-0">
             <AuthImage
               src={insuranceVerificationStickerPhoto}
               alt="Insurance sticker"
               className="w-full h-full object-cover"
               loading="lazy"
-              fallback={<div className="w-full h-full flex items-center justify-center"><ShieldCheck size={16} className="text-brand-gold/60" aria-hidden="true" /></div>}
+              fallback={<div className="w-full h-full flex items-center justify-center"><ShieldCheck size={16} className="text-accent/60" aria-hidden="true" /></div>}
             />
           </div>
           <span className="inline-flex items-center gap-1"><ShieldCheck size={12} aria-hidden="true" />Insurance sticker on file</span>
@@ -181,7 +181,7 @@ export default function OwnerVehicleCard({
       )}
 
       {(availableFrom || availableTo) ? (
-        <p className="inline-flex items-center gap-1.5 text-brand-grey text-xs">
+        <p className="inline-flex items-center gap-1.5 text-muted text-xs">
           <CalendarClock size={12} aria-hidden="true" />
           Bookable
           {availableFrom && ` from ${formatDateTime(availableFrom)}`}
@@ -189,7 +189,7 @@ export default function OwnerVehicleCard({
         </p>
       ) : (
         available === true && (
-          <p className="inline-flex items-center gap-1.5 text-brand-grey text-xs">
+          <p className="inline-flex items-center gap-1.5 text-muted text-xs">
             <CalendarClock size={12} aria-hidden="true" />
             Available any time
           </p>
@@ -200,11 +200,11 @@ export default function OwnerVehicleCard({
         <AvailabilitySwitch available={available} pending={togglePending} onToggle={(next) => onToggleAvailable(vehicle, next)} />
       )}
       {available === false && (
-        <p className="text-xs text-brand-grey">Renters can't see this vehicle — it isn't marked available.</p>
+        <p className="text-xs text-muted">Renters can't see this vehicle — it isn't marked available.</p>
       )}
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-brand-grey">
+        <p className="text-xs text-muted">
           {bookings.length === 0 ? 'No bookings yet.' : `${bookings.length} upcoming booking${bookings.length === 1 ? '' : 's'}`}
         </p>
         {bookings.length > 0 && (

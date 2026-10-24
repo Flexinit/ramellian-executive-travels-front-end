@@ -36,8 +36,8 @@ export default function CheckoutPhonePrompt() {
     <Card className="p-4">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
         <div>
-          <h2 className="font-heading text-brand-white text-sm font-semibold">Add your phone number</h2>
-          <p className="text-brand-grey text-xs mt-1">
+          <h2 className="font-heading text-ink text-sm font-semibold">Add your phone number</h2>
+          <p className="text-muted text-xs mt-1">
             So we can reach you about this booking. It&apos;s saved to your profile, so you won&apos;t be asked again,
             and it is never shown to vehicle owners.
           </p>

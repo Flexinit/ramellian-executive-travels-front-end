@@ -3,6 +3,65 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-25 (new sign-in pages; forgot password)
+
+- **Added:** **Forgot password?** on Log In — get a 6-digit code by email and choose a new password.
+- **Changed:** Log In, Create Account and Forgot Password show a full-screen photo of people enjoying a drive, with a
+  short welcome on the left and the form on a see-through frosted card on the right (on a phone, the welcome on top
+  and the card below it).
+
+## 2026-10-25 (simpler booking form; selfies on a computer; car cards)
+
+- **Changed:** the booking form only asks what applies. A chauffeured booking no longer asks how you'll get the
+  vehicle (the chauffeur brings it). Collecting a self-drive car yourself no longer asks for pickup and drop-off
+  places — it's collected from and returned to the vehicle's own location, which the form shows.
+- **Changed:** for chauffeured-only cars, fuel and gearbox are no longer shown on the car card or its page, and
+  filtering Browse Vehicles for Chauffeured hides the Fuel Type and Transmission filters.
+- **Fixed:** the selfie holding your ID or passport can now be taken on a computer: **Take selfie** opens a camera
+  window using the webcam (before, a computer only offered a file browser).
+- **Changed:** a vehicle's **Car features** are compact tiles with the key ones first (seats, driving, gearbox,
+  fuel); **Show all features** opens the rest. When the page opens the tiles fade in and a soft gold highlight
+  passes over each in turn, once (not for anyone whose device asks for reduced motion).
+- **Changed:** Browse Vehicles shows one grid of cars instead of a section per place (which left half-empty
+  rows); each card shows its place, and **Available in** narrows to one.
+- **Changed:** the home search bar asks for the **Pick-up Location** first and dates; a **Return Location** box
+  appears only if you click **Return to a different location**.
+- **Changed:** car cards show the whole car (not cropped) on the same light grey panel, and their specs stay on
+  one line, so cards in a row are the same height.
+
+## 2026-10-24 (new look)
+
+- **Changed:** the whole portal has a new, light look taken from the *Car Rental App* design system: an off-white
+  page, white cards, black text in the Roboto font and solid pill buttons, in place of the dark pages. Buttons and
+  selected menu items, filters and switches are Ramellian navy, with touches of Ramellian gold (section labels,
+  today and your chosen dates in the date picker, the current tab on a phone, the contract and invoice
+  letterhead). Form fields are white boxes with their label set into the top edge.
+- **Changed:** background photos are only on the home page (now in full colour behind white text) and the log-in
+  and sign-up screens; every other page has the design's plain light background.
+- **Changed:** Browse Vehicles follows the design's Search screen: a search field with a round filter button on a
+  phone, two cars per row on a phone, and the design's car card — the photo on a light grey panel, the name, rating,
+  location, seats / gearbox / fuel, the price per day and a small **Book now** button.
+- **Changed:** details such as a booking's dates, trip type, locations, price and totals are laid out in two
+  columns — the name on the left and its value right beside it — instead of the value sitting at the far edge of
+  the card. Grey text across the portal is a little darker, so it's easier to read.
+- **Changed:** a vehicle's page follows the design's Car Details screen: the photo on top, the name with its
+  rating, then **Car features** as tiles (seats, fuel, gearbox, colour, driving, air conditioning, insurance), what
+  it's suited for, and **Reviews (n)**. The booking form beside it is a plain white card. On the home page the cars
+  now come straight after the search.
+- **Changed:** the step bar in booking, adding a vehicle and setting up your profile uses the design's small dots
+  on a line, and the Profile page opens with a card showing your photo, name and email.
+- **Changed:** **Self-Drive** and **Chauffeured** now have icons (a steering wheel and a chauffeur's cap).
+- **Changed:** in the date picker, past dates are a readable grey instead of nearly invisible, and the search
+  bar's field names (Pick-up Location, Return Location, Trip Dates) are darker and easier to read.
+- **Added:** on a phone, once signed in, a floating bar along the bottom with **Home**, **Search**, **Messages**,
+  **Inbox** and **Profile** (with unread counts). The menu strip at the top is still there.
+
+## 2026-10-22 (invoice generator for admins)
+
+- **Added (administrators and super admins):** **Invoices** in the Admin Panel. Enter the client, the items with
+  their quantities and rates, the VAT rate and an optional discount; the invoice is drawn up as you type, with the
+  company letterhead, and **Print / Save as PDF** prints just the invoice. Invoices aren't saved on the platform.
+
 ## 2026-10-20 (phone and tablet layout)
 
 - **Changed:** on a phone, bookings (My Bookings, Fleet Bookings, All Bookings) and the admin Users, All Vehicles and

@@ -33,7 +33,7 @@ export default function SearchBar({ placeholder = 'Search by model, location, fu
   return (
     <div className="relative">
       {/* z-10: the input's backdrop blur paints it as its own layer, which would otherwise cover the icon. */}
-      <Search size={16} className="absolute z-10 left-4 top-1/2 -translate-y-1/2 text-brand-grey pointer-events-none" aria-hidden="true" />
+      <Search size={16} className="absolute z-10 left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" aria-hidden="true" />
       <input
         type="text"
         role="searchbox"
@@ -41,7 +41,7 @@ export default function SearchBar({ placeholder = 'Search by model, location, fu
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-full bg-white/5 backdrop-blur-lg border border-white/10 hover:border-brand-gold/50 pl-10 pr-4 py-3 text-sm text-brand-white placeholder-brand-grey/60 focus:outline-none focus:ring-2 focus:ring-brand-gold focus:border-transparent transition"
+        className="w-full rounded-full bg-surface border border-line hover:border-accent/60 pl-10 pr-4 py-3 text-sm text-ink placeholder-muted/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
       />
     </div>
   );

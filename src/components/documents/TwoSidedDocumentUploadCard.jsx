@@ -61,14 +61,14 @@ export default function TwoSidedDocumentUploadCard({ type, title, description, d
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-heading text-brand-white font-semibold">{title}</h3>
-          {description && <p className="text-brand-grey text-xs mt-1">{description}</p>}
+          <h3 className="font-heading text-ink font-semibold">{title}</h3>
+          {description && <p className="text-muted text-xs mt-1">{description}</p>}
         </div>
         {meta && <Badge label={meta.label} variant={meta.variant} className="shrink-0" />}
       </div>
 
       {status === DOCUMENT_STATUSES.REJECTED && document?.rejectionReason && (
-        <p className="text-red-400 text-xs">{document.rejectionReason}</p>
+        <p className="text-red-600 text-xs">{document.rejectionReason}</p>
       )}
 
       <DocumentFilePreview document={document} />
@@ -80,12 +80,12 @@ export default function TwoSidedDocumentUploadCard({ type, title, description, d
             <ShotPicker label="Back" file={back} onPick={setBack} onClear={() => setBack(null)} disabled={busy} />
           </div>
 
-          {composeError && <p role="alert" className="text-red-400 text-xs">{composeError}</p>}
+          {composeError && <p role="alert" className="text-red-600 text-xs">{composeError}</p>}
 
           {busy ? (
             <div className="flex flex-col items-center gap-2 py-2">
               <Spinner size="md" label={composing ? 'Combining photos' : 'Uploading'} />
-              <p className="text-brand-grey text-xs">
+              <p className="text-muted text-xs">
                 {composing ? 'Combining your photos…' : `${progress}%`}
               </p>
             </div>

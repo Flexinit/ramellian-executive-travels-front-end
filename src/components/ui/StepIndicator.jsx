@@ -17,8 +17,10 @@ function Wrapper({ index, onStepClick, children }) {
 }
 
 /**
- * Booking / wizard step progress indicator.
- * Matches otto.rentals' inline step counter style.
+ * Booking / wizard step progress indicator — the design system's step bar ("Booking details • Payment methods •
+ * confirmation"): small dots on a thin line with the step names underneath. A finished step is a solid navy dot with a
+ * white check, the current one a white dot with a thick navy ring around a navy centre, the ones still to come a faded
+ * navy dot; the line between two steps is solid once the first of them is done.
  *
  * @param {{ label: string, done?: boolean }[]} steps — `done` overrides the default
  *   "every step before the current one is complete" when a flow can be done out of order
@@ -41,24 +43,22 @@ export default function StepIndicator({ steps = [], currentStep = 0, onStepClick
                 <Wrapper index={index} onStepClick={onStepClick}>
                 <div
                   aria-current={isCurrent ? 'step' : undefined}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all
+                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all
                     ${isComplete
-                      ? 'bg-brand-gold border-brand-gold text-brand-dark'
+                      ? 'bg-accent text-on-accent'
                       : isCurrent
-                      ? 'border-brand-gold text-brand-gold bg-transparent'
-                      : 'border-white/20 text-brand-grey bg-transparent'}`}
+                      ? 'bg-surface border-[5px] border-accent'
+                      : 'bg-accent/30'}`}
                 >
                   {isComplete ? (
                     <span data-testid="step-complete">
-                      <Check size={14} strokeWidth={3} />
+                      <Check size={11} strokeWidth={3.5} />
                     </span>
-                  ) : (
-                    <span>{index + 1}</span>
-                  )}
+                  ) : null}
                 </div>
                 <span
-                  className={`text-xs font-medium truncate max-w-[80px] text-center
-                    ${isCurrent ? 'text-brand-white' : isComplete ? 'text-brand-gold' : 'text-brand-grey'}`}
+                  className={`text-[11px] truncate max-w-[96px] text-center
+                    ${isCurrent ? 'text-ink font-semibold' : 'text-muted font-medium'}`}
                 >
                   {step.label}
                 </span>
@@ -72,8 +72,8 @@ export default function StepIndicator({ steps = [], currentStep = 0, onStepClick
                   className="flex-1 list-none"
                 >
                   <div
-                    className={`h-0.5 mx-2 mb-5 transition-all
-                      ${isComplete ? 'bg-brand-gold' : 'bg-white/10'}`}
+                    className={`h-px mx-1 mb-6 transition-all
+                      ${isComplete ? 'bg-accent' : 'bg-accent/30'}`}
                   />
                 </li>
               )}

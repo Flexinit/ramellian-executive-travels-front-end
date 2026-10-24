@@ -43,8 +43,8 @@ export default function InboxPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Inbox</h1>
-            <p className="text-brand-grey text-sm mt-1">
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Inbox</h1>
+            <p className="text-muted text-sm mt-1">
               {unreadCount > 0 ? `${unreadCount} unread` : 'You’re all caught up.'} Bookings and updates appear here as they happen.
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function InboxPage() {
               const isBooking = /BOOKING/i.test(n.referenceType || '');
               const Icon = /CHAT|MESSAGE/i.test(`${n.type} ${n.referenceType}`) ? MessageSquare : CalendarCheck;
               const classes = `flex items-start gap-4 rounded-2xl border p-4 transition-colors ${
-                n.read ? 'border-white/10 bg-white/[0.03]' : 'border-brand-gold/40 bg-brand-gold/10'
+                n.read ? 'border-black/10 bg-black/[0.03]' : 'border-accent/40 bg-accent/10'
               }`;
               return (
                 <li key={n.id} className={classes}>
@@ -88,22 +88,22 @@ export default function InboxPage() {
                   {isBooking && n.referenceId ? (
                     <NotificationVehiclePhoto bookingId={n.referenceId} />
                   ) : (
-                    <span className="w-10 h-10 rounded-xl bg-brand-gold/10 flex items-center justify-center shrink-0">
-                      <Icon size={18} className="text-brand-gold" aria-hidden="true" />
+                    <span className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                      <Icon size={18} className="text-accent" aria-hidden="true" />
                     </span>
                   )}
                   <span className="flex-1 min-w-0 flex flex-col gap-1.5">
                     <span className="flex items-start gap-2">
-                      <span className={`text-sm text-brand-white ${n.read ? 'font-medium' : 'font-bold'}`}>
+                      <span className={`text-sm text-ink ${n.read ? 'font-medium' : 'font-bold'}`}>
                         {title}
                         {!n.read && <span className="sr-only"> (unread)</span>}
                       </span>
-                      {!n.read && <span aria-hidden="true" className="w-2.5 h-2.5 rounded-full bg-brand-gold mt-1.5 shrink-0" />}
+                      {!n.read && <span aria-hidden="true" className="w-2.5 h-2.5 rounded-full bg-accent mt-1.5 shrink-0" />}
                     </span>
-                    {message && <span className="text-xs text-brand-grey break-words">{message}</span>}
+                    {message && <span className="text-xs text-muted break-words">{message}</span>}
                     <span className="flex items-center gap-3 mt-1 flex-wrap">
                       {n.createdAt && (
-                        <time dateTime={n.createdAt} className="text-[11px] text-brand-grey/80">
+                        <time dateTime={n.createdAt} className="text-[11px] text-muted/80">
                           {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                         </time>
                       )}
@@ -118,7 +118,7 @@ export default function InboxPage() {
                     <button
                       type="button"
                       onClick={() => markRead.mutate(n.id)}
-                      className="text-xs text-brand-gold hover:text-brand-gold-light font-semibold focus-ring rounded-md shrink-0"
+                      className="text-xs text-accent hover:text-accent-hover font-semibold focus-ring rounded-md shrink-0"
                     >
                       Mark read
                     </button>

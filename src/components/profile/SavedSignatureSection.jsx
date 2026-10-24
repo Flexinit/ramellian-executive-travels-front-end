@@ -43,10 +43,10 @@ export default function SavedSignatureSection() {
   return (
     <Card className="p-5 flex flex-col gap-4">
       <div>
-        <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-          <PenLine size={17} className="text-brand-gold" aria-hidden="true" /> My signature
+        <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+          <PenLine size={17} className="text-accent" aria-hidden="true" /> My signature
         </h2>
-        <p className="text-brand-grey text-sm mt-1">Save it once, then sign each rental contract with one click.</p>
+        <p className="text-muted text-sm mt-1">Save it once, then sign each rental contract with one click.</p>
       </div>
 
       {hasSaved && !editing && (
@@ -54,7 +54,7 @@ export default function SavedSignatureSection() {
           <div className="h-24 max-w-sm rounded-xl bg-white flex items-center justify-center overflow-hidden">
             {image.data ? <img src={image.data} alt="Your saved signature" className="max-h-20 object-contain" /> : <span className="text-xs text-slate-400">Your saved signature</span>}
           </div>
-          {saved.data?.consentGivenAt && <p className="text-xs text-brand-grey">Saved {formatDate(saved.data.consentGivenAt)}.</p>}
+          {saved.data?.consentGivenAt && <p className="text-xs text-muted">Saved {formatDate(saved.data.consentGivenAt)}.</p>}
           <div className="flex flex-wrap gap-3">
             <Button size="sm" onClick={() => setEditing(true)}>Replace</Button>
             <Button size="sm" variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>
@@ -76,13 +76,13 @@ export default function SavedSignatureSection() {
           {how === 'draw' ? (
             <SignaturePad onChange={setDrawn} label="Your signature" />
           ) : (
-            <label className="flex flex-col gap-1 text-sm font-medium text-brand-white">
+            <label className="flex flex-col gap-1 text-sm font-medium text-ink">
               A clear photo of your signature, on white paper
               <input
                 type="file"
                 accept="image/png,image/jpeg"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="text-sm text-brand-grey file:mr-3 file:rounded-full file:border file:border-brand-gold file:bg-transparent file:px-4 file:py-1.5 file:text-brand-gold file:font-semibold"
+                className="text-sm text-muted file:mr-3 file:rounded-full file:border file:border-accent file:bg-transparent file:px-4 file:py-1.5 file:text-accent file:font-semibold"
               />
             </label>
           )}

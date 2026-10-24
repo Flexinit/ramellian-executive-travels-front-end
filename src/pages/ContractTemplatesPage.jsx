@@ -28,14 +28,14 @@ function TemplateCard({ template, onNewVersion }) {
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="min-w-0">
-          <h2 className="font-heading text-brand-white text-lg font-semibold truncate">{template.name}</h2>
-          <p className="text-brand-grey text-xs mt-1">Version {template.version ?? 1}</p>
+          <h2 className="font-heading text-ink text-lg font-semibold truncate">{template.name}</h2>
+          <p className="text-muted text-xs mt-1">Version {template.version ?? 1}</p>
         </div>
         <Badge label={statusLabel(template.status)} variant={statusVariant(template.status)} />
       </div>
 
       {showing && (
-        <pre className="whitespace-pre-wrap break-words rounded-lg bg-white/5 border border-white/10 p-3 text-xs text-brand-grey font-mono max-h-80 overflow-y-auto">
+        <pre className="whitespace-pre-wrap break-words rounded-lg bg-black/5 border border-black/10 p-3 text-xs text-muted font-mono max-h-80 overflow-y-auto">
           {template.content}
         </pre>
       )}
@@ -90,7 +90,7 @@ export default function ContractTemplatesPage() {
     return (
       <PageWrapper className="max-w-2xl">
         <div className="flex flex-col gap-6">
-          <h1 className="font-heading text-brand-white text-2xl font-bold">{editing?.id ? 'New Version' : 'New Template'}</h1>
+          <h1 className="font-heading text-ink text-2xl font-bold">{editing?.id ? 'New Version' : 'New Template'}</h1>
           <ContractTemplateEditor
             template={editing}
             onSave={handleSave}
@@ -109,7 +109,7 @@ export default function ContractTemplatesPage() {
       <PageTitle title="Contract Templates" />
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Contract Templates</h1>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Contract Templates</h1>
           <Button size="sm" onClick={() => setEditing({})}>
             <Plus size={15} aria-hidden="true" />
             New Template

@@ -61,7 +61,7 @@ describe('Navbar', () => {
     });
     renderNavbar();
     const logoLink = screen.getByText('RAMELLIAN').closest('a');
-    expect(logoLink).toHaveClass('md:w-64', 'md:pl-5', 'md:border-r');
+    expect(logoLink).toHaveClass('md:w-64', 'md:pl-5', 'md:bg-brand-navy');
     // The bar runs the full width, so the column lines up with the menu at the page edge.
     expect(logoLink.parentElement).toHaveClass('w-full');
   });

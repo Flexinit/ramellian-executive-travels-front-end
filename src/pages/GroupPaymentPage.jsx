@@ -132,8 +132,8 @@ export default function GroupPaymentPage() {
       <div className="flex flex-col gap-6">
         <BackLink to="/booking/checkout" label="Back to checkout" />
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Payment</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl font-bold">Payment</h1>
+          <p className="text-muted text-sm mt-1">
             {allSuccessful
               ? 'Your payment went through.'
               : checkoutStarted

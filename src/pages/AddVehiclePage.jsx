@@ -218,23 +218,23 @@ export default function AddVehiclePage() {
       <PageTitle title="Add Vehicle" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Add Vehicle</h1>
-          <p className="text-brand-grey text-sm mt-1">Add a new vehicle to the fleet — four quick steps.</p>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Add Vehicle</h1>
+          <p className="text-muted text-sm mt-1">Add a new vehicle to the fleet — four quick steps.</p>
         </div>
 
         {created ? (
           <Card className="p-6 flex flex-col items-center text-center gap-4">
-            <CheckCircle2 size={40} className="text-emerald-400" aria-hidden="true" />
+            <CheckCircle2 size={40} className="text-emerald-600" aria-hidden="true" />
             <div>
-              <h2 className="font-heading text-brand-white text-lg font-semibold">
+              <h2 className="font-heading text-ink text-lg font-semibold">
                 {created.model} added
               </h2>
-              <p className="text-brand-grey text-sm mt-1">
+              <p className="text-muted text-sm mt-1">
                 {uploadingPhotos ? 'Uploading photos…' : 'Sent for approval — renters will see it once an administrator approves it.'}
               </p>
             </div>
             {stickerFailed && (
-              <div role="alert" className="flex flex-col items-center gap-2 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <div role="alert" className="flex flex-col items-center gap-2 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-700">
                 <p>The insurance sticker photo didn't upload. Vehicles need it, so please try again.</p>
                 <Button size="sm" onClick={retrySticker} loading={attachSticker.isPending}>
                   Try again
@@ -255,8 +255,8 @@ export default function AddVehiclePage() {
             <StepIndicator steps={STEPS.map((s) => ({ label: s.label }))} currentStep={stepIndex} />
 
             <div className="flex flex-col gap-1">
-              <h2 className="font-heading text-brand-white text-lg font-semibold">{step.title}</h2>
-              <p className="text-brand-grey text-sm">{step.blurb}</p>
+              <h2 className="font-heading text-ink text-lg font-semibold">{step.title}</h2>
+              <p className="text-muted text-sm">{step.blurb}</p>
             </div>
 
             <form onSubmit={handleFormSubmit} className="flex flex-col gap-4" noValidate>
@@ -319,7 +319,7 @@ export default function AddVehiclePage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-brand-white">Booking Mode</span>
+                    <span className="text-sm font-medium text-ink">Booking Mode</span>
                     <div role="group" aria-label="Booking mode" className="flex gap-2">
                       <ToggleChip size="md" active={selfDrive} onClick={() => setValue('selfDrive', !selfDrive, { shouldValidate: true })}>
                         Self-Drive
@@ -328,71 +328,71 @@ export default function AddVehiclePage() {
                         Chauffeured
                       </ToggleChip>
                     </div>
-                    {!selfDrive && !chauffeured && <p className="text-xs text-brand-grey">None picked — renters can book it either way.</p>}
+                    {!selfDrive && !chauffeured && <p className="text-xs text-muted">None picked — renters can book it either way.</p>}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 cursor-pointer">
-                      <input type="checkbox" className="accent-brand-gold h-4 w-4" {...register('hasWorkingAC')} />
-                      <span className="text-sm font-medium text-brand-white">Working air conditioning</span>
+                    <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                      <input type="checkbox" className="accent-accent h-4 w-4" {...register('hasWorkingAC')} />
+                      <span className="text-sm font-medium text-ink">Working air conditioning</span>
                     </label>
-                    <label className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 cursor-pointer">
-                      <input type="checkbox" className="accent-brand-gold h-4 w-4" {...register('comprehensiveInsurance')} />
-                      <span className="text-sm font-medium text-brand-white">
-                        Comprehensive insurance <span aria-hidden="true" className="text-brand-gold">*</span>
+                    <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                      <input type="checkbox" className="accent-accent h-4 w-4" {...register('comprehensiveInsurance')} />
+                      <span className="text-sm font-medium text-ink">
+                        Comprehensive insurance <span aria-hidden="true" className="text-accent">*</span>
                       </span>
                     </label>
                   </div>
-                  {errors.comprehensiveInsurance && <p className="text-xs text-red-400">{errors.comprehensiveInsurance.message}</p>}
+                  {errors.comprehensiveInsurance && <p className="text-xs text-red-600">{errors.comprehensiveInsurance.message}</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Insurer (optional)" placeholder="e.g. Jubilee Insurance" error={errors.insurer?.message} register={register('insurer')} />
                     <Input label="Policy number (optional)" error={errors.policyNumber?.message} register={register('policyNumber')} />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-sm font-medium text-brand-white">
-                      Insurance sticker photo <span aria-hidden="true" className="text-brand-gold">*</span>
+                    <span className="text-sm font-medium text-ink">
+                      Insurance sticker photo <span aria-hidden="true" className="text-accent">*</span>
                     </span>
-                    <p className="text-xs text-brand-grey">
+                    <p className="text-xs text-muted">
                       We only list vehicles with comprehensive insurance. Upload a clear photo of the insurance sticker on the windscreen, or a PDF of it.
                     </p>
                     {stickerBusy && (
-                      <p role="status" className="text-xs text-brand-grey">Reading the PDF…</p>
+                      <p role="status" className="text-xs text-muted">Reading the PDF…</p>
                     )}
                     {stickerFile && <StickerPreview file={stickerFile} />}
                     {stickerFile ? (
-                      <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+                      <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600">
                         <ShieldCheck size={13} aria-hidden="true" />
                         <span className="truncate max-w-[220px]">{stickerFile.name}</span>
                         <button
                           type="button"
                           onClick={() => setStickerFile(null)}
                           aria-label="Remove insurance sticker photo"
-                          className="p-0.5 rounded-full text-brand-grey hover:text-brand-white hover:bg-white/10 focus-ring"
+                          className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-black/10 focus-ring"
                         >
                           <X size={12} aria-hidden="true" />
                         </button>
                       </div>
                     ) : (
-                      <label className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold text-brand-gold hover:text-brand-gold-light cursor-pointer rounded-md px-1 focus-within:ring-2 focus-within:ring-brand-gold">
+                      <label className="inline-flex items-center gap-1.5 w-fit text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer rounded-md px-1 focus-within:ring-2 focus-within:ring-accent">
                         <ShieldCheck size={13} aria-hidden="true" />
                         Add insurance sticker photo
                         <input type="file" accept={STICKER_ACCEPT} className="sr-only" onChange={pickSticker} />
                       </label>
                     )}
-                    {stickerError && <p className="text-xs text-red-400">{stickerError}</p>}
+                    {stickerError && <p className="text-xs text-red-600">{stickerError}</p>}
                   </div>
 
-                  <label className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 cursor-pointer">
-                    <input type="checkbox" className="accent-brand-gold h-4 w-4" {...register('available')} />
+                  <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                    <input type="checkbox" className="accent-accent h-4 w-4" {...register('available')} />
                     <span className="flex flex-col">
-                      <span className="text-sm font-medium text-brand-white">Available for booking</span>
-                      <span className="text-xs text-brand-grey">Untick to add it now but keep it hidden from renters. You can change this any time from My Vehicles.</span>
+                      <span className="text-sm font-medium text-ink">Available for booking</span>
+                      <span className="text-xs text-muted">Untick to add it now but keep it hidden from renters. You can change this any time from My Vehicles.</span>
                     </span>
                   </label>
 
                   <fieldset className="flex flex-col gap-2">
-                    <legend className="text-sm font-medium text-brand-white mb-1">When can it be booked?</legend>
+                    <legend className="text-sm font-medium text-ink mb-1">When can it be booked?</legend>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {[
                         { value: 'always', label: 'Always available', hint: 'Renters can book it any time it is free.' },
@@ -400,14 +400,14 @@ export default function AddVehiclePage() {
                       ].map((opt) => (
                         <label
                           key={opt.value}
-                          className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-brand-gold ${
-                            availabilityMode === opt.value ? 'border-brand-gold bg-brand-gold/10' : 'border-white/10 bg-white/5 hover:border-brand-gold/40'
+                          className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
+                            availabilityMode === opt.value ? 'border-accent bg-accent/10' : 'border-black/10 bg-black/5 hover:border-accent/40'
                           }`}
                         >
-                          <input type="radio" value={opt.value} className="accent-brand-gold mt-1" {...register('availabilityMode')} />
+                          <input type="radio" value={opt.value} className="accent-accent mt-1" {...register('availabilityMode')} />
                           <span className="flex flex-col">
-                            <span className="text-sm font-medium text-brand-white">{opt.label}</span>
-                            <span className="text-xs text-brand-grey">{opt.hint}</span>
+                            <span className="text-sm font-medium text-ink">{opt.label}</span>
+                            <span className="text-xs text-muted">{opt.hint}</span>
                           </span>
                         </label>
                       ))}
@@ -433,8 +433,8 @@ export default function AddVehiclePage() {
                   </fieldset>
 
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm font-medium text-brand-white">
-                      Trip Types <span className="text-brand-grey font-normal">(optional)</span>
+                    <span className="text-sm font-medium text-ink">
+                      Trip Types <span className="text-muted font-normal">(optional)</span>
                     </span>
                     <div className="flex flex-wrap gap-2" role="group" aria-label="Trip types">
                       {VEHICLE_TRIP_TYPES.map((t) => (

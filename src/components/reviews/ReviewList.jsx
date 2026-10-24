@@ -20,9 +20,9 @@ export default function ReviewList({ reviews, isLoading, showComplaints = false,
     // Nobody has reviewed yet, so the rating starts at the top (see lib/ratings.js). Said on one line, so the
     // starting stars don't sit above a big "No reviews yet" block that seems to contradict them.
     return (
-      <p className="flex flex-wrap items-center gap-2 text-sm text-brand-grey">
+      <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
         <Stars rating={DEFAULT_RATING} size={16} />
-        <span className="text-brand-white font-semibold">{DEFAULT_RATING.toFixed(1)}</span>
+        <span className="text-ink font-semibold">{DEFAULT_RATING.toFixed(1)}</span>
         <span aria-hidden="true">·</span>
         <span>{String(emptyText).replace(/\.$/, '')}</span>
       </p>
@@ -33,21 +33,21 @@ export default function ReviewList({ reviews, isLoading, showComplaints = false,
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="flex items-center gap-2 text-sm text-brand-grey">
+      <p className="flex items-center gap-2 text-sm text-muted">
         <Stars rating={average} size={16} />
-        <span className="text-brand-white font-semibold">{average.toFixed(1)}</span>
+        <span className="text-ink font-semibold">{average.toFixed(1)}</span>
         from {list.length} {list.length === 1 ? 'review' : 'reviews'}
       </p>
       <ul className="flex flex-col gap-3" aria-label="Reviews">
         {list.map((review) => (
-          <li key={review.id} className="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col gap-2">
+          <li key={review.id} className="rounded-[15px] border border-line bg-surface p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <Stars rating={review.rating} />
-              <span className="text-xs text-brand-grey break-all">{review.reviewerEmail}</span>
+              <span className="text-xs text-muted break-all">{review.reviewerEmail}</span>
             </div>
-            {review.feedback && <p className="text-sm text-brand-white whitespace-pre-line break-words">{review.feedback}</p>}
+            {review.feedback && <p className="text-sm text-ink whitespace-pre-line break-words">{review.feedback}</p>}
             {showComplaints && review.complaint && (
-              <p className="text-sm text-red-300 whitespace-pre-line break-words">
+              <p className="text-sm text-red-700 whitespace-pre-line break-words">
                 <span className="font-semibold">Complaint: </span>
                 {review.complaint}
               </p>

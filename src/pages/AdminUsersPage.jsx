@@ -48,8 +48,8 @@ export default function AdminUsersPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Users</h1>
-            <p className="text-brand-grey text-sm mt-1">Every account on the platform. Use Edit to change someone's role or switch their account on or off, or open a row for their full details.</p>
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Users</h1>
+            <p className="text-muted text-sm mt-1">Every account on the platform. Use Edit to change someone's role or switch their account on or off, or open a row for their full details.</p>
           </div>
           <Button onClick={() => setAdding(true)}>
             <UserPlus size={15} aria-hidden="true" /> Add a renter
@@ -76,7 +76,7 @@ export default function AdminUsersPage() {
             className="w-full sm:w-48"
           />
           {!isLoading && Array.isArray(users) && (
-            <p className="text-brand-grey text-sm sm:ml-auto pb-2.5" aria-live="polite">
+            <p className="text-muted text-sm sm:ml-auto pb-2.5" aria-live="polite">
               {shown.length} of {users.length} {users.length === 1 ? 'account' : 'accounts'}
             </p>
           )}
@@ -94,18 +94,18 @@ export default function AdminUsersPage() {
           !isError && <EmptyState icon={Users} title="No accounts found" description="Try a different search or role." />
         ) : (
           <div className="flex flex-col gap-4">
-          <div className="table-scroll rounded-2xl border border-white/10">
+          <div className="table-scroll rounded-2xl border border-black/10">
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-black/10">
                   {['Name', 'Email', 'Roles', 'Status', ''].map((col, i) => (
-                    <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider">
+                    <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col || <span className="sr-only">Actions</span>}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-black/5">
                 {pages.pageItems.map((user) => {
                   const open = () => navigate(`/admin/users/${user.id}`);
                   return (
@@ -117,15 +117,15 @@ export default function AdminUsersPage() {
                         if (e.key === 'Enter') open();
                       }}
                       aria-label={`Open ${userDisplayName(user)}`}
-                      className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
+                      className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
                     >
-                      <td className="stack-full px-4 py-3 text-sm text-brand-white">
+                      <td className="stack-full px-4 py-3 text-sm text-ink">
                         <span className="flex items-center gap-3">
                           <Avatar name={userDisplayName(user)} size="sm" />
                           {userDisplayName(user)}
                         </span>
                       </td>
-                      <td data-label="Email" className="stack-full px-4 py-3 text-sm text-brand-grey break-all md:break-normal">{user.email}</td>
+                      <td data-label="Email" className="stack-full px-4 py-3 text-sm text-muted break-all md:break-normal">{user.email}</td>
                       <td data-label="Roles" className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {roleBadges(user.roles).map((label) => (

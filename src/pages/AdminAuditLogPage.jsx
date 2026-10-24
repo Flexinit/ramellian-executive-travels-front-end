@@ -51,8 +51,8 @@ export default function AdminAuditLogPage() {
       <PageTitle title="Audit Log" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Audit Log</h1>
-          <p className="text-brand-grey text-sm mt-1">Who did what on the platform, newest first. Open an entry for its full details.</p>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Audit Log</h1>
+          <p className="text-muted text-sm mt-1">Who did what on the platform, newest first. Open an entry for its full details.</p>
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
@@ -60,7 +60,7 @@ export default function AdminAuditLogPage() {
           <Input label="Person's email" name="actorEmail" type="search" placeholder="Email" value={actorEmail} onChange={(e) => setActorEmail(e.target.value)} className="w-full sm:w-64" />
           <Input label="Kind of record" name="resourceType" placeholder="e.g. USER" value={resourceType} onChange={(e) => setResourceType(e.target.value)} className="w-full sm:w-48" />
           {data && (
-            <p className="text-brand-grey text-sm sm:ml-auto pb-2.5" aria-live="polite">
+            <p className="text-muted text-sm sm:ml-auto pb-2.5" aria-live="polite">
               {data.totalElements} {data.totalElements === 1 ? 'entry' : 'entries'}
             </p>
           )}
@@ -77,18 +77,18 @@ export default function AdminAuditLogPage() {
         ) : entries.length === 0 ? (
           !isError && <EmptyState icon={ScrollText} title="No entries found" description="Try different filters." />
         ) : (
-          <div className={`table-scroll rounded-2xl border border-white/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+          <div className={`table-scroll rounded-2xl border border-black/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-black/10">
                   {['When', 'Who', 'Action', 'About', 'Result'].map((col) => (
-                    <th key={col} scope="col" className="px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider">
+                    <th key={col} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-black/5">
                 {entries.map((entry) => {
                   const open = () => setOpenId(entry.id);
                   return (
@@ -100,12 +100,12 @@ export default function AdminAuditLogPage() {
                         if (e.key === 'Enter') open();
                       }}
                       aria-label={`Open ${actionLabel(entry.action)} by ${entry.actorEmail || 'unknown'}`}
-                      className="cursor-pointer hover:bg-white/5 transition-colors focus-ring"
+                      className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
                     >
-                      <td data-label="When" className="stack-full px-4 py-3 text-sm text-brand-grey whitespace-nowrap">{formatDateTime(entry.createdAt)}</td>
-                      <td data-label="Who" className="stack-full px-4 py-3 text-sm text-brand-white break-all">{entry.actorEmail || '—'}</td>
-                      <td data-label="Action" className="px-4 py-3 text-sm text-brand-white">{actionLabel(entry.action)}</td>
-                      <td data-label="About" className="px-4 py-3 text-sm text-brand-grey">{entry.resourceType || '—'}</td>
+                      <td data-label="When" className="stack-full px-4 py-3 text-sm text-muted whitespace-nowrap">{formatDateTime(entry.createdAt)}</td>
+                      <td data-label="Who" className="stack-full px-4 py-3 text-sm text-ink break-all">{entry.actorEmail || '—'}</td>
+                      <td data-label="Action" className="px-4 py-3 text-sm text-ink">{actionLabel(entry.action)}</td>
+                      <td data-label="About" className="px-4 py-3 text-sm text-muted">{entry.resourceType || '—'}</td>
                       <td data-label="Result" className="px-4 py-3">
                         <Badge label={entry.status || '—'} variant={auditStatusVariant(entry.status)} />
                       </td>
@@ -123,7 +123,7 @@ export default function AdminAuditLogPage() {
               <ChevronLeft size={14} aria-hidden="true" />
               Newer
             </Button>
-            <span className="text-sm text-brand-grey">
+            <span className="text-sm text-muted">
               Page {data.number + 1} of {data.totalPages}
             </span>
             <Button size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>

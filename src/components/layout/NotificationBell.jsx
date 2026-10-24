@@ -6,14 +6,14 @@ import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { useUnreadMessageCount } from '../../hooks/useChat';
 
 export const LINK =
-  'relative inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-white hover:text-brand-gold hover:bg-white/5 transition-colors focus-ring';
+  'relative inline-flex items-center justify-center w-10 h-10 rounded-full text-ink hover:text-accent hover:bg-black/5 transition-colors focus-ring';
 
 export function CountBadge({ count }) {
   if (count <= 0) return null;
   return (
     <span
       aria-hidden="true"
-      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-brand-dark text-[10px] font-bold flex items-center justify-center"
+      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-on-accent text-[10px] font-bold flex items-center justify-center"
     >
       {count > 99 ? '99+' : count}
     </span>

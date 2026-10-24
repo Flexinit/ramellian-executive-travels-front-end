@@ -22,18 +22,18 @@ export default function Checkbox({ label, error, register, className = '', ...re
           type="checkbox"
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={error ? descId : undefined}
-          className={`mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border bg-white/5 accent-brand-gold
-            focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-dark transition
-            ${error ? 'border-red-500' : 'border-white/20'}`}
+          className={`mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border bg-surface accent-accent
+            focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas transition
+            ${error ? 'border-red-500' : 'border-black/20'}`}
           {...(register || {})}
           {...rest}
         />
-        <label htmlFor={id} className="text-sm text-brand-grey leading-snug cursor-pointer">
+        <label htmlFor={id} className="text-sm text-muted leading-snug cursor-pointer">
           {label}
         </label>
       </div>
       {error && (
-        <p id={descId} className="text-xs text-red-400">
+        <p id={descId} className="text-xs text-red-600">
           {error}
         </p>
       )}

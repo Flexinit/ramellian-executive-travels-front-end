@@ -39,7 +39,7 @@ const ICONS = {
 
 export default function BookingStatusTabs({ value, onChange, counts }) {
   return (
-    <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2 border-b border-white/10 pb-px">
+    <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2 border-b border-black/10 pb-px">
       {TAB_VALUES.map((tab) => {
         const active = value === tab;
         const Icon = tab ? ICONS[tab] : ListFilter;
@@ -53,14 +53,14 @@ export default function BookingStatusTabs({ value, onChange, counts }) {
             onClick={() => onChange(tab)}
             className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors focus-ring ${
               active
-                ? 'text-brand-gold border-brand-gold'
-                : 'text-brand-grey border-transparent hover:text-brand-white hover:border-white/20'
+                ? 'text-accent border-accent'
+                : 'text-muted border-transparent hover:text-ink hover:border-black/20'
             }`}
           >
             <Icon size={14} aria-hidden="true" />
             {tab ? bookingStatusLabel(tab) : 'All'}
             {count !== null && (
-              <span className={`text-xs font-normal ${active ? 'text-brand-gold/70' : 'text-brand-grey/70'}`}>({count})</span>
+              <span className={`text-xs font-normal ${active ? 'text-accent/70' : 'text-muted/70'}`}>({count})</span>
             )}
           </button>
         );

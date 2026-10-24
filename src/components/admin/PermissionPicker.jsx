@@ -20,10 +20,10 @@ const actionRank = (name) => {
 
 const CHIP =
   'inline-flex select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150 ' +
-  'peer-focus-visible:ring-2 peer-focus-visible:ring-brand-gold peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-brand-navy';
-const CHIP_OFF = 'border-white/10 bg-white/[0.03] text-brand-grey hover:border-white/25 hover:bg-white/[0.06] hover:text-brand-white';
-const CHIP_ON = 'border-brand-gold/50 bg-brand-gold/15 text-brand-gold-light shadow-[0_0_0_1px_rgba(201,168,76,0.08)]';
-const CHIP_ON_DANGER = 'border-red-400/40 bg-red-500/15 text-red-300';
+  'peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-surface';
+const CHIP_OFF = 'border-black/10 bg-black/[0.03] text-muted hover:border-black/25 hover:bg-black/[0.06] hover:text-ink';
+const CHIP_ON = 'border-accent bg-accent text-on-accent';
+const CHIP_ON_DANGER = 'border-red-400/40 bg-red-500/15 text-red-700';
 
 /**
  * One pill you can switch on and off. It is a real (visually hidden) checkbox, so it works with the keyboard and screen readers; the pill
@@ -73,15 +73,15 @@ export default function PermissionPicker({ available = [], value = [], onChange,
 
   const toggleMany = (list, on) => onChange(on ? [...new Set([...value, ...list])] : value.filter((n) => !list.includes(n)));
 
-  if (groups.length === 0) return <p className="text-sm text-brand-grey">There are no permissions yet. Add some on the Permissions tab first.</p>;
+  if (groups.length === 0) return <p className="text-sm text-muted">There are no permissions yet. Add some on the Permissions tab first.</p>;
 
   const columnNames = (action) => names.filter((n) => actionKey(n) === action);
   const quickPicks = STANDARD.filter((action) => columnNames(action).length > 0);
 
   return (
     <div className="flex flex-col gap-4" role="group" aria-label="Permissions">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-        <span className="text-xs font-semibold uppercase tracking-widest text-brand-grey">Quick pick</span>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted">Quick pick</span>
         {quickPicks.map((action) => (
           <Chip key={action} names={columnNames(action)} selected={value} onToggle={toggleMany} label={`All ${action} permissions`} title={`${permissionAction(action)} in every area`} disabled={disabled} tone={action === 'DELETE' ? 'danger' : undefined}>
             {permissionAction(action)}
@@ -101,19 +101,19 @@ export default function PermissionPicker({ available = [], value = [], onChange,
           const percent = Math.round((chosen / list.length) * 100);
           const all = chosen === list.length;
           return (
-            <div key={group} role="group" aria-labelledby={`perm-area-${group}`} className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors ${chosen > 0 ? 'border-brand-gold/25 bg-white/[0.05]' : 'border-white/10 bg-white/[0.03]'}`}>
+            <div key={group} role="group" aria-labelledby={`perm-area-${group}`} className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors ${chosen > 0 ? 'border-accent/25 bg-black/[0.05]' : 'border-black/10 bg-black/[0.03]'}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-1.5">
                   <div className="flex items-baseline gap-2">
-                    <span id={`perm-area-${group}`} className="text-sm font-semibold uppercase tracking-widest text-brand-gold">
+                    <span id={`perm-area-${group}`} className="text-sm font-semibold uppercase tracking-widest text-brand-gold-deep">
                       {group}
                     </span>
-                    <span className="text-xs tabular-nums text-brand-grey">
+                    <span className="text-xs tabular-nums text-muted">
                       {chosen}/{list.length}
                     </span>
                   </div>
-                  <div className="h-1 w-28 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
-                    <div className="h-full rounded-full bg-brand-gold transition-all duration-300" style={{ width: `${percent}%` }} />
+                  <div className="h-1 w-28 overflow-hidden rounded-full bg-black/10" aria-hidden="true">
+                    <div className="h-full rounded-full bg-accent transition-all duration-300" style={{ width: `${percent}%` }} />
                   </div>
                 </div>
                 <Chip names={list} selected={value} onToggle={toggleMany} label={`All ${group} permissions`} title={all ? `Clear every ${group.toLowerCase()} permission` : `Give every ${group.toLowerCase()} permission`} disabled={disabled}>

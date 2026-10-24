@@ -18,7 +18,7 @@ export default function NavLink({
   to,
   label,
   dropdown,
-  activeClassName = 'text-brand-gold border-b-2 border-brand-gold',
+  activeClassName = 'text-accent font-semibold border-b-2 border-accent',
   className = '',
 }) {
   const [open, setOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function NavLink({
   const isActive = to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
 
   const base = 'font-body text-sm font-medium pb-1 transition-colors focus-ring rounded-sm';
-  const stateClass = isActive ? activeClassName : 'text-brand-white hover:text-brand-gold border-b-2 border-transparent';
+  const stateClass = isActive ? activeClassName : 'text-muted hover:text-ink border-b-2 border-transparent';
 
   if (!dropdown || dropdown.length === 0) {
     return (

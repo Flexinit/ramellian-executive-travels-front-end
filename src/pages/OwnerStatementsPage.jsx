@@ -33,21 +33,21 @@ function useOwnerStatement({ vehicleId, from, to }) {
 function Table({ caption, head, rows }) {
   return (
     <Card className="p-0 overflow-hidden">
-      <h2 className="px-5 pt-4 pb-3 font-heading text-brand-white text-base font-semibold">{caption}</h2>
+      <h2 className="px-5 pt-4 pb-3 font-heading text-ink text-base font-semibold">{caption}</h2>
       <div className="table-scroll">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-y border-white/10 bg-white/[0.03] text-left text-xs uppercase tracking-wider text-brand-grey">
+            <tr className="border-y border-black/10 bg-black/[0.03] text-left text-xs uppercase tracking-wider text-muted">
               {head.map((h, i) => (
                 <th key={h} scope="col" className={`px-5 py-2.5 font-medium ${i > 0 && /KES|Payout|Fee|Gross|Bookings|Days/.test(h) ? 'text-right' : ''}`}>{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-black/5">
             {rows.map((cells, r) => (
               <tr key={r}>
                 {cells.map((c, i) => (
-                  <td key={i} className={`px-5 py-2.5 ${typeof c === 'number' || /^KES/.test(String(c)) ? 'text-right tabular-nums' : ''} ${i === 0 ? 'text-brand-white' : 'text-brand-grey'}`}>{c}</td>
+                  <td key={i} className={`px-5 py-2.5 ${typeof c === 'number' || /^KES/.test(String(c)) ? 'text-right tabular-nums' : ''} ${i === 0 ? 'text-ink' : 'text-muted'}`}>{c}</td>
                 ))}
               </tr>
             ))}
@@ -78,8 +78,8 @@ export default function OwnerStatementsPage() {
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Statements</h1>
-            <p className="text-brand-grey text-sm mt-1.5">What your vehicles earned, and what was paid out to you.</p>
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Statements</h1>
+            <p className="text-muted text-sm mt-1.5">What your vehicles earned, and what was paid out to you.</p>
           </div>
           <Button size="sm" onClick={() => window.print()} className="print:hidden">
             <Printer size={14} aria-hidden="true" /> Print / PDF
@@ -104,7 +104,7 @@ export default function OwnerStatementsPage() {
           <ErrorBanner message={apiErrorMessage(statement.error, 'Could not load your statement.')} onRetry={statement.refetch} />
         ) : (
           <>
-            <p className="text-xs text-brand-grey">
+            <p className="text-xs text-muted">
               {s?.from || s?.to ? `${s.from ? formatDate(s.from) : 'Start'} – ${s.to ? formatDate(s.to) : 'today'}` : 'All time'}
               {s?.generatedAt ? ` · generated ${formatDate(s.generatedAt)}` : ''}
             </p>

@@ -89,17 +89,17 @@ export default function SetupSteps({ onFinish, onAllDone }) {
         currentStep={index}
         onStepClick={setManual}
       />
-      <p className="text-xs text-brand-grey -mt-2">Tap any step to fill it in or change it — nothing is locked in.</p>
+      <p className="text-xs text-muted -mt-2">Tap any step to fill it in or change it — nothing is locked in.</p>
 
       {nothingLeft && (
-        <p role="status" className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+        <p role="status" className="rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700">
           Everything is set up. You can come back to any step to change your details later.
         </p>
       )}
 
       <div className="flex flex-col gap-1">
-        <p className="font-heading text-brand-white text-lg font-semibold">{TITLES[key]}</p>
-        <p className="text-brand-grey text-sm">{BLURBS[key]}</p>
+        <p className="font-heading text-ink text-lg font-semibold">{TITLES[key]}</p>
+        <p className="text-muted text-sm">{BLURBS[key]}</p>
       </div>
 
       {key === 'personal' && <PersonalDetailsForm submitLabel="Save & Continue" onSaved={afterSave} />}
@@ -131,7 +131,7 @@ export default function SetupSteps({ onFinish, onAllDone }) {
           <button
             type="button"
             onClick={() => setManual(index - 1)}
-            className="text-sm text-brand-grey hover:text-brand-white transition-colors focus-ring rounded-md"
+            className="text-sm text-muted hover:text-ink transition-colors focus-ring rounded-md"
           >
             ← Back
           </button>
@@ -141,7 +141,7 @@ export default function SetupSteps({ onFinish, onAllDone }) {
         <button
           type="button"
           onClick={later}
-          className="text-sm text-brand-grey hover:text-brand-white underline underline-offset-2 transition-colors focus-ring rounded-md"
+          className="text-sm text-muted hover:text-ink underline underline-offset-2 transition-colors focus-ring rounded-md"
         >
           {isLast ? 'Finish' : 'Do this later'}
         </button>

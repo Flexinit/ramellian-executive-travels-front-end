@@ -17,7 +17,7 @@ export default function Spinner({ size = 'md', label = 'Loading', color = '' }) 
     <span
       role="status"
       aria-label={label}
-      className={`${sizes[size]} inline-block rounded-full border-brand-gold/30 border-t-brand-gold animate-spin ${color}`}
+      className={`${sizes[size]} inline-block rounded-full border-accent/30 border-t-accent animate-spin ${color}`}
     />
   );
 }

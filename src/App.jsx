@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet } from 'lucide-react';
+import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText } from 'lucide-react';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -13,6 +13,7 @@ import RouteFallback from './components/layout/RouteFallback';
 import SetupPrompts from './components/layout/SetupPrompts';
 import SetupGuideModal from './components/layout/SetupGuideModal';
 import AssistantFab from './components/layout/AssistantFab';
+import MobileTabBar from './components/layout/MobileTabBar';
 import { useSyncCurrentUser } from './hooks/useProfile';
 import { useSessionExpiry, useReturnToCheckoutAfterAuth } from './hooks/useAuth';
 import { USER_ROLES } from './lib/constants';
@@ -73,6 +74,7 @@ const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage'));
 const AdminPlatformSettingsPage = lazy(() => import('./pages/AdminPlatformSettingsPage'));
 const AdminRentalTermsPage = lazy(() => import('./pages/AdminRentalTermsPage'));
 const AdminPayoutsPage = lazy(() => import('./pages/AdminPayoutsPage'));
+const AdminQuotationPage = lazy(() => import('./pages/AdminQuotationPage'));
 const AdminVehicleApprovalsPage = lazy(() => import('./pages/AdminVehicleApprovalsPage'));
 const EditVehiclePage = lazy(() => import('./pages/EditVehiclePage'));
 const OwnerContractTemplatesPage = lazy(() => import('./pages/OwnerContractTemplatesPage'));
@@ -83,6 +85,7 @@ const AddVehiclePage = lazy(() => import('./pages/AddVehiclePage'));
 const OwnerDashboardPage = lazy(() => import('./pages/OwnerDashboardPage'));
 const OwnerVehiclesPage = lazy(() => import('./pages/OwnerVehiclesPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 const Verify2faPage = lazy(() => import('./pages/Verify2faPage'));
@@ -104,18 +107,27 @@ const page = (element) => <ErrorBoundary>{element}</ErrorBoundary>;
  * Also syncs the full `GET /users/me` profile into authStore once
  * authenticated, regardless of which page the user lands on first.
  */
+/** Shows its page only to a super admin; anyone else in the Admin Panel is sent to its overview. */
+function SuperAdminOnly({ children }) {
+  const isSuperAdmin = useAuthStore((s) => !!s.user?.isSuperAdmin);
+  return isSuperAdmin ? children : <Navigate to="/admin" replace />;
+}
+
 function RootLayout() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   useSyncCurrentUser();
   useSessionExpiry();
   useReturnToCheckoutAfterAuth();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    // A signed-in phone leaves room at the bottom for the floating tab bar.
+    <div className={`min-h-screen flex flex-col ${isAuthenticated ? 'pb-24 md:pb-0' : ''}`}>
       <Navbar />
       <SetupPrompts />
       <SetupGuideModal />
       <AssistantFab />
       <Outlet />
+      <MobileTabBar />
     </div>
   );
 }
@@ -200,6 +212,8 @@ const ADMIN_TOOLS = [
   { label: 'Platform Settings', to: '/admin/settings', icon: Percent },
   { label: 'Rental Terms', to: '/admin/rental-terms', icon: ScrollText },
   { label: 'Owner Payouts', to: '/admin/payouts', icon: Wallet, permissions: [P.BOOKING_MANAGE] },
+  // Super admins only (`superAdminOnly`; the route checks too). Invoices will be generated automatically later.
+  { label: 'Quotations', to: '/admin/quotations', icon: ReceiptText, superAdminOnly: true },
 ];
 
 /** Vehicles, kept together: the whole fleet, adding one, and approval — what's waiting, what was approved, what was rejected. */
@@ -241,11 +255,15 @@ const SWITCH_TO_RENTER = { label: 'Switch to Renter', to: '/dashboard', icon: Ar
  * @param {string[]} roles
  * @param {'renter'|'owner'|null} mode
  * @param {string[]} [permissions] from the access token
+ * @param {boolean} [isSuperAdmin] — shows the items marked `superAdminOnly`
  * @returns {{ items: object[], heading: string }}
  */
-function menuFor(roles = [], mode = null, permissions = []) {
+function menuFor(roles = [], mode = null, permissions = [], isSuperAdmin = false) {
   const { items, heading } = menuForRoles(roles, mode);
-  return { items: items.filter((item) => hasPermission(item.permissions, permissions)), heading };
+  return {
+    items: items.filter((item) => hasPermission(item.permissions, permissions) && (!item.superAdminOnly || isSuperAdmin)),
+    heading,
+  };
 }
 
 function menuForRoles(roles, mode) {
@@ -328,7 +346,8 @@ function AccountLayout() {
     if (isOwner && mode === 'renter' && pathname.startsWith('/owner')) setMode('owner');
   }, [requested, isOwner, mode, pathname, setMode]);
 
-  const { items, heading } = menuFor(roles, mode, permissions);
+  const isSuperAdmin = useAuthStore((s) => !!s.user?.isSuperAdmin);
+  const { items, heading } = menuFor(roles, mode, permissions, isSuperAdmin);
   return <DashboardLayout items={items} heading={heading} />;
 }
 
@@ -394,6 +413,7 @@ export default function App() {
           {/* Auth — guest-only */}
           <Route element={<GuestRoute />}>
             <Route path="/auth/login" element={page(<LoginPage />)} />
+            <Route path="/auth/forgot-password" element={page(<ForgotPasswordPage />)} />
             <Route path="/auth/register" element={page(<RegisterPage />)} />
             <Route path="/auth/verify-email" element={page(<VerifyEmailPage />)} />
             <Route path="/auth/verify-2fa" element={page(<Verify2faPage />)} />
@@ -470,6 +490,7 @@ export default function App() {
               <Route path="/admin/settings" element={page(<AdminPlatformSettingsPage />)} />
               <Route path="/admin/rental-terms" element={page(<AdminRentalTermsPage />)} />
               <Route path="/admin/payouts" element={page(<AdminPayoutsPage />)} />
+              <Route path="/admin/quotations" element={page(<SuperAdminOnly>{<AdminQuotationPage />}</SuperAdminOnly>)} />
             </Route>
           </Route>
         </Route>

@@ -23,8 +23,8 @@ export default function AdminDashboardPage() {
       <PageTitle title="Admin Dashboard" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Admin Overview</h1>
-          <p className="text-brand-grey text-sm mt-1">Platform-wide activity at a glance.</p>
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Admin Overview</h1>
+          <p className="text-muted text-sm mt-1">Platform-wide activity at a glance.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

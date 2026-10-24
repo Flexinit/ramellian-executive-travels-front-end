@@ -27,22 +27,6 @@ export function locationFacets(vehicles = []) {
   return [...byKey.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-/**
- * The vehicles split into one group per location, the busiest location first.
- * @param {object[]} vehicles
- * @returns {Array<{ name: string, vehicles: object[] }>}
- */
-export function groupByLocation(vehicles = []) {
-  const byKey = new Map();
-  for (const v of vehicles) {
-    const key = keyOf(v?.location) || '\u0000none';
-    const group = byKey.get(key) || { name: labelOf(v?.location) || UNKNOWN_LOCATION, vehicles: [] };
-    group.vehicles.push(v);
-    byKey.set(key, group);
-  }
-  return [...byKey.values()].sort((a, b) => b.vehicles.length - a.vehicles.length || a.name.localeCompare(b.name));
-}
-
 /** Whether `location` is the place the `selected` filter names (same spelling rules as above). */
 export function isSameLocation(location, selected) {
   return !!keyOf(selected) && keyOf(location) === keyOf(selected);

@@ -22,11 +22,11 @@ function GooglePreview({ text }) {
   const label = text === 'signup_with' ? 'Sign up with Google' : text === 'signin_with' ? 'Sign in with Google' : 'Continue with Google';
   return (
     <div className="flex flex-col items-center gap-1.5" data-testid="google-signin-preview">
-      <button type="button" disabled className="inline-flex h-10 w-[300px] max-w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-white/20 bg-[#131314] px-4 text-sm font-medium text-white opacity-60">
+      <button type="button" disabled className="inline-flex h-10 w-[300px] max-w-full cursor-not-allowed items-center justify-center gap-3 rounded-full border border-black/20 bg-[#131314] px-4 text-sm font-medium text-white opacity-60">
         <GoogleG />
         {label}
       </button>
-      <p className="text-center text-[11px] text-brand-grey">Preview only — set VITE_GOOGLE_CLIENT_ID in .env to switch it on.</p>
+      <p className="text-center text-[11px] text-muted">Preview only — set VITE_GOOGLE_CLIENT_ID in .env to switch it on.</p>
     </div>
   );
 }

@@ -56,10 +56,10 @@ export default function AdminVehiclesPage() {
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">All Vehicles</h1>
-            <p className="text-brand-grey text-sm mt-1">Every vehicle on the platform and who owns it.</p>
-            <p className="text-brand-grey text-xs mt-1 max-w-2xl">
-              New vehicles need approval before renters see them — decide on them under <strong className="text-brand-white font-medium">Vehicle Approvals</strong>.
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">All Vehicles</h1>
+            <p className="text-muted text-sm mt-1">Every vehicle on the platform and who owns it.</p>
+            <p className="text-muted text-xs mt-1 max-w-2xl">
+              New vehicles need approval before renters see them — decide on them under <strong className="text-ink font-medium">Vehicle Approvals</strong>.
               Photos: the backend doesn&apos;t list a vehicle&apos;s photos (a photo&apos;s address is only revealed to whoever uploads it), so the
               pictures shown are the ones uploaded from this browser. The insurance sticker is stored with the vehicle, so it shows for any
               vehicle that has one.
@@ -98,29 +98,29 @@ export default function AdminVehiclesPage() {
           <Card className="table-scroll">
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-black/10">
                   {['Vehicle', 'Owner', 'Place', 'Per day', 'Insurance', 'Approval', 'Status', ''].map((col, i) => (
-                    <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-brand-grey uppercase tracking-wider">
+                    <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col || <span className="sr-only">Actions</span>}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-black/5">
                 {pages.pageItems.map((v) => (
                   <tr key={v.id}>
-                    <td className="stack-full px-4 py-3 text-sm text-brand-white">
+                    <td className="stack-full px-4 py-3 text-sm text-ink">
                       <div className="flex items-center gap-3">
                         <VehicleThumb vehicle={v} onOpen={setGallery} />
                         <span>
                           {v.model}
-                          <span className="block text-xs text-brand-grey">{v.registrationNumber}</span>
+                          <span className="block text-xs text-muted">{v.registrationNumber}</span>
                         </span>
                       </div>
                     </td>
-                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-brand-grey break-all md:break-normal">{v.ownerEmail || '—'}</td>
-                    <td data-label="Place" className="px-4 py-3 text-sm text-brand-grey">{v.location}</td>
-                    <td data-label="Per day" className="px-4 py-3 text-sm text-brand-white">{formatCurrency(v.pricePerDay)}</td>
+                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-muted break-all md:break-normal">{v.ownerEmail || '—'}</td>
+                    <td data-label="Place" className="px-4 py-3 text-sm text-muted">{v.location}</td>
+                    <td data-label="Per day" className="px-4 py-3 text-sm text-ink">{formatCurrency(v.pricePerDay)}</td>
                     <td data-label="Insurance" className="px-4 py-3">
                       <div className="flex flex-col items-start gap-1.5">
                         <Badge
@@ -132,7 +132,7 @@ export default function AdminVehiclesPage() {
                             type="button"
                             onClick={() => setSticker(v)}
                             aria-label={`View insurance sticker: ${v.model}`}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-brand-gold hover:text-brand-gold-light focus-ring rounded"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded"
                           >
                             <ShieldCheck size={12} aria-hidden="true" />
                             View sticker
@@ -178,12 +178,12 @@ export default function AdminVehiclesPage() {
         {gallery && (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={`Photos of ${gallery.model}`}>
             {(gallery.photos || []).map((photo, i) => (
-              <li key={photo.url || i} className="rounded-xl overflow-hidden border border-white/10 bg-black/20">
+              <li key={photo.url || i} className="rounded-xl overflow-hidden border border-black/10 bg-subtle">
                 <AuthImage
                   src={photo.url}
                   alt={`${gallery.model} — photo ${i + 1}`}
                   className="w-full max-h-96 object-contain"
-                  fallback={<p className="p-6 text-sm text-red-400 text-center">Couldn&apos;t load this photo.</p>}
+                  fallback={<p className="p-6 text-sm text-red-600 text-center">Couldn&apos;t load this photo.</p>}
                 />
               </li>
             ))}
@@ -197,8 +197,8 @@ export default function AdminVehiclesPage() {
 
       <Modal isOpen={!!removing} onClose={() => setRemoving(null)} title="Remove vehicle">
         <div className="flex flex-col gap-4">
-          <p className="text-brand-grey text-sm">
-            This can&apos;t be undone. Remove <span className="text-brand-white">{removing?.model}</span> ({removing?.registrationNumber}) from the platform?
+          <p className="text-muted text-sm">
+            This can&apos;t be undone. Remove <span className="text-ink">{removing?.model}</span> ({removing?.registrationNumber}) from the platform?
           </p>
           <div className="flex gap-3 justify-end">
             <Button onClick={() => setRemoving(null)}>Cancel</Button>

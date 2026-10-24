@@ -39,22 +39,22 @@ describe('NavLink', () => {
 
   it('applies active styling when the route matches', () => {
     renderWithRouter(<NavLink to="/vehicles" label="Vehicles" />, { route: '/vehicles' });
-    expect(screen.getByRole('link', { name: 'Vehicles' })).toHaveClass('text-brand-gold');
+    expect(screen.getByRole('link', { name: 'Vehicles' })).toHaveClass('text-accent');
   });
 
   it('treats sub-routes as active too', () => {
     renderWithRouter(<NavLink to="/vehicles" label="Vehicles" />, { route: '/vehicles/v123' });
-    expect(screen.getByRole('link', { name: 'Vehicles' })).toHaveClass('text-brand-gold');
+    expect(screen.getByRole('link', { name: 'Vehicles' })).toHaveClass('text-accent');
   });
 
   it('does not apply active styling when the route does not match', () => {
     renderWithRouter(<NavLink to="/vehicles" label="Vehicles" />, { route: '/about' });
-    expect(screen.getByRole('link', { name: 'Vehicles' })).not.toHaveClass('text-brand-gold');
+    expect(screen.getByRole('link', { name: 'Vehicles' })).not.toHaveClass('text-accent');
   });
 
   it('only matches "/" exactly, not every route', () => {
     renderWithRouter(<NavLink to="/" label="Home" />, { route: '/vehicles' });
-    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveClass('text-brand-gold');
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveClass('text-accent');
   });
 
   it('has no accessibility violations', async () => {

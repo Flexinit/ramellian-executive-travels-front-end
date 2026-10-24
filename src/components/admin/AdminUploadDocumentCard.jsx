@@ -37,11 +37,11 @@ export default function AdminUploadDocumentCard({ userId }) {
 
   return (
     <Card className="p-5 flex flex-col gap-4 lg:col-span-2">
-      <h2 className="flex items-center gap-2 font-heading text-brand-white text-base font-semibold">
-        <Upload size={17} className="text-brand-gold" aria-hidden="true" />
+      <h2 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+        <Upload size={17} className="text-accent" aria-hidden="true" />
         Upload a document for this user
       </h2>
-      <p className="text-sm text-brand-grey -mt-2">For a copy handed in to staff. It is reviewed like any other upload.</p>
+      <p className="text-sm text-muted -mt-2">For a copy handed in to staff. It is reviewed like any other upload.</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
         <Select
           label="Document"
@@ -50,17 +50,17 @@ export default function AdminUploadDocumentCard({ userId }) {
           onChange={(e) => setType(e.target.value)}
           options={Object.values(DOCUMENT_TYPES).map((t) => ({ value: t, label: DOCUMENT_TYPE_LABELS[t] || t }))}
         />
-        <label className="flex flex-col gap-1 text-sm font-medium text-brand-white">
+        <label className="flex flex-col gap-1 text-sm font-medium text-ink">
           File
           <input
             type="file"
             accept="image/jpeg,image/png,application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="text-sm text-brand-grey file:mr-3 file:rounded-full file:border file:border-brand-gold file:bg-transparent file:px-4 file:py-1.5 file:text-brand-gold file:font-semibold"
+            className="text-sm text-muted file:mr-3 file:rounded-full file:border file:border-accent file:bg-transparent file:px-4 file:py-1.5 file:text-accent file:font-semibold"
           />
         </label>
       </div>
-      {upload.isError && <p role="alert" className="text-sm text-red-400">{apiErrorMessage(upload.error, "Couldn't upload the document.")}</p>}
+      {upload.isError && <p role="alert" className="text-sm text-red-600">{apiErrorMessage(upload.error, "Couldn't upload the document.")}</p>}
       <Button className="self-start" disabled={!type || !file} loading={upload.isPending} onClick={() => upload.mutate()}>
         {!upload.isPending && <Upload size={14} aria-hidden="true" />} Upload
       </Button>

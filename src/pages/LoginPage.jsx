@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +13,8 @@ import RememberMe from '../components/auth/RememberMe';
 import { useGoogleLogin, useLogin } from '../hooks/useAuth';
 import { isGoogleSignInEnabled } from '../lib/features';
 import AuthBackdrop from '../components/layout/AuthBackdrop';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
+import AuthCard from '../components/auth/AuthCard';
+import { AUTH_PHOTOS } from '../lib/authPhotos';
 
 const schema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
@@ -20,12 +22,14 @@ const schema = z.object({
 });
 
 export default function LoginPage() {
+  // After resetting a password, the email comes along so it doesn't have to be typed again.
+  const emailFromReset = useLocation().state?.email;
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) });
+  } = useForm({ resolver: zodResolver(schema), defaultValues: { email: emailFromReset || '' } });
   const login = useLogin();
   const googleLogin = useGoogleLogin();
 
@@ -48,14 +52,14 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthBackdrop image={nairobiSkyline}>
+    <AuthBackdrop images={AUTH_PHOTOS} title="Welcome back to executive travel" subtitle="Log in to manage your bookings, documents and payments.">
       <PageTitle title="Log In" />
-      <div className="w-full max-w-sm flex flex-col gap-8">
+      <div className="w-full">
 
-        <div className="bg-brand-navy/90 backdrop-blur-md border border-white/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6">
+        <AuthCard>
           <div className="text-center">
-            <h1 className="font-heading text-brand-white text-2xl font-bold">Welcome back</h1>
-            <p className="text-brand-grey text-sm mt-1.5">Log in to your account.</p>
+            <h1 className="font-heading text-ink text-2xl font-bold">Welcome back</h1>
+            <p className="text-muted text-sm mt-1.5">Log in to your account.</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
@@ -73,6 +77,12 @@ export default function LoginPage() {
               error={errors.password?.message}
               register={register('password')}
             />
+            <Link
+              to="/auth/forgot-password"
+              className="-mt-2 self-end text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded-md"
+            >
+              Forgot password?
+            </Link>
 
             <RememberMe />
             <Button type="submit" size="lg" loading={login.isPending} className="mt-2">
@@ -86,15 +96,15 @@ export default function LoginPage() {
               <GoogleSignInButton text="signin_with" onCredential={googleLogin.mutate} disabled={googleLogin.isPending || login.isPending} />
             </>
           )}
-        </div>
 
-        {/* Easy to spot: a full-width button, not a small link. */}
-        <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-          <p className="text-brand-white text-sm font-medium">New to Ramellian Executive Travels?</p>
-          <Button to="/auth/register" size="lg" className="w-full">
-            <UserPlus size={16} aria-hidden="true" /> Create an account
-          </Button>
-        </div>
+          {/* Easy to spot: a full-width button, not a small link — inside the card, so the form is one unit. */}
+          <div className="flex flex-col gap-2 pt-5 border-t border-black/10 text-center">
+            <p className="text-ink text-sm font-medium">New to Ramellian Executive Travels?</p>
+            <Button to="/auth/register" variant="outline" size="lg" className="w-full">
+              <UserPlus size={16} aria-hidden="true" /> Create an account
+            </Button>
+          </div>
+        </AuthCard>
       </div>
     </AuthBackdrop>
   );

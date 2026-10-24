@@ -27,15 +27,15 @@ function PendingDocumentCard({ document, onOpen }) {
 
   return (
     <Card className="p-5 grid gap-5 md:grid-cols-[minmax(0,20rem)_1fr]">
-      <div className="rounded-xl border border-white/10 bg-black/20 overflow-hidden self-start w-full">
+      <div className="rounded-xl border border-black/10 bg-subtle overflow-hidden self-start w-full">
         <DocumentPreview document={document} onOpen={onOpen} />
       </div>
 
       <div className="flex flex-col gap-4 min-w-0">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 className="font-heading text-brand-white text-lg font-semibold">{title}</h2>
-            <p className="text-brand-grey text-xs mt-1 break-all">
+            <h2 className="font-heading text-ink text-lg font-semibold">{title}</h2>
+            <p className="text-muted text-xs mt-1 break-all">
               {document.originalFileName} · {formatFileSize(document.fileSize)} · uploaded {formatDateTime(document.createdAt)}
               {document.vehicleId ? ' · for a vehicle' : ''}
             </p>
@@ -103,11 +103,11 @@ export default function AdminDocumentsPage() {
       <PageTitle title="Document Review" />
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="font-heading text-brand-white text-2xl sm:text-3xl font-bold">Document Review</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Document Review</h1>
+          <p className="text-muted text-sm mt-1">
             Documents people have uploaded that are waiting for a decision — check each one, then approve or reject it.
-            Changed your mind? Decided documents are under <strong className="text-brand-white font-medium">Approved Documents</strong> and{' '}
-            <strong className="text-brand-white font-medium">Rejected Documents</strong> in the menu.
+            Changed your mind? Decided documents are under <strong className="text-ink font-medium">Approved Documents</strong> and{' '}
+            <strong className="text-ink font-medium">Rejected Documents</strong> in the menu.
           </p>
         </div>
 

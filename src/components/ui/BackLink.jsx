@@ -3,7 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 import Button from './Button';
 
 /**
- * A "go back" link — the shared `Button`'s own pill look, with a leading `ArrowLeft`. Drop it right after
+ * A "go back" link — the shared `Button`'s quiet outlined pill (like the design's round back button), with a
+ * leading `ArrowLeft`. Drop it right after
  * `PageTitle` on any page that would otherwise leave someone with no way back except the browser's own Back
  * button (a page reached only by drilling into something, with no persistent nav link to its parent list).
  *
@@ -13,7 +14,7 @@ import Button from './Button';
  */
 export default function BackLink({ to, label = 'Back', state, className = '' }) {
   return (
-    <Button to={to} state={state} size="sm" className={`self-start ${className}`}>
+    <Button to={to} state={state} variant="outline" size="sm" className={`self-start ${className}`}>
       <ArrowLeft size={14} aria-hidden="true" />
       {label}
     </Button>

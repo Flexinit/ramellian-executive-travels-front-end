@@ -3,17 +3,17 @@ import Card from '../ui/Card';
 import PriceDisplay from '../ui/PriceDisplay';
 import { quoteBreakdown } from '../../lib/quoteBreakdown';
 import { formatCurrency } from '../../lib/utils';
+import { DetailList, DetailRow } from '../ui/DetailList';
 
 function Lines({ lines }) {
   return (
-    <ul className="flex flex-col gap-1.5 text-sm">
+    <DetailList className="gap-y-1.5">
       {lines.map((line) => (
-        <li key={line.label} className="flex justify-between gap-4">
-          <span className="text-brand-grey">{line.label}</span>
-          <span className="text-brand-white tabular-nums">{formatCurrency(line.amount)}</span>
-        </li>
+        <DetailRow key={line.label} label={line.label} valueClassName="tabular-nums">
+          {formatCurrency(line.amount)}
+        </DetailRow>
       ))}
-    </ul>
+    </DetailList>
   );
 }
 
@@ -38,17 +38,18 @@ export default function CartTotals({ items, quotes = {} }) {
 
   return (
     <Card className="p-5 flex flex-col gap-3" aria-label="Booking total">
-      <h2 className="font-heading text-brand-white text-sm font-semibold">Price breakdown</h2>
+      <h2 className="font-heading text-ink text-sm font-semibold">Price breakdown</h2>
 
       {several ? (
         <ul className="flex flex-col gap-3">
           {breakdowns.map(({ item, lines, total: subtotal }) => (
             <li key={item.vehicleId} className="flex flex-col gap-1.5">
-              <div className="flex justify-between gap-4 text-sm font-medium">
-                <span className="text-brand-white">{item.vehicle.model}</span>
-                <span className="text-brand-white tabular-nums">{formatCurrency(subtotal)}</span>
-              </div>
-              <div className="pl-3 border-l border-white/10">
+              <DetailList>
+                <DetailRow label={<span className="text-ink font-semibold">{item.vehicle.model}</span>} valueClassName="font-semibold tabular-nums">
+                  {formatCurrency(subtotal)}
+                </DetailRow>
+              </DetailList>
+              <div className="pl-3 border-l border-black/10">
                 <Lines lines={lines} />
               </div>
             </li>
@@ -58,14 +59,14 @@ export default function CartTotals({ items, quotes = {} }) {
         breakdowns[0] && <Lines lines={breakdowns[0].lines} />
       )}
 
-      <div aria-label="Total to pay" className="flex items-center justify-between pt-3 border-t border-white/10">
-        <span className="text-brand-grey text-sm">
-          {estimated ? 'Estimated total' : 'Total'}
-          {several ? ` · ${items.length} vehicles` : ''}
-        </span>
-        <PriceDisplay amount={total} period="" size="lg" />
+      <div aria-label="Total to pay" className="pt-3 border-t border-black/10">
+        <DetailList className="items-center">
+          <DetailRow label={`${estimated ? 'Estimated total' : 'Total'}${several ? ` · ${items.length} vehicles` : ''}`}>
+            <PriceDisplay amount={total} period="" size="lg" />
+          </DetailRow>
+        </DetailList>
       </div>
-      <p className="text-brand-grey text-xs">
+      <p className="text-muted text-xs">
         {estimated
           ? 'Worked out from the number of days. The final amount is confirmed when your booking is created.'
           : "This is what you'll pay. It's confirmed again when your booking is created."}

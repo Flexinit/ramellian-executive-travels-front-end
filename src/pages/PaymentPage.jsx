@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PageBackdrop from '../components/layout/PageBackdrop';
-import nairobiSkyline from '../assets/destinations/nairobi-skyline.jpg';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { PenLine, CreditCard } from 'lucide-react';
@@ -162,7 +160,7 @@ export default function PaymentPage() {
   const status = paymentStatus.data?.status;
 
   return (
-    <PageBackdrop image={nairobiSkyline}>
+    <>
     <PageWrapper className="max-w-md mx-auto">
       <PageTitle title="Payment" />
       <div className="flex flex-col gap-6">
@@ -173,8 +171,8 @@ export default function PaymentPage() {
           <BackLink to={`/book/${bookingId}/contract`} state={{ bookingId }} label="Back to contract" />
         )}
         <div>
-          <h1 className="font-heading text-brand-white text-2xl font-bold">Payment</h1>
-          <p className="text-brand-grey text-sm mt-1">
+          <h1 className="font-heading text-ink text-2xl font-bold">Payment</h1>
+          <p className="text-muted text-sm mt-1">
             {status === PAYMENT_STATUSES.SUCCESSFUL
               ? 'Your payment went through.'
               : checkoutStarted
@@ -222,6 +220,6 @@ export default function PaymentPage() {
         </div>
       </div>
     </PageWrapper>
-    </PageBackdrop>
+    </>
   );
 }

@@ -53,7 +53,7 @@ export default function ContractPreviewModal({ isOpen, onClose, contractId, sign
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <div className="rounded-2xl border border-white/10 bg-white overflow-auto max-h-[70vh] flex justify-center">
+          <div className="rounded-2xl border border-black/10 bg-white overflow-auto max-h-[70vh] flex justify-center">
             <Document
               file={blob}
               onLoadSuccess={({ numPages: n }) => setNumPages(n)}
@@ -75,11 +75,11 @@ export default function ContractPreviewModal({ isOpen, onClose, contractId, sign
                 disabled={pageNumber <= 1}
                 onClick={() => setPageNumber((p) => p - 1)}
                 aria-label="Previous page"
-                className="p-1.5 rounded-full text-brand-grey hover:text-brand-gold disabled:opacity-30 disabled:cursor-not-allowed focus-ring"
+                className="p-1.5 rounded-full text-muted hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed focus-ring"
               >
                 <ChevronLeft size={16} aria-hidden="true" />
               </button>
-              <span className="text-brand-grey text-xs">
+              <span className="text-muted text-xs">
                 Page {pageNumber} of {numPages || '—'}
               </span>
               <button
@@ -87,7 +87,7 @@ export default function ContractPreviewModal({ isOpen, onClose, contractId, sign
                 disabled={!numPages || pageNumber >= numPages}
                 onClick={() => setPageNumber((p) => p + 1)}
                 aria-label="Next page"
-                className="p-1.5 rounded-full text-brand-grey hover:text-brand-gold disabled:opacity-30 disabled:cursor-not-allowed focus-ring"
+                className="p-1.5 rounded-full text-muted hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed focus-ring"
               >
                 <ChevronRight size={16} aria-hidden="true" />
               </button>
@@ -95,7 +95,7 @@ export default function ContractPreviewModal({ isOpen, onClose, contractId, sign
             <button
               type="button"
               onClick={() => downloadContract(contractId, signed)}
-              className="inline-flex items-center gap-1.5 text-brand-gold text-xs font-semibold hover:text-brand-gold-light transition-colors focus-ring rounded-md"
+              className="inline-flex items-center gap-1.5 text-accent text-xs font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
             >
               <Download size={13} aria-hidden="true" />
               Download PDF

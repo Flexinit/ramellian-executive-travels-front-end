@@ -128,7 +128,7 @@ export default function SignaturePage() {
             {/* Already signed (signed earlier, or the page was reloaded): say so, and go on from here. */}
             {renterSignedAt(contract) && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
-                <p className="text-sm text-brand-white">This contract is signed. You can go on to the next step.</p>
+                <p className="text-sm text-ink">This contract is signed. You can go on to the next step.</p>
                 <Button size="lg" onClick={() => goOnAfterSigning(bookingId, navigate)} className="shrink-0">
                   Continue <ArrowRight size={16} aria-hidden="true" />
                 </Button>

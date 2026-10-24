@@ -24,10 +24,10 @@ export default function ConfirmPaymentForm({ booking }) {
   }
 
   return (
-    <form onSubmit={submit} className="bg-brand-navy border border-white/10 rounded-2xl p-5 flex flex-col gap-4" aria-label="Record a payment">
+    <form onSubmit={submit} className="bg-surface border border-black/10 rounded-2xl p-5 flex flex-col gap-4" aria-label="Record a payment">
       <div>
-        <h2 className="font-heading text-brand-white text-base font-semibold">Record a payment</h2>
-        <p className="text-brand-grey text-xs mt-1">For a payment taken outside the online checkout.</p>
+        <h2 className="font-heading text-ink text-base font-semibold">Record a payment</h2>
+        <p className="text-muted text-xs mt-1">For a payment taken outside the online checkout.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label="Payment method" name="paymentMethod" placeholder="e.g. M-Pesa, bank transfer" value={method} onChange={(e) => setMethod(e.target.value)} />

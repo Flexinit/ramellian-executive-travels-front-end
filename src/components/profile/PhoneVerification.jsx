@@ -32,7 +32,7 @@ export default function PhoneVerification({ phoneNumber, verified }) {
 
   if (verified || stage === 'done') {
     return (
-      <p className="inline-flex items-center gap-1.5 text-sm text-emerald-400">
+      <p className="inline-flex items-center gap-1.5 text-sm text-emerald-600">
         <ShieldCheck size={15} aria-hidden="true" /> Phone number verified
       </p>
     );
@@ -46,11 +46,11 @@ export default function PhoneVerification({ phoneNumber, verified }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-xl border border-black/10 bg-black/5 px-4 py-3">
       <div id="phone-recaptcha" />
       {stage === 'code' || stage === 'verifying' ? (
         <>
-          <p className="text-sm text-brand-white">We sent a 6-digit code to {phoneNumber}.</p>
+          <p className="text-sm text-ink">We sent a 6-digit code to {phoneNumber}.</p>
           <div className="flex flex-wrap items-end gap-3">
             <Input
               label="Code"
@@ -71,13 +71,13 @@ export default function PhoneVerification({ phoneNumber, verified }) {
         </>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-brand-grey">Not verified yet. We'll send a code by SMS to confirm it's yours.</p>
+          <p className="text-sm text-muted">Not verified yet. We'll send a code by SMS to confirm it's yours.</p>
           <Button size="sm" loading={stage === 'sending'} onClick={send}>
             {stage !== 'sending' && <MessageSquareText size={14} aria-hidden="true" />} Verify by SMS
           </Button>
         </div>
       )}
-      {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

@@ -16,8 +16,8 @@ const titleCase = (value) => (value ? value.charAt(0) + value.slice(1).toLowerCa
 /** A small pill with an icon: one fact about the vehicle. */
 function Chip({ icon: Icon, children }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-brand-white">
-      <Icon size={12} className="text-brand-gold" aria-hidden="true" />
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/5 px-2.5 py-1 text-xs text-ink">
+      <Icon size={12} className="text-accent" aria-hidden="true" />
       {children}
     </span>
   );
@@ -45,10 +45,10 @@ export default function VehicleReviewCard({ vehicle }) {
   const modes = [vehicle.selfDrive && 'Self-drive', vehicle.chauffeured && 'Chauffeured'].filter(Boolean).join(' + ');
 
   return (
-    <Card className="overflow-hidden p-0 transition-colors hover:border-brand-gold/30">
+    <Card className="overflow-hidden p-0 transition-colors hover:border-accent/30">
       <div className="grid md:grid-cols-[15rem_1fr]">
         {/* Photo */}
-        <div className="relative min-h-44 bg-black/30 md:min-h-full">
+        <div className="relative min-h-44 bg-subtle md:min-h-full">
           {photos.length > 0 ? (
             <button
               type="button"
@@ -60,12 +60,12 @@ export default function VehicleReviewCard({ vehicle }) {
                 src={photos[0].url}
                 alt=""
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                fallback={<span className="flex h-full w-full items-center justify-center text-brand-grey"><Car size={36} aria-hidden="true" /></span>}
+                fallback={<span className="flex h-full w-full items-center justify-center text-muted"><Car size={36} aria-hidden="true" /></span>}
               />
               <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">{photos.length} {photos.length === 1 ? 'photo' : 'photos'}</span>
             </button>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-brand-grey">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-muted">
               <ImageOff size={30} aria-hidden="true" />
               <p className="text-xs">No photos to show — the backend doesn&apos;t send a vehicle&apos;s photos, so only ones uploaded from this browser can be shown.</p>
             </div>
@@ -76,15 +76,15 @@ export default function VehicleReviewCard({ vehicle }) {
         <div className="flex min-w-0 flex-col gap-4 p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-heading text-brand-white text-xl font-semibold leading-tight">{vehicle.model}</h2>
-              <p className="mt-0.5 break-all text-xs text-brand-grey">{`${vehicle.registrationNumber} · ${vehicle.ownerEmail || 'unknown owner'}`}</p>
+              <h2 className="font-heading text-ink text-xl font-semibold leading-tight">{vehicle.model}</h2>
+              <p className="mt-0.5 break-all text-xs text-muted">{`${vehicle.registrationNumber} · ${vehicle.ownerEmail || 'unknown owner'}`}</p>
             </div>
             <Badge label={approvalLabel(vehicle)} variant={approvalVariant(vehicle)} className="shrink-0" />
           </div>
 
           <p className="flex items-baseline gap-1.5">
-            <span className="font-heading text-2xl font-bold text-brand-gold">{vehicle.pricePerDay != null ? formatCurrency(vehicle.pricePerDay) : '—'}</span>
-            <span className="text-xs text-brand-grey">per day</span>
+            <span className="font-heading text-2xl font-bold text-accent">{vehicle.pricePerDay != null ? formatCurrency(vehicle.pricePerDay) : '—'}</span>
+            <span className="text-xs text-muted">per day</span>
           </p>
 
           <div className="flex flex-wrap gap-2" aria-label="Key facts">
@@ -96,7 +96,7 @@ export default function VehicleReviewCard({ vehicle }) {
             {modes && <Chip icon={Car}>{modes}</Chip>}
             {vehicle.color && <Chip icon={Car}>{vehicle.color}</Chip>}
           </div>
-          {vehicle.vin && <p className="text-xs text-brand-grey">VIN {vehicle.vin}</p>}
+          {vehicle.vin && <p className="text-xs text-muted">VIN {vehicle.vin}</p>}
 
           {/* Insurance */}
           <div
@@ -104,8 +104,8 @@ export default function VehicleReviewCard({ vehicle }) {
               insured && hasSticker ? 'border-green-500/30 bg-green-500/5' : 'border-yellow-500/30 bg-yellow-500/5'
             }`}
           >
-            <span className="flex items-center gap-2 text-sm text-brand-white">
-              {insured && hasSticker ? <ShieldCheck size={16} className="text-green-400" aria-hidden="true" /> : <ShieldAlert size={16} className="text-yellow-400" aria-hidden="true" />}
+            <span className="flex items-center gap-2 text-sm text-ink">
+              {insured && hasSticker ? <ShieldCheck size={16} className="text-green-600" aria-hidden="true" /> : <ShieldAlert size={16} className="text-yellow-600" aria-hidden="true" />}
               <Badge
                 label={!insured ? 'No insurance' : hasSticker ? 'Insured · sticker' : 'Insured · no sticker'}
                 variant={!insured ? 'danger' : hasSticker ? 'success' : 'warning'}
@@ -120,7 +120,7 @@ export default function VehicleReviewCard({ vehicle }) {
           </div>
 
           {decided && (
-            <p className="text-xs text-brand-grey">
+            <p className="text-xs text-muted">
               {approvalLabel(vehicle)}
               {vehicle.reviewedBy ? ` by ${vehicle.reviewedBy}` : ''}
               {vehicle.reviewedAt ? ` · ${formatDateTime(vehicle.reviewedAt)}` : ''}
@@ -168,12 +168,12 @@ export default function VehicleReviewCard({ vehicle }) {
       <Modal isOpen={showPhotos} onClose={() => setShowPhotos(false)} title={`Photos — ${vehicle.model} (${vehicle.registrationNumber})`} size="xl">
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={`Photos of ${vehicle.model}`}>
           {photos.map((photo, i) => (
-            <li key={photo.url || i} className="rounded-xl overflow-hidden border border-white/10 bg-black/20">
+            <li key={photo.url || i} className="rounded-xl overflow-hidden border border-black/10 bg-subtle">
               <AuthImage
                 src={photo.url}
                 alt={`${vehicle.model} — photo ${i + 1}`}
                 className="w-full max-h-96 object-contain"
-                fallback={<p className="p-6 text-sm text-red-400 text-center">Couldn&apos;t load this photo.</p>}
+                fallback={<p className="p-6 text-sm text-red-600 text-center">Couldn&apos;t load this photo.</p>}
               />
             </li>
           ))}

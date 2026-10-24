@@ -17,7 +17,7 @@ export default function Avatar({ name = '', src, size = 'md', className = '' }) 
     xl: 'w-20 h-20 text-2xl',
   };
 
-  const base = `inline-flex items-center justify-center rounded-full bg-brand-gold/20 border border-brand-gold/40 font-semibold text-brand-gold overflow-hidden shrink-0 ${sizes[size]} ${className}`;
+  const base = `inline-flex items-center justify-center rounded-full bg-subtle border border-line font-semibold text-ink overflow-hidden shrink-0 ${sizes[size]} ${className}`;
 
   if (src) {
     return (
