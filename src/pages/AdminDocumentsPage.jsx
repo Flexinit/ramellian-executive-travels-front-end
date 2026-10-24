@@ -27,7 +27,7 @@ function PendingDocumentCard({ document, onOpen }) {
 
   return (
     <Card className="p-5 grid gap-5 md:grid-cols-[minmax(0,20rem)_1fr]">
-      <div className="rounded-xl border border-black/10 bg-subtle overflow-hidden self-start w-full">
+      <div className="rounded-xl border border-ink/10 bg-subtle overflow-hidden self-start w-full">
         <DocumentPreview document={document} onOpen={onOpen} />
       </div>
 

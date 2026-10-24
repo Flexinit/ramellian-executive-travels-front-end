@@ -6,7 +6,7 @@ import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { useUnreadMessageCount } from '../../hooks/useChat';
 
 export const LINK =
-  'relative inline-flex items-center justify-center w-10 h-10 rounded-full text-ink hover:text-accent hover:bg-black/5 transition-colors focus-ring';
+  'relative inline-flex items-center justify-center w-10 h-10 rounded-full text-ink hover:text-accent hover:bg-ink/5 transition-colors focus-ring';
 
 export function CountBadge({ count }) {
   if (count <= 0) return null;

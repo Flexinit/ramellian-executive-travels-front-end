@@ -16,7 +16,7 @@ const titleCase = (value) => (value ? value.charAt(0) + value.slice(1).toLowerCa
 /** A small pill with an icon: one fact about the vehicle. */
 function Chip({ icon: Icon, children }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-black/5 px-2.5 py-1 text-xs text-ink">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-ink/5 px-2.5 py-1 text-xs text-ink">
       <Icon size={12} className="text-accent" aria-hidden="true" />
       {children}
     </span>
@@ -168,7 +168,7 @@ export default function VehicleReviewCard({ vehicle }) {
       <Modal isOpen={showPhotos} onClose={() => setShowPhotos(false)} title={`Photos — ${vehicle.model} (${vehicle.registrationNumber})`} size="xl">
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={`Photos of ${vehicle.model}`}>
           {photos.map((photo, i) => (
-            <li key={photo.url || i} className="rounded-xl overflow-hidden border border-black/10 bg-subtle">
+            <li key={photo.url || i} className="rounded-xl overflow-hidden border border-ink/10 bg-subtle">
               <AuthImage
                 src={photo.url}
                 alt={`${vehicle.model} — photo ${i + 1}`}

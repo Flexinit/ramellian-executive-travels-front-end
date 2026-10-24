@@ -19,7 +19,7 @@ export default function StickerPreview({ file }) {
   if (!url) return null;
   return (
     <a href={url} target="_blank" rel="noreferrer" aria-label="Open the insurance sticker preview full size" className="self-start rounded-lg focus-ring">
-      <img src={url} alt="Insurance sticker preview" className="h-32 w-auto max-w-full rounded-lg border border-black/10 bg-white object-contain" />
+      <img src={url} alt="Insurance sticker preview" className="h-32 w-auto max-w-full rounded-lg border border-ink/10 bg-white object-contain" />
     </a>
   );
 }

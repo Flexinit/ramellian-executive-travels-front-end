@@ -410,7 +410,7 @@ describe('App routing', () => {
           const labels = within(menu).getAllByRole('link').map((l) => l.textContent);
           expect(labels).toEqual([
             'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Invoices', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
             'Back to Main Site',
           ]);
@@ -456,7 +456,7 @@ describe('App routing', () => {
         signInWith(['SUPER_ADMIN', 'MANAGE', 'CAR_OWNER'], LIVE_ADMIN_PERMISSIONS);
         expect(await menuLabels('/admin')).toEqual([
           'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Invoices', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
           'Back to Main Site',
         ]);
@@ -465,7 +465,7 @@ describe('App routing', () => {
       it('hides the vehicle and booking items from an administrator who lacks those permissions', async () => {
         signInWith(['SUPER_ADMIN'], ['USER_MANAGE', 'DOCUMENT_REVIEW']);
         expect(await menuLabels('/admin')).toEqual([
-          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Invoices', 'Review Documents', 'Approved Documents',
+          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Quotations', 'Review Documents', 'Approved Documents',
           'Rejected Documents', 'Back to Main Site',
         ]);
       });
@@ -473,7 +473,7 @@ describe('App routing', () => {
       it('shows an administrator who can only manage users just the user pages', async () => {
         signInWith(['ADMIN'], ['USER_MANAGE']);
         expect(await menuLabels('/admin')).toEqual([
-          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Invoices', 'Back to Main Site',
+          'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Back to Main Site',
         ]);
       });
 

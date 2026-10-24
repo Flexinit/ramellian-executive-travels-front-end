@@ -1,36 +1,42 @@
 import { FONTS, fontStack } from './src/theme/fonts.js';
 
 /** @type {import('tailwindcss').Config} */
+/** A colour that follows the light / dark theme: its value is the CSS variable `--c-<name>` (index.css). */
+const themed = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
+  // Dark mode is a `dark` class on <html> (set before the page draws — index.html — and by the ThemeToggle).
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // The Figma "Qent" car-rental design system (docs/design.md §4) — a light page, white cards, black text and
-        // charcoal pill buttons. Named for what they do, so a page never picks a raw hex.
-        canvas:         '#F8F8F8', // the page background ("coloe bg")
-        surface:        '#FFFFFF', // cards, panels, the menu ("White")
-        subtle:         '#EDEDED', // quiet fills: chips, feature tiles, the image well behind a car ("Secondary")
-        line:           '#D7D7D7', // field and card outlines ("Stoke")
-        ink:            '#000000', // main text ("Text 1")
+        // The Figma "Qent" car-rental design system (docs/design.md §4), named for what each colour does so a page
+        // never picks a raw hex. Each one has a light and a dark value — the variables in index.css (`:root` and
+        // `.dark`) — so every page switches theme without its own dark styles.
+        canvas:         themed('canvas'),       // the page background (light: "coloe bg" #F8F8F8)
+        surface:        themed('surface'),      // cards, panels (light: white)
+        subtle:         themed('subtle'),       // quiet fills: chips, tiles, image wells, table stripes (light: #EDEDED)
+        line:           themed('line'),         // field and card outlines (light: "Stoke" #D7D7D7)
+        well:           themed('well'),         // the panel behind a car photo — light grey in both themes
+        ink:            themed('ink'),          // main text (light: black)
         // Secondary text. The design's "Text 2" is #7F7F7F, but that is only 3.9:1 on white — below the 4.5:1 that
-        // small text needs to be readable — so it is a step darker here (5.3:1).
-        muted:          '#6B6B6B',
-        icon:           '#767676', // outline icons ("icon")
-        // Buttons, the selected state, links — Ramellian navy in the design's "Bttons" slot (product owner,
-        // 2026-10-24: "can the black buttons be Ramellian blue instead?").
-        accent:         '#16213E',
-        'accent-hover': '#25365F', // a button under the pointer — the same navy, a step lighter
-        'on-accent':    '#FFFFFF', // text and icons on an accent fill
-        overlay:        '#131927', // dark panels and bands
-        star:           '#C9A84C', // rating stars and unread counts — Ramellian gold in the design's star slot
-
-        // Ramellian's own colours, mixed in sparingly over the design system: section labels, the hero's
-        // highlighted word, the phone tab bar, the closing banner and the contract/invoice letterhead.
-        // `brand-gold` is for lines, dots and fills; text in gold uses `brand-gold-deep` (readable on white).
+        // small text needs to be readable — so it is #6B6B6B (5.3:1) in the light theme.
+        muted:          themed('muted'),
+        icon:           themed('icon'),         // outline icons
+        // Buttons, the selected state, links — Ramellian navy in the light theme (product owner, 2026-10-24), and
+        // Ramellian gold with navy text in the dark one (navy buttons would vanish on a dark page).
+        accent:         themed('accent'),
+        'accent-hover': themed('accent-hover'),
+        'on-accent':    themed('on-accent'),    // text and icons on an accent fill
+        overlay:        themed('overlay'),      // dark panels and bands
+        star:           '#C9A84C',              // rating stars and unread counts — Ramellian gold
+        // Ramellian's own colours, mixed in sparingly: section labels, the hero's highlighted word, the phone tab
+        // bar, the left menu, the closing banner and the contract/invoice letterhead. `brand-gold` is for lines,
+        // dots and fills; text in gold uses `brand-gold-deep` (readable on the page in either theme).
         'brand-navy':      '#16213E',
         'brand-gold':      '#C9A84C',
-        'brand-gold-deep': '#8C6D1F',
+        'brand-gold-deep': themed('gold-deep'),
       },
       fontFamily: {
         // Set in src/theme/fonts.js — change the fonts there, not here.

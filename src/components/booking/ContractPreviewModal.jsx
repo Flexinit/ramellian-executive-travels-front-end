@@ -53,7 +53,7 @@ export default function ContractPreviewModal({ isOpen, onClose, contractId, sign
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <div className="rounded-2xl border border-black/10 bg-white overflow-auto max-h-[70vh] flex justify-center">
+          <div className="rounded-2xl border border-ink/10 bg-white overflow-auto max-h-[70vh] flex justify-center">
             <Document
               file={blob}
               onLoadSuccess={({ numPages: n }) => setNumPages(n)}

@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react';
 import nairobiSkyline from '../../assets/destinations/nairobi-skyline.jpg';
 import dianiBeach from '../../assets/destinations/diani-beach.jpg';
 import dianiReefResort from '../../assets/destinations/diani-reef-resort.jpg';
-import executiveResidence from '../../assets/destinations/executive-residence.webp';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 // Wide, high-resolution photos only: a hero is full-width, so anything much under ~1500px across looks soft.
-// (coastal-lodge.jpg, 602×602, was dropped from the rotation for that reason.) `position` keeps the subject in
+// (coastal-lodge.jpg, 602×602, was dropped from the rotation for that reason; executive-residence was removed at the
+// product owner's request, 2026-10-25.) `position` keeps the subject in
 // frame when the photo is cropped to the hero's shape.
 const IMAGES = [
   { src: nairobiSkyline, position: 'center 60%' },
   { src: dianiBeach, position: 'center' },
-  { src: executiveResidence, position: 'center 40%' },
   { src: dianiReefResort, position: 'center' },
 ];
 

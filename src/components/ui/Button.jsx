@@ -53,7 +53,7 @@ export default function Button({
   };
 
   const sizes = {
-    xs: 'px-3 py-1.5 text-[11px]', // the design's small "Book now" pill on a car card
+    xs: 'px-3 py-1.5 text-[11px] whitespace-nowrap', // the design's small "Book now" pill on a car card
     sm: 'px-4 py-1.5 text-sm',
     md: 'px-5 py-2.5 text-sm',
     lg: 'px-7 py-3.5 text-base',

@@ -181,7 +181,7 @@ export default function AddToBookingPanel({ vehicle }) {
     // screen without scrolling the page (the column sticks beside the vehicle's details).
     <div className="p-5 flex flex-col gap-3.5 rounded-card border border-line bg-surface shadow-card">
       {alreadyBooked && (
-        <p className="text-xs text-muted bg-black/5 border border-black/10 rounded-lg px-3 py-2">
+        <p className="text-xs text-muted bg-ink/5 border border-ink/10 rounded-lg px-3 py-2">
           You already have a booking for this vehicle (<span className="text-ink font-medium">My Bookings</span>) — new dates start a separate one.
         </p>
       )}
@@ -201,7 +201,7 @@ export default function AddToBookingPanel({ vehicle }) {
         </p>
       )}
 
-      <div className="pt-2.5 border-t border-black/10 flex flex-col gap-2.5">
+      <div className="pt-2.5 border-t border-ink/10 flex flex-col gap-2.5">
         <div className="flex items-end justify-between gap-4">
           <div className="text-sm text-muted">
             {days > 0 ? (

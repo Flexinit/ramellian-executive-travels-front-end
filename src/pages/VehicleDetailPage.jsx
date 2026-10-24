@@ -65,7 +65,7 @@ export default function VehicleDetailPage() {
           <ImageGallery photos={vehicle.photos} alt={vehicle.model} tier={vehicle.tier} />
           <VehicleInfoPanel vehicle={vehicle} isOwner={isOwnVehicle(vehicle, user)} />
 
-          <section aria-labelledby="reviews-heading" className="flex flex-col gap-3 pt-6 border-t border-black/10">
+          <section aria-labelledby="reviews-heading" className="flex flex-col gap-3 pt-6 border-t border-ink/10">
             <h2 id="reviews-heading" className="font-heading text-ink text-base font-semibold">
               Reviews{Array.isArray(reviews.data) && reviews.data.length > 0 ? ` (${reviews.data.length})` : ''}
             </h2>
@@ -89,7 +89,7 @@ export default function VehicleDetailPage() {
               </Link>
             </div>
           ) : vehicle.available === false ? (
-            <div role="note" className="rounded-xl bg-black/5 border border-black/10 px-4 py-3 text-sm text-muted">
+            <div role="note" className="rounded-xl bg-ink/5 border border-ink/10 px-4 py-3 text-sm text-muted">
               This vehicle isn't available for booking right now.
             </div>
           ) : (

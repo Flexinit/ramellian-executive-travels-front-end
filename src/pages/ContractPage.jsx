@@ -154,7 +154,7 @@ export default function ContractPage() {
         {unfulfilled && <BookingUnavailableNotice booking={booking} />}
 
         {alreadyPastContract && (
-          <div className="rounded-xl bg-black/5 border border-black/10 px-5 py-4 flex flex-col gap-3">
+          <div className="rounded-xl bg-ink/5 border border-ink/10 px-5 py-4 flex flex-col gap-3">
             <p className="text-muted text-sm">
               {booking?.status === 'CANCELLED'
                 ? 'This booking was cancelled.'

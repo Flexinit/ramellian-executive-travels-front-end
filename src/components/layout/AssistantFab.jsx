@@ -53,7 +53,7 @@ export default function AssistantFab() {
   return (
     <>
       {open && (
-        <div className={`fixed ${isAuthenticated ? 'bottom-44 md:bottom-24' : 'bottom-24'} right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-black/10 bg-surface shadow-2xl`}>
+        <div className={`fixed ${isAuthenticated ? 'bottom-44 md:bottom-24' : 'bottom-24'} right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-2xl`}>
           <div className="flex shrink-0 items-center justify-between gap-3 bg-[#25D366] px-4 py-3">
             <span className="inline-flex items-center gap-2 font-heading text-sm font-semibold text-white">
               <FaWhatsapp size={18} aria-hidden="true" />
@@ -63,7 +63,7 @@ export default function AssistantFab() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close chat"
-              className="rounded-full p-1 text-white/90 transition hover:bg-black/10 hover:text-white focus-ring"
+              className="rounded-full p-1 text-white/90 transition hover:bg-ink/10 hover:text-white focus-ring"
             >
               <X size={16} aria-hidden="true" />
             </button>

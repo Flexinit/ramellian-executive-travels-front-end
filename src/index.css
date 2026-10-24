@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The theme's colours (tailwind.config.js reads them as rgb(var(--c-…))): light by default, dark with a `dark` class
+   on <html> (index.html sets it before the page draws; ThemeToggle switches it). Values are "R G B" so Tailwind's
+   opacity modifiers (bg-ink/10…) still work. */
+:root {
+  --c-canvas: 248 248 248;
+  --c-surface: 255 255 255;
+  --c-subtle: 237 237 237;
+  --c-line: 215 215 215;
+  --c-ink: 0 0 0;
+  --c-muted: 107 107 107;
+  --c-icon: 118 118 118;
+  --c-accent: 22 33 62;        /* Ramellian navy */
+  --c-accent-hover: 37 54 95;
+  --c-on-accent: 255 255 255;
+  --c-overlay: 19 25 39;
+  --c-gold-deep: 140 109 31;
+  --c-well: 237 237 237;       /* the panel behind a car photo */
+  color-scheme: light;
+}
+.dark {
+  --c-canvas: 12 16 28;
+  --c-surface: 20 26 43;
+  --c-subtle: 31 39 61;
+  --c-line: 51 61 89;
+  --c-ink: 240 242 247;
+  --c-muted: 166 172 189;
+  --c-icon: 166 172 189;
+  --c-accent: 201 168 76;      /* Ramellian gold, with navy text on it */
+  --c-accent-hover: 232 201 122;
+  --c-on-accent: 22 33 62;
+  --c-overlay: 8 11 20;
+  --c-gold-deep: 217 184 92;
+  --c-well: 226 229 236;       /* stays light: car photos (often on white) and the outline placeholder need it */
+  color-scheme: dark;
+}
+
 @layer base {
   *,
   *::before,
@@ -92,7 +128,7 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: theme('colors.muted');
+    color: rgb(var(--c-muted));
   }
   .stack-table > tbody > tr > td.stack-full,
   .stack-table > tbody > tr > td[colspan] {
@@ -113,17 +149,17 @@
 .auth-glass .text-muted { color: rgba(255, 255, 255, 0.82); }
 .auth-glass .text-accent { color: #e8c97a; }
 .auth-glass .hover\:text-accent-hover:hover { color: #f3dda0; }
-.auth-glass .border-black\/10 { border-color: rgba(255, 255, 255, 0.25); }
+.auth-glass .border-ink\/10 { border-color: rgba(255, 255, 255, 0.25); }
 .auth-glass .text-green-700 { color: #86efac; }
 .auth-glass .text-red-600 { color: #fca5a5; }
 .auth-glass .bg-surface.text-ink,
-.auth-glass .bg-surface .text-ink { color: #000000; }
+.auth-glass .bg-surface .text-ink { color: rgb(var(--c-ink)); }
 .auth-glass .field-label {
   top: 0.5rem;
   left: 0.75rem;
   background: none;
   font-size: 0.6875rem;
-  color: #555555;
+  color: rgb(var(--c-muted));
 }
 .auth-glass .field-control {
   height: 3.5rem;

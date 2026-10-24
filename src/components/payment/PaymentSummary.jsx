@@ -19,8 +19,8 @@ export default function PaymentSummary({ booking, vehicle, paid = false, classNa
           <p className="text-muted text-xs mt-1">{formatDateRange(booking.startTime, booking.endTime)}</p>
         )}
       </div>
-      <div className="pt-3 border-t border-black/10">
-        <DetailList className="items-center">
+      <div className="pt-3 border-t border-ink/10">
+        <DetailList>
           <DetailRow label={paid ? 'Total Paid' : 'Total Due'}>
             <PriceDisplay amount={total} period="" size="md" />
           </DetailRow>

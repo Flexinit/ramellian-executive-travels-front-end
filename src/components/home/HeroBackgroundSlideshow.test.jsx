@@ -13,7 +13,7 @@ describe('HeroBackgroundSlideshow', () => {
   it('renders one image per destination, hidden from assistive tech', () => {
     const { container } = render(<HeroBackgroundSlideshow />);
     const images = container.querySelectorAll('img');
-    expect(images.length).toBe(4);
+    expect(images.length).toBe(3);
     expect(container.firstChild).toHaveAttribute('aria-hidden', 'true');
   });
 

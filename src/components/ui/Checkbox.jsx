@@ -24,7 +24,7 @@ export default function Checkbox({ label, error, register, className = '', ...re
           aria-describedby={error ? descId : undefined}
           className={`mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border bg-surface accent-accent
             focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas transition
-            ${error ? 'border-red-500' : 'border-black/20'}`}
+            ${error ? 'border-red-500' : 'border-ink/20'}`}
           {...(register || {})}
           {...rest}
         />

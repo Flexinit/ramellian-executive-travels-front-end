@@ -96,7 +96,7 @@ export default function LoginModal({ isOpen, onClose, onReopen, onSwitchToRegist
         )}
 
         {/* Easy to spot: a full-width button, not a small link. */}
-        <div className="flex flex-col gap-2 rounded-xl border border-black/10 bg-black/5 p-4 text-center">
+        <div className="flex flex-col gap-2 rounded-xl border border-ink/10 bg-ink/5 p-4 text-center">
           <p className="text-ink text-sm font-medium">New to Ramellian Executive Travels?</p>
           {onSwitchToRegister ? (
             <Button

@@ -56,7 +56,7 @@ export default function BookingTable({ bookings, isLoading, basePath, actionLabe
       <Card className="table-scroll">
         <table className="stack-table w-full text-left">
           <thead>
-            <tr className="border-b border-black/10">
+            <tr className="border-b border-ink/10">
               {columns.map((col) => (
                 <th
                   key={col}
@@ -70,7 +70,7 @@ export default function BookingTable({ bookings, isLoading, basePath, actionLabe
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/5">
+          <tbody className="divide-y divide-ink/5">
             {pages.pageItems.map((b) => (
               <BookingRow key={b.id} booking={b} basePath={basePath} actionLabel={actionLabel} onAction={onAction} showContract={showContract} showReceipt={showReceipt} />
             ))}

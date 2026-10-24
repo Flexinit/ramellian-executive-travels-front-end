@@ -89,7 +89,7 @@ export default function BookingDetailPage() {
         <BackLink to="/dashboard/bookings" label="Back to My Bookings" />
         <div className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
           <div className="flex items-center gap-4 min-w-0 max-w-full">
-            <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-black/5">
+            <div className="w-20 h-16 rounded-xl overflow-hidden shrink-0 bg-ink/5">
               {photoUrl ? (
                 <AuthImage
                   src={photoUrl}
@@ -196,7 +196,7 @@ export default function BookingDetailPage() {
         <HandoverHistory bookingId={booking.id} />
 
         {canReview && (
-          <section aria-labelledby="review-heading" className="bg-surface border border-black/10 rounded-2xl p-5 flex flex-col gap-4">
+          <section aria-labelledby="review-heading" className="bg-surface border border-ink/10 rounded-2xl p-5 flex flex-col gap-4">
             <h2 id="review-heading" className="font-heading text-ink text-base font-semibold">
               How was your trip?
             </h2>

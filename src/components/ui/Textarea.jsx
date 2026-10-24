@@ -45,7 +45,7 @@ export default function Textarea({
   return (
     <div className={`flex flex-col gap-1 pt-2 ${className}`}>
       <div className="relative">
-      <label htmlFor={id} className="field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,theme(colors.surface)_50%)]">
+      <label htmlFor={id} className="field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,rgb(var(--c-surface))_50%)]">
         {label}
       </label>
       <textarea

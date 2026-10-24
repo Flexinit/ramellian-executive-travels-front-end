@@ -40,7 +40,7 @@ export default function VehicleCard({ vehicle }) {
       <Link
         to={`/vehicles/${id}`}
         aria-label={`View ${model}`}
-        className="relative block aspect-[4/3] overflow-hidden rounded-[11px] bg-subtle focus-ring"
+        className="relative block aspect-[4/3] overflow-hidden rounded-[11px] bg-well focus-ring"
       >
         {photo ? (
           <AuthImage

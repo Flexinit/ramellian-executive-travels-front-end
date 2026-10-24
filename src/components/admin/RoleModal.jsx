@@ -72,7 +72,7 @@ export default function RoleModal({ isOpen, role, permissions, onClose }) {
         )}
 
         {/* Pinned to the bottom of the window, so Save is always in reach however long the grid is. */}
-        <div className="sticky bottom-0 -mx-6 -mb-5 flex justify-end gap-3 border-t border-black/10 bg-surface px-6 py-4">
+        <div className="sticky bottom-0 -mx-6 -mb-5 flex justify-end gap-3 border-t border-ink/10 bg-surface px-6 py-4">
           <Button onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={pending} disabled={!editing && !roleName.trim()}>
             {editing ? 'Save role' : 'Create role'}

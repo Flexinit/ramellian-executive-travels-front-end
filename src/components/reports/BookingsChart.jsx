@@ -36,7 +36,7 @@ function PeriodTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   const present = payload.filter((p) => p.value > 0);
   return (
-    <div className="rounded-lg border border-black/10 bg-surface px-3 py-2 shadow-card text-xs min-w-32">
+    <div className="rounded-lg border border-ink/10 bg-surface px-3 py-2 shadow-card text-xs min-w-32">
       <p className="text-ink font-semibold mb-1">{label}</p>
       {present.length === 0 ? (
         <p className="text-muted">No bookings</p>
@@ -104,7 +104,7 @@ export default function BookingsChart({ report }) {
         <div className="table-scroll">
           <table className="w-full text-sm" aria-labelledby={titleId}>
             <thead>
-              <tr className="border-b border-black/10 text-left text-muted">
+              <tr className="border-b border-ink/10 text-left text-muted">
                 <th scope="col" className="py-2 pr-4 font-medium">
                   {GRANULARITY_COLUMN_LABEL[granularity]}
                 </th>
@@ -120,7 +120,7 @@ export default function BookingsChart({ report }) {
             </thead>
             <tbody>
               {periods.map((p) => (
-                <tr key={p.period} className="border-b border-black/5">
+                <tr key={p.period} className="border-b border-ink/5">
                   <td className="py-2 pr-4 text-ink">{p.label}</td>
                   {OUTCOME_GROUPS.map((g) => (
                     <td key={g.key} className="py-2 pr-4 text-right text-ink tabular-nums">

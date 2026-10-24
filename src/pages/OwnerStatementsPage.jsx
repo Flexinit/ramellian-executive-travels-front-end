@@ -37,13 +37,13 @@ function Table({ caption, head, rows }) {
       <div className="table-scroll">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-y border-black/10 bg-black/[0.03] text-left text-xs uppercase tracking-wider text-muted">
+            <tr className="border-y border-ink/10 bg-black/[0.03] text-left text-xs uppercase tracking-wider text-muted">
               {head.map((h, i) => (
                 <th key={h} scope="col" className={`px-5 py-2.5 font-medium ${i > 0 && /KES|Payout|Fee|Gross|Bookings|Days/.test(h) ? 'text-right' : ''}`}>{h}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/5">
+          <tbody className="divide-y divide-ink/5">
             {rows.map((cells, r) => (
               <tr key={r}>
                 {cells.map((c, i) => (

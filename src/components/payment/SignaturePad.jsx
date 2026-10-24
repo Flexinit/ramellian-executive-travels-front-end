@@ -33,7 +33,7 @@ export default function SignaturePad({ onChange, tone = 'dark', label = 'Your Si
       <span className={`text-sm font-medium ${paper ? 'text-slate-700' : 'text-ink'}`} id="signature-label">
         {label}
       </span>
-      <div className={`rounded-xl border bg-white overflow-hidden ${paper ? 'border-slate-300 border-dashed' : 'border-black/10'}`}>
+      <div className={`rounded-xl border bg-white overflow-hidden ${paper ? 'border-slate-300 border-dashed' : 'border-ink/10'}`}>
         <SignatureCanvas
           ref={sigRef}
           penColor="#16213E"

@@ -62,7 +62,7 @@ export default function RangeSlider({ label, min, max, step = 1, value, onCommit
       </div>
 
       <div role="group" aria-labelledby={`${id}-label`} className="relative h-6">
-        <div aria-hidden="true" className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-black/15" />
+        <div aria-hidden="true" className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-ink/15" />
         <div
           aria-hidden="true"
           className="absolute top-1/2 -translate-y-1/2 h-1 rounded-full bg-accent"

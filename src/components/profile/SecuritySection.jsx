@@ -75,7 +75,7 @@ function TwoFactor() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-lg bg-ink/5 px-3 py-3">
         <span className="flex flex-col">
           <span id={labelId} className="text-sm font-medium text-ink">
             Two-factor sign-in
@@ -90,7 +90,7 @@ function TwoFactor() {
           disabled={!me || setTwoFactor.isPending}
           onClick={() => setTwoFactor.mutate({ enabled: !enabled, method })}
           className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
-            enabled ? 'bg-accent border-accent' : 'bg-black/10 border-black/20'
+            enabled ? 'bg-accent border-accent' : 'bg-ink/10 border-ink/20'
           }`}
         >
           <span aria-hidden="true" className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -125,10 +125,10 @@ function RecentActivity() {
         <ScrollText size={17} className="text-accent" aria-hidden="true" />
         Recent activity
       </h3>
-      <ul className="flex flex-col divide-y divide-black/5" aria-label="Recent account activity">
+      <ul className="flex flex-col divide-y divide-ink/5" aria-label="Recent account activity">
         {entries.map((entry) => (
           <li key={entry.id}>
-            <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-black/5 px-2 focus-ring">
+            <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-ink/5 px-2 focus-ring">
               <span className="flex flex-col min-w-0">
                 <span className="text-sm text-ink">{actionLabel(entry.action)}</span>
                 <span className="text-xs text-muted">{formatDateTime(entry.createdAt)}</span>

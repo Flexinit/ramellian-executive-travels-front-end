@@ -221,12 +221,12 @@ export default function EditVehiclePage() {
               {!selfDrive && !chauffeured && <p className="text-xs text-muted">None picked — renters can book it either way.</p>}
             </div>
 
-            <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+            <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
               <input type="checkbox" className="accent-accent h-4 w-4" {...register('hasWorkingAC')} />
               <span className="text-sm font-medium text-ink">Working air conditioning</span>
             </label>
 
-            <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+            <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
               <input type="checkbox" className="accent-accent h-4 w-4" {...register('available')} />
               <span className="flex flex-col">
                 <span className="text-sm font-medium text-ink">Available for booking</span>
@@ -244,7 +244,7 @@ export default function EditVehiclePage() {
                   <label
                     key={opt.value}
                     className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
-                      availabilityMode === opt.value ? 'border-accent bg-accent/10' : 'border-black/10 bg-black/5 hover:border-accent/40'
+                      availabilityMode === opt.value ? 'border-accent bg-accent/10' : 'border-ink/10 bg-ink/5 hover:border-accent/40'
                     }`}
                   >
                     <input type="radio" value={opt.value} className="accent-accent mt-1" {...register('availabilityMode')} />
@@ -278,7 +278,7 @@ export default function EditVehiclePage() {
           </Section>
 
           <Section title="Insurance" hint="We only list vehicles with comprehensive insurance and a photo (or PDF) of its sticker.">
-            <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+            <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
               <input type="checkbox" className="accent-accent h-4 w-4" {...register('comprehensiveInsurance')} />
               <span className="text-sm font-medium text-ink">
                 Comprehensive insurance <span aria-hidden="true" className="text-accent">*</span>
@@ -296,7 +296,7 @@ export default function EditVehiclePage() {
                 <AuthImage
                   src={vehicle.insuranceVerificationStickerPhoto}
                   alt="Current insurance sticker"
-                  className="h-32 w-auto rounded-lg border border-black/10 object-contain self-start"
+                  className="h-32 w-auto rounded-lg border border-ink/10 object-contain self-start"
                   fallback={<p className="text-xs text-muted">A sticker photo is on file (it can&apos;t be shown here).</p>}
                 />
               )}
@@ -312,7 +312,7 @@ export default function EditVehiclePage() {
                     type="button"
                     onClick={() => setStickerFile(null)}
                     aria-label="Remove the new insurance sticker photo"
-                    className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-black/10 focus-ring"
+                    className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-ink/10 focus-ring"
                   >
                     <X size={12} aria-hidden="true" />
                   </button>
@@ -333,7 +333,7 @@ export default function EditVehiclePage() {
             hint="Replace or remove a photo below — that happens straight away, without pressing Save. Add more photos underneath."
           >
             <PhotoManager vehicle={vehicle} />
-            <div className="flex flex-col gap-2 border-t border-black/10 pt-4">
+            <div className="flex flex-col gap-2 border-t border-ink/10 pt-4">
               <span className="text-sm font-medium text-ink">Add photos</span>
               <VehiclePhotoGuide slots={slotPhotos} onSlotChange={setSlotPhoto} extras={extraPhotos} onExtrasChange={setExtraPhotos} />
             </div>

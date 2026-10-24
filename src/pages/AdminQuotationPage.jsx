@@ -104,7 +104,7 @@ export default function AdminQuotationPage() {
               <SectionHeading>Items</SectionHeading>
               <ol className="flex flex-col gap-3">
                 {invoice.items.map((item, i) => (
-                  <li key={i} className="rounded-xl border border-black/10 bg-black/[0.03] p-3 flex flex-col gap-3">
+                  <li key={i} className="rounded-xl border border-ink/10 bg-black/[0.03] p-3 flex flex-col gap-3">
                     <div className="flex items-start gap-2">
                       <Input
                         label={`Item ${i + 1}`}
@@ -158,7 +158,7 @@ export default function AdminQuotationPage() {
               hint="e.g. what's included, payment terms, or how to confirm the booking"
             />
 
-            <div className="flex flex-col gap-3 pt-4 border-t border-black/10">
+            <div className="flex flex-col gap-3 pt-4 border-t border-ink/10">
               <div className="flex items-baseline gap-6">
                 <span className="text-muted text-sm">Total</span>
                 <span className="font-heading text-accent text-2xl font-bold tabular-nums">{formatMoney(totals.total)}</span>

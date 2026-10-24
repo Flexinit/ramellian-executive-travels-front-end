@@ -77,10 +77,10 @@ export default function AdminAuditLogPage() {
         ) : entries.length === 0 ? (
           !isError && <EmptyState icon={ScrollText} title="No entries found" description="Try different filters." />
         ) : (
-          <div className={`table-scroll rounded-2xl border border-black/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+          <div className={`table-scroll rounded-2xl border border-ink/10 transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-black/10">
+                <tr className="border-b border-ink/10">
                   {['When', 'Who', 'Action', 'About', 'Result'].map((col) => (
                     <th key={col} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col}
@@ -88,7 +88,7 @@ export default function AdminAuditLogPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/5">
+              <tbody className="divide-y divide-ink/5">
                 {entries.map((entry) => {
                   const open = () => setOpenId(entry.id);
                   return (
@@ -100,7 +100,7 @@ export default function AdminAuditLogPage() {
                         if (e.key === 'Enter') open();
                       }}
                       aria-label={`Open ${actionLabel(entry.action)} by ${entry.actorEmail || 'unknown'}`}
-                      className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
+                      className="cursor-pointer hover:bg-ink/5 transition-colors focus-ring"
                     >
                       <td data-label="When" className="stack-full px-4 py-3 text-sm text-muted whitespace-nowrap">{formatDateTime(entry.createdAt)}</td>
                       <td data-label="Who" className="stack-full px-4 py-3 text-sm text-ink break-all">{entry.actorEmail || '—'}</td>

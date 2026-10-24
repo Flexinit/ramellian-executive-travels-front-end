@@ -20,7 +20,7 @@ function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss"
-        className="p-1 rounded-full text-muted hover:text-ink hover:bg-black/10 transition-colors focus-ring"
+        className="p-1 rounded-full text-muted hover:text-ink hover:bg-ink/10 transition-colors focus-ring"
       >
         <X size={14} aria-hidden="true" />
       </button>

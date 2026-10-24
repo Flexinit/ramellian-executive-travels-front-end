@@ -31,10 +31,10 @@ function FactChip({ icon: Icon, label, on, onText = 'Yes', offText = 'No' }) {
   return (
     <div
       className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-        on ? 'border-green-500/30 bg-green-500/10' : 'border-black/10 bg-black/5'
+        on ? 'border-green-500/30 bg-green-500/10' : 'border-ink/10 bg-ink/5'
       }`}
     >
-      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${on ? 'bg-green-500/20 text-green-600' : 'bg-black/10 text-muted'}`}>
+      <span className={`flex h-9 w-9 items-center justify-center rounded-full ${on ? 'bg-green-500/20 text-green-600' : 'bg-ink/10 text-muted'}`}>
         <Icon size={17} aria-hidden="true" />
       </span>
       <span className="flex flex-col">
@@ -95,7 +95,7 @@ function PermissionsCard({ user }) {
       </div>
       <ul className="flex flex-wrap gap-1.5" aria-label="Permissions this person has">
         {all.map((name) => (
-          <li key={name} className="rounded-full border border-black/10 bg-black/5 px-2 py-0.5 text-[11px] text-muted">
+          <li key={name} className="rounded-full border border-ink/10 bg-ink/5 px-2 py-0.5 text-[11px] text-muted">
             {name}
           </li>
         ))}
@@ -135,7 +135,7 @@ function IdentityCard({ user }) {
                 type="button"
                 onClick={() => setZoom({ label, src })}
                 aria-label={`Open ${label} full size`}
-                className="block w-full rounded-xl border border-black/10 bg-subtle overflow-hidden focus-ring hover:border-accent/50 transition-colors"
+                className="block w-full rounded-xl border border-ink/10 bg-subtle overflow-hidden focus-ring hover:border-accent/50 transition-colors"
               >
                 <AuthImage src={src} alt={label} className="h-28 w-full object-cover" fallback={<span className="flex h-28 items-center justify-center px-2 text-xs text-muted">Couldn&apos;t load</span>} />
                 <span className="block px-2 py-1.5 text-xs text-muted text-left">{label}</span>

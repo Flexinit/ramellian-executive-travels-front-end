@@ -79,7 +79,7 @@ export default function InboxPage() {
               const isBooking = /BOOKING/i.test(n.referenceType || '');
               const Icon = /CHAT|MESSAGE/i.test(`${n.type} ${n.referenceType}`) ? MessageSquare : CalendarCheck;
               const classes = `flex items-start gap-4 rounded-2xl border p-4 transition-colors ${
-                n.read ? 'border-black/10 bg-black/[0.03]' : 'border-accent/40 bg-accent/10'
+                n.read ? 'border-ink/10 bg-black/[0.03]' : 'border-accent/40 bg-accent/10'
               }`;
               return (
                 <li key={n.id} className={classes}>

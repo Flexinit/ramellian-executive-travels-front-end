@@ -65,10 +65,10 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         aria-labelledby="modal-title"
         ref={panelRef}
         onClick={(e) => e.stopPropagation()}
-        className={`relative flex w-full max-h-[calc(100dvh-2rem)] flex-col ${sizes[size]} bg-surface border border-black/10 rounded-2xl shadow-2xl`}
+        className={`relative flex w-full max-h-[calc(100dvh-2rem)] flex-col ${sizes[size]} bg-surface border border-ink/10 rounded-2xl shadow-2xl`}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-black/10">
+        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-ink/10">
           <h2 id="modal-title" className="font-heading text-lg font-semibold text-ink">
             {title}
           </h2>
@@ -76,7 +76,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             ref={closeBtnRef}
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-black/10 transition focus-ring"
+            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-ink/10 transition focus-ring"
           >
             <X size={18} />
           </button>

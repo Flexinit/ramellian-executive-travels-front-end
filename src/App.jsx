@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
 import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText } from 'lucide-react';
+import { applyTheme } from './lib/theme';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -115,6 +116,8 @@ function SuperAdminOnly({ children }) {
 
 function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  // Dark mode is for signed-in people: their saved theme while signed in, light again once they log out.
+  useEffect(() => applyTheme(isAuthenticated), [isAuthenticated]);
   useSyncCurrentUser();
   useSessionExpiry();
   useReturnToCheckoutAfterAuth();

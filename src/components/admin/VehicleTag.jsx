@@ -12,7 +12,7 @@ export default function VehicleTag({ vehicleId }) {
   if (!vehicleId) return null;
 
   return (
-    <p className="flex items-start gap-2 rounded-lg bg-black/5 px-3 py-2 text-xs text-muted">
+    <p className="flex items-start gap-2 rounded-lg bg-ink/5 px-3 py-2 text-xs text-muted">
       <Car size={14} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
       {vehicle ? (
         <span className="min-w-0 break-words">

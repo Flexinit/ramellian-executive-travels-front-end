@@ -50,7 +50,7 @@ export default function CircularCountdown({ startedAt, durationSeconds = 60, onE
       style={{ width: SIZE, height: SIZE }}
     >
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90" aria-hidden="true">
-        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="currentColor" strokeWidth={STROKE} className="text-black/10" />
+        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="currentColor" strokeWidth={STROKE} className="text-ink/10" />
         <circle
           cx={SIZE / 2}
           cy={SIZE / 2}

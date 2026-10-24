@@ -92,7 +92,7 @@ export default function ChatThread({ bookingId, otherUserId, recipientId }) {
       <ul
         aria-label="Messages"
         aria-live="polite"
-        className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-black/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
+        className="flex flex-col gap-3 rounded-2xl border border-ink/10 bg-black/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
       >
         {messages.length === 0 && <li className="m-auto text-sm text-muted text-center">No messages yet — say hello.</li>}
         {messages.map((m) => {
@@ -101,7 +101,7 @@ export default function ChatThread({ bookingId, otherUserId, recipientId }) {
             <li key={m.id} className={`flex flex-col max-w-[80%] ${mine ? 'self-end items-end' : 'self-start items-start'}`}>
               <span
                 className={`rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap break-words ${
-                  mine ? 'bg-accent/15 border border-accent/40 text-ink' : 'bg-black/5 border border-black/10 text-ink'
+                  mine ? 'bg-accent/15 border border-accent/40 text-ink' : 'bg-ink/5 border border-ink/10 text-ink'
                 }`}
               >
                 {stripPhoneNumbers(m.message).text}
@@ -123,7 +123,7 @@ export default function ChatThread({ bookingId, otherUserId, recipientId }) {
         )}
         {theyAreTyping && (
           <li className="flex flex-col max-w-[80%] self-start items-start">
-            <span className="rounded-2xl px-4 py-2 text-sm bg-black/5 border border-black/10 text-ink">
+            <span className="rounded-2xl px-4 py-2 text-sm bg-ink/5 border border-ink/10 text-ink">
               <TypingDots label="Typing" />
             </span>
           </li>

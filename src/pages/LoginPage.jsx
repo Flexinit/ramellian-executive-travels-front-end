@@ -98,7 +98,7 @@ export default function LoginPage() {
           )}
 
           {/* Easy to spot: a full-width button, not a small link — inside the card, so the form is one unit. */}
-          <div className="flex flex-col gap-2 pt-5 border-t border-black/10 text-center">
+          <div className="flex flex-col gap-2 pt-5 border-t border-ink/10 text-center">
             <p className="text-ink text-sm font-medium">New to Ramellian Executive Travels?</p>
             <Button to="/auth/register" variant="outline" size="lg" className="w-full">
               <UserPlus size={16} aria-hidden="true" /> Create an account

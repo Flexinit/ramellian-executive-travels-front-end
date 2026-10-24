@@ -42,7 +42,7 @@ function RoleCard({ role, onEdit, onDelete }) {
       {permissions.length > 0 ? (
         <ul className="flex flex-wrap gap-1.5" aria-label={`Permissions of ${roleTitle(role.roleName)}`}>
           {permissions.slice(0, SHOWN_CHIPS).map((name) => (
-            <li key={name} className="rounded-full border border-black/10 bg-black/5 px-2 py-0.5 text-[11px] text-muted">
+            <li key={name} className="rounded-full border border-ink/10 bg-ink/5 px-2 py-0.5 text-[11px] text-muted">
               {name}
             </li>
           ))}
@@ -147,16 +147,16 @@ export default function AdminRolesPage() {
           !permissions.isError && <EmptyState icon={KeyRound} title="No permissions found" description="Try a different search, or add a permission." />
         ) : (
           <>
-            <div className="table-scroll rounded-2xl border border-black/10">
+            <div className="table-scroll rounded-2xl border border-ink/10">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-black/10">
+                  <tr className="border-b border-ink/10">
                     <th scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">Permission</th>
                     <th scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">What it allows</th>
                     <th scope="col" className="px-4 py-3"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/5">
+                <tbody className="divide-y divide-ink/5">
                   {pages.pageItems.map((p) => (
                     <tr key={p.id || p.permissionName}>
                       <td className="px-4 py-3 font-mono text-xs text-ink break-all">{p.permissionName}</td>

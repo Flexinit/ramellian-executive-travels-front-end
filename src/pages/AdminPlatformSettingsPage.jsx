@@ -91,7 +91,7 @@ export default function AdminPlatformSettingsPage() {
                 error={errors.commissionRatePct}
               />
 
-              <div className="border-t border-black/10 pt-5">
+              <div className="border-t border-ink/10 pt-5">
                 <h2 className="font-heading text-ink text-base font-semibold">Payment processing fee</h2>
                 <p className="text-muted text-sm mt-1">The Pesapal transaction fee, as a percentage of each payment.</p>
               </div>
@@ -108,7 +108,7 @@ export default function AdminPlatformSettingsPage() {
                 error={errors.pesapalTransactionFeeRatePct}
               />
 
-              <div className="border-t border-black/10 pt-5">
+              <div className="border-t border-ink/10 pt-5">
                 <h2 className="font-heading text-ink text-base font-semibold">Delivery fee</h2>
                 <p className="text-muted text-sm mt-1">
                   A flat amount added to a booking when the renter asks for the vehicle to be delivered to them.

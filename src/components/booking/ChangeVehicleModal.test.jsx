@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import ChangeVehicleModal, { canChangeVehicle } from './ChangeVehicleModal';
+import { useAuthStore } from '../../store/authStore';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 const FUTURE = '2099-10-01T09:00:00.000Z';
@@ -59,6 +60,7 @@ describe('ChangeVehicleModal', () => {
   });
 
   it("offers an owner their own cars", async () => {
+    useAuthStore.setState({ token: 't', user: { id: 'o1', roles: ['OWNER'] } }); // their list loads only when signed in
     server.use(http.get(`${BASE}/vehicles/me`, () => HttpResponse.json([car('v1', 'Current Car'), car('v9', 'My Other Car')])));
     renderModal('owner');
     expect(await screen.findByRole('radio', { name: /my other car/i })).toBeInTheDocument();

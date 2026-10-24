@@ -93,7 +93,7 @@ export default function NewMessageModal({ isOpen, onClose, toId }) {
                 <label
                   key={u.id}
                   className={`flex items-center gap-3 rounded-xl border px-3 py-2 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
-                    selected ? 'border-accent bg-accent/10' : 'border-black/10 hover:border-accent/50 hover:bg-black/5'
+                    selected ? 'border-accent bg-accent/10' : 'border-ink/10 hover:border-accent/50 hover:bg-ink/5'
                   }`}
                 >
                   <input type="radio" name="recipient" value={u.id} checked={selected} onChange={() => setRecipientId(u.id)} className="sr-only" aria-label={`${name}, ${u.email}`} />

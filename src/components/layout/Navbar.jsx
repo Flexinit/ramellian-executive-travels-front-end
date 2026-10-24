@@ -9,6 +9,7 @@ import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import NotificationBell from './NotificationBell';
 import CartLink from './CartLink';
+import ThemeToggle from './ThemeToggle';
 
 /**
  * The primary links. "Vehicles" and "Services" are deliberately not here: browsing is the
@@ -30,7 +31,7 @@ export default function Navbar() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
   return (
-    <header className="sticky top-0 z-30 bg-canvas/95 backdrop-blur-md border-b border-black/10">
+    <header className="sticky top-0 z-30 bg-canvas/95 backdrop-blur-md border-b border-ink/10">
       <div
         className={`h-20 flex items-center gap-3 sm:gap-6 ${
           isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
@@ -49,6 +50,7 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-8 ml-auto">
           <div className="flex items-center gap-3 shrink-0">
+            {isAuthenticated && <ThemeToggle />}
             <CartLink />
             {isAuthenticated ? (
               <>
@@ -70,7 +72,7 @@ export default function Navbar() {
             )}
           </div>
 
-          <span aria-hidden="true" className="h-6 w-px bg-black/15" />
+          <span aria-hidden="true" className="h-6 w-px bg-ink/15" />
 
           <nav aria-label="Primary" className="flex items-center gap-8">
             {NAV_LINKS.map((link) => (
@@ -86,6 +88,7 @@ export default function Navbar() {
               <LogIn size={14} aria-hidden="true" /> Log In
             </Button>
           )}
+          {isAuthenticated && <ThemeToggle />}
           <CartLink />
           <NotificationBell />
           <MobileMenu links={NAV_LINKS} />

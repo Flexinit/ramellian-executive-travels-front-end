@@ -96,7 +96,7 @@ export default function VerifyEmailPage() {
       <PageTitle title={whatsapp ? 'Verify WhatsApp' : 'Verify Email'} />
       <div className="w-full max-w-sm flex flex-col gap-8">
 
-        <div className="bg-surface border border-black/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
+        <div className="bg-surface border border-ink/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
           <div className="w-14 h-14 mx-auto rounded-full bg-accent/10 flex items-center justify-center">
             <Icon size={24} className="text-accent" aria-hidden="true" />
           </div>
@@ -178,7 +178,7 @@ export default function VerifyEmailPage() {
               )}
 
               {whatsappOffered && (
-                <div className="border-t border-black/10 pt-5 flex flex-col items-center gap-2">
+                <div className="border-t border-ink/10 pt-5 flex flex-col items-center gap-2">
                   <p className="text-muted text-xs">{whatsapp ? 'Prefer email?' : 'Prefer WhatsApp?'}</p>
                   <Button size="sm" onClick={handleSwitch} loading={switching.isPending} disabled={!activeEmail}>
                     {whatsapp ? 'Get the code by email instead' : 'Get the code on WhatsApp instead'}

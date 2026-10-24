@@ -80,7 +80,7 @@ export default function EditUserModal({ user, onClose }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 px-3 py-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-ink/5 px-3 py-3">
             <span className="flex flex-col">
               <span id={statusId} className="text-sm font-medium text-ink">
                 Account active
@@ -97,7 +97,7 @@ export default function EditUserModal({ user, onClose }) {
               disabled={isMe || setEnabled.isPending}
               onClick={toggleEnabled}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors focus-ring disabled:opacity-50 disabled:cursor-not-allowed ${
-                enabled ? 'bg-accent border-accent' : 'bg-black/10 border-black/20'
+                enabled ? 'bg-accent border-accent' : 'bg-ink/10 border-ink/20'
               }`}
             >
               <span aria-hidden="true" className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -119,14 +119,14 @@ export default function EditUserModal({ user, onClose }) {
                 <label
                   key={value}
                   className={`flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
-                    selected ? 'border-accent bg-accent/10' : 'border-black/10 hover:border-accent/50 hover:bg-black/5'
+                    selected ? 'border-accent bg-accent/10' : 'border-ink/10 hover:border-accent/50 hover:bg-ink/5'
                   }`}
                 >
                   <input type="radio" name="role" value={value} checked={selected} onChange={() => setChoice(value)} className="sr-only" />
                   <span
                     aria-hidden="true"
                     className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      selected ? 'border-accent bg-accent text-on-accent' : 'border-black/30'
+                      selected ? 'border-accent bg-accent text-on-accent' : 'border-ink/30'
                     }`}
                   >
                     {selected && <Check size={12} />}
@@ -140,7 +140,7 @@ export default function EditUserModal({ user, onClose }) {
             })}
           </fieldset>
 
-          <div className="rounded-lg bg-black/5 px-3 py-3 text-xs text-muted flex gap-2" role="note">
+          <div className="rounded-lg bg-ink/5 px-3 py-3 text-xs text-muted flex gap-2" role="note">
             <Info size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" />
             <div className="flex flex-col gap-1.5">
               <p>

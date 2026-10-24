@@ -70,7 +70,7 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-ink">Platform Terms</span>
-        <div className="flex items-start gap-2 rounded-lg bg-black/5 border border-black/10 px-3 py-2.5">
+        <div className="flex items-start gap-2 rounded-lg bg-ink/5 border border-ink/10 px-3 py-2.5">
           <ShieldCheck size={15} className="text-accent shrink-0 mt-0.5" aria-hidden="true" />
           <p className="text-muted text-xs leading-relaxed whitespace-pre-wrap">{PLATFORM_LIABILITY_CLAUSE}</p>
         </div>
@@ -85,7 +85,7 @@ export default function ContractTemplateEditor({ template, onSave, onDiscard, is
           <label htmlFor="template-content" className="text-sm font-medium text-ink">
             Contract Body (Markdown)
           </label>
-          <div className="flex gap-1 rounded-full border border-black/10 p-0.5 text-xs">
+          <div className="flex gap-1 rounded-full border border-ink/10 p-0.5 text-xs">
             <button
               type="button"
               aria-pressed={tab === 'edit'}

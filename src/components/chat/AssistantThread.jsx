@@ -29,7 +29,7 @@ function MediaAttachment({ media }) {
   if (isImage) {
     return (
       <div className="flex flex-col gap-1 mt-2">
-        <AuthImage src={src} alt={media.caption || media.fileName || 'Attachment'} className="max-w-[220px] rounded-xl border border-black/10" />
+        <AuthImage src={src} alt={media.caption || media.fileName || 'Attachment'} className="max-w-[220px] rounded-xl border border-ink/10" />
         {media.caption && <span className="text-[11px] text-muted">{media.caption}</span>}
       </div>
     );
@@ -89,7 +89,7 @@ export default function AssistantThread() {
       <ul
         aria-label="Conversation with the assistant"
         aria-live="polite"
-        className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-black/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
+        className="flex flex-col gap-3 rounded-2xl border border-ink/10 bg-black/[0.03] p-4 min-h-[16rem] max-h-[55vh] overflow-y-auto"
       >
         {messages.length === 0 && (
           <li className="m-auto flex flex-col items-center gap-2 text-center py-6">
@@ -109,7 +109,7 @@ export default function AssistantThread() {
                     ? 'bg-accent/15 border border-accent/40 text-ink'
                     : m.isError
                       ? 'bg-red-500/10 border border-red-500/30 text-red-200'
-                      : 'bg-black/5 border border-black/10 text-ink'
+                      : 'bg-ink/5 border border-ink/10 text-ink'
                 }`}
               >
                 {m.text}
@@ -120,7 +120,7 @@ export default function AssistantThread() {
         })}
         {send.isPending && (
           <li className="flex flex-col max-w-[80%] self-start items-start">
-            <span className="rounded-2xl px-4 py-2 text-sm bg-black/5 border border-black/10 text-ink">
+            <span className="rounded-2xl px-4 py-2 text-sm bg-ink/5 border border-ink/10 text-ink">
               <TypingDots label="Assistant is typing" />
             </span>
           </li>

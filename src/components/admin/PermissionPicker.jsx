@@ -21,7 +21,7 @@ const actionRank = (name) => {
 const CHIP =
   'inline-flex select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-150 ' +
   'peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-surface';
-const CHIP_OFF = 'border-black/10 bg-black/[0.03] text-muted hover:border-black/25 hover:bg-black/[0.06] hover:text-ink';
+const CHIP_OFF = 'border-ink/10 bg-black/[0.03] text-muted hover:border-ink/25 hover:bg-black/[0.06] hover:text-ink';
 const CHIP_ON = 'border-accent bg-accent text-on-accent';
 const CHIP_ON_DANGER = 'border-red-400/40 bg-red-500/15 text-red-700';
 
@@ -80,7 +80,7 @@ export default function PermissionPicker({ available = [], value = [], onChange,
 
   return (
     <div className="flex flex-col gap-4" role="group" aria-label="Permissions">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-black/10 bg-black/[0.03] px-4 py-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-ink/10 bg-black/[0.03] px-4 py-3">
         <span className="text-xs font-semibold uppercase tracking-widest text-muted">Quick pick</span>
         {quickPicks.map((action) => (
           <Chip key={action} names={columnNames(action)} selected={value} onToggle={toggleMany} label={`All ${action} permissions`} title={`${permissionAction(action)} in every area`} disabled={disabled} tone={action === 'DELETE' ? 'danger' : undefined}>
@@ -101,7 +101,7 @@ export default function PermissionPicker({ available = [], value = [], onChange,
           const percent = Math.round((chosen / list.length) * 100);
           const all = chosen === list.length;
           return (
-            <div key={group} role="group" aria-labelledby={`perm-area-${group}`} className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors ${chosen > 0 ? 'border-accent/25 bg-black/[0.05]' : 'border-black/10 bg-black/[0.03]'}`}>
+            <div key={group} role="group" aria-labelledby={`perm-area-${group}`} className={`flex flex-col gap-3 rounded-2xl border p-4 transition-colors ${chosen > 0 ? 'border-accent/25 bg-black/[0.05]' : 'border-ink/10 bg-black/[0.03]'}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-1.5">
                   <div className="flex items-baseline gap-2">
@@ -112,7 +112,7 @@ export default function PermissionPicker({ available = [], value = [], onChange,
                       {chosen}/{list.length}
                     </span>
                   </div>
-                  <div className="h-1 w-28 overflow-hidden rounded-full bg-black/10" aria-hidden="true">
+                  <div className="h-1 w-28 overflow-hidden rounded-full bg-ink/10" aria-hidden="true">
                     <div className="h-full rounded-full bg-accent transition-all duration-300" style={{ width: `${percent}%` }} />
                   </div>
                 </div>

@@ -27,7 +27,7 @@ export default function ReportSummaryCards({ report, isLoading, kind = 'owner' }
 
       <ul aria-label="Bookings by outcome" className="flex flex-wrap gap-2">
         {reportCounts(report).map((count) => (
-          <li key={count.key} className="rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs text-muted">
+          <li key={count.key} className="rounded-full border border-ink/10 bg-ink/5 px-3 py-1 text-xs text-muted">
             {count.label} <span className="text-ink font-semibold ml-1">{isLoading ? '…' : count.value}</span>
           </li>
         ))}

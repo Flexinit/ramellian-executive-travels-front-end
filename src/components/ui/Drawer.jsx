@@ -122,10 +122,10 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
         aria-labelledby="drawer-title"
         ref={panelRef}
         onClick={(e) => e.stopPropagation()}
-        className={`relative flex max-h-full w-full flex-col ${sizes[size]} bg-surface/90 backdrop-blur-xl border border-black/15 rounded-2xl shadow-2xl transition-transform duration-300 ease-out ${entered ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`relative flex max-h-full w-full flex-col ${sizes[size]} bg-surface/90 backdrop-blur-xl border border-ink/15 rounded-2xl shadow-2xl transition-transform duration-300 ease-out ${entered ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-black/10">
+        <div className="flex shrink-0 items-center justify-between px-6 py-4 border-b border-ink/10">
           <h2 id="drawer-title" className="font-heading text-lg font-semibold text-ink">
             {title}
           </h2>
@@ -133,7 +133,7 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
             ref={closeBtnRef}
             onClick={handleDismiss}
             aria-label="Close"
-            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-black/10 transition focus-ring"
+            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-ink/10 transition focus-ring"
           >
             <X size={18} />
           </button>

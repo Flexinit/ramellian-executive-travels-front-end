@@ -39,7 +39,7 @@ const ICONS = {
 
 export default function BookingStatusTabs({ value, onChange, counts }) {
   return (
-    <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2 border-b border-black/10 pb-px">
+    <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-2 border-b border-ink/10 pb-px">
       {TAB_VALUES.map((tab) => {
         const active = value === tab;
         const Icon = tab ? ICONS[tab] : ListFilter;
@@ -54,7 +54,7 @@ export default function BookingStatusTabs({ value, onChange, counts }) {
             className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-colors focus-ring ${
               active
                 ? 'text-accent border-accent'
-                : 'text-muted border-transparent hover:text-ink hover:border-black/20'
+                : 'text-muted border-transparent hover:text-ink hover:border-ink/20'
             }`}
           >
             <Icon size={14} aria-hidden="true" />

@@ -62,7 +62,7 @@ export function SignedInSection() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted">{signIns.isLoading ? 'Loading…' : 'Nobody has signed in during the last hour.'}</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-black/5" aria-label="People signed in recently">
+              <ul className="flex flex-col divide-y divide-ink/5" aria-label="People signed in recently">
                 {recent.slice(0, 10).map((person) => (
                   <li key={person.email} className="flex items-center justify-between gap-3 py-2 text-sm">
                     <span className="text-ink break-all">{person.email}</span>
@@ -138,7 +138,7 @@ export function VehiclesSection() {
               </h3>
               <ul className="flex flex-wrap gap-2" aria-label="Vehicles by place">
                 {v.locations.slice(0, 8).map((place) => (
-                  <li key={place.name} className="rounded-full border border-black/10 bg-black/5 px-3 py-1 text-xs text-muted">
+                  <li key={place.name} className="rounded-full border border-ink/10 bg-ink/5 px-3 py-1 text-xs text-muted">
                     {place.name} <span className="text-ink font-semibold ml-1">{place.count}</span>
                   </li>
                 ))}

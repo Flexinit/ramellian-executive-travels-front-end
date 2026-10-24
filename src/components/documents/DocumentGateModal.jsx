@@ -54,7 +54,7 @@ function PhotoStep({ file, onPick, selfie = false }) {
         onPick(e.dataTransfer.files?.[0]);
       }}
       className={`rounded-xl border-2 border-dashed h-48 flex flex-col items-center justify-center gap-2 text-center transition-colors overflow-hidden ${
-        dragOver ? 'border-accent bg-accent/5' : 'border-black/15 hover:border-accent/40'
+        dragOver ? 'border-accent bg-accent/5' : 'border-ink/15 hover:border-accent/40'
       }`}
     >
       {url ? (
@@ -265,7 +265,7 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
                 <span
                   key={i}
                   aria-hidden="true"
-                  className={`h-1.5 flex-1 rounded-full ${i < stepIndex ? 'bg-accent' : i === stepIndex ? 'bg-accent/50' : 'bg-black/10'}`}
+                  className={`h-1.5 flex-1 rounded-full ${i < stepIndex ? 'bg-accent' : i === stepIndex ? 'bg-accent/50' : 'bg-ink/10'}`}
                 />
               ))}
             </div>
@@ -333,7 +333,7 @@ export default function DocumentGateModal({ isOpen, onClose, missing = [], docum
           </>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-3">
+        <div className="flex items-center justify-between gap-3 border-t border-ink/10 pt-3">
           <Link to="/dashboard/documents" className="text-accent text-xs font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md">
             Manage all my documents
           </Link>

@@ -74,7 +74,7 @@ export default function InsuranceStickerReview({ vehicle }) {
                 variant={hasRegistration ? 'success' : 'neutral'}
               />
             </div>
-            <p className="rounded-lg border border-black/10 bg-subtle px-3 py-2 text-xs text-ink font-mono break-all select-all" aria-label="What the QR code says">
+            <p className="rounded-lg border border-ink/10 bg-subtle px-3 py-2 text-xs text-ink font-mono break-all select-all" aria-label="What the QR code says">
               {found.text}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -92,7 +92,7 @@ export default function InsuranceStickerReview({ vehicle }) {
           </div>
         )}
 
-        <div className="rounded-lg bg-black/5 px-3 py-3 text-xs text-muted flex gap-2">
+        <div className="rounded-lg bg-ink/5 px-3 py-3 text-xs text-muted flex gap-2">
           {found ? <CircleHelp size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" /> : <CircleCheck size={15} className="shrink-0 mt-0.5 text-accent" aria-hidden="true" />}
           <p>
             A QR code only shows the sticker has one. Whether the insurance is valid is decided by the Association of Kenya

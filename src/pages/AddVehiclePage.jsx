@@ -332,11 +332,11 @@ export default function AddVehiclePage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                    <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
                       <input type="checkbox" className="accent-accent h-4 w-4" {...register('hasWorkingAC')} />
                       <span className="text-sm font-medium text-ink">Working air conditioning</span>
                     </label>
-                    <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                    <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
                       <input type="checkbox" className="accent-accent h-4 w-4" {...register('comprehensiveInsurance')} />
                       <span className="text-sm font-medium text-ink">
                         Comprehensive insurance <span aria-hidden="true" className="text-accent">*</span>
@@ -368,7 +368,7 @@ export default function AddVehiclePage() {
                           type="button"
                           onClick={() => setStickerFile(null)}
                           aria-label="Remove insurance sticker photo"
-                          className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-black/10 focus-ring"
+                          className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-ink/10 focus-ring"
                         >
                           <X size={12} aria-hidden="true" />
                         </button>
@@ -383,7 +383,7 @@ export default function AddVehiclePage() {
                     {stickerError && <p className="text-xs text-red-600">{stickerError}</p>}
                   </div>
 
-                  <label className="flex items-center gap-3 rounded-lg bg-black/5 px-3 py-2.5 cursor-pointer">
+                  <label className="flex items-center gap-3 rounded-lg bg-ink/5 px-3 py-2.5 cursor-pointer">
                     <input type="checkbox" className="accent-accent h-4 w-4" {...register('available')} />
                     <span className="flex flex-col">
                       <span className="text-sm font-medium text-ink">Available for booking</span>
@@ -401,7 +401,7 @@ export default function AddVehiclePage() {
                         <label
                           key={opt.value}
                           className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
-                            availabilityMode === opt.value ? 'border-accent bg-accent/10' : 'border-black/10 bg-black/5 hover:border-accent/40'
+                            availabilityMode === opt.value ? 'border-accent bg-accent/10' : 'border-ink/10 bg-ink/5 hover:border-accent/40'
                           }`}
                         >
                           <input type="radio" value={opt.value} className="accent-accent mt-1" {...register('availabilityMode')} />

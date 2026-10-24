@@ -28,7 +28,7 @@ export default function BookingStatusControl({ booking }) {
   }
 
   return (
-    <form onSubmit={submit} className="bg-surface border border-black/10 rounded-2xl p-5 flex flex-col gap-4" aria-label="Update booking status">
+    <form onSubmit={submit} className="bg-surface border border-ink/10 rounded-2xl p-5 flex flex-col gap-4" aria-label="Update booking status">
       <h2 className="font-heading text-ink text-base font-semibold">Update status</h2>
       <Select
         label="Move this booking to"

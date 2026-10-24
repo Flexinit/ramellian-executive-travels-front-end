@@ -43,7 +43,7 @@ const SAMPLE_CONTRACT = fillContractText(
 
 const Section = ({ title, children }) => (
   <section className="mb-12">
-    <h2 className="font-heading text-accent text-xl font-semibold mb-6 pb-2 border-b border-black/10">
+    <h2 className="font-heading text-accent text-xl font-semibold mb-6 pb-2 border-b border-ink/10">
       {title}
     </h2>
     <div className="flex flex-wrap gap-4 items-start">{children}</div>
@@ -327,7 +327,7 @@ export default function WidgetShowcase() {
               You are about to book a <span className="text-ink font-medium">Toyota Prado</span> for
               3 days from <span className="text-ink font-medium">01 Oct 2026</span>.
             </p>
-            <div className="flex items-center justify-between py-3 border-y border-black/10">
+            <div className="flex items-center justify-between py-3 border-y border-ink/10">
               <span className="text-muted text-sm">Total</span>
               <PriceDisplay amount={45000} period="/ 3 days" size="sm" />
             </div>

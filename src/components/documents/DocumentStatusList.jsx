@@ -31,7 +31,7 @@ export default function DocumentStatusList({ documents = [] }) {
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-black/10">
+    <ul className="flex flex-col divide-y divide-ink/10">
       {documents.map((doc) => {
         const meta = STATUS_META[doc.status] || STATUS_META[DOCUMENT_STATUSES.PENDING];
         const Icon = meta.icon || File;

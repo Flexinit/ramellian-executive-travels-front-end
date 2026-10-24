@@ -74,7 +74,7 @@ export default function OwnerVehicleCard({
   return (
     <Card className="p-5 flex flex-col gap-3 hover:border-accent/40 transition-colors">
       {photo && (
-        <div className="aspect-[16/9] rounded-lg overflow-hidden bg-black/5 -mt-1">
+        <div className="aspect-[16/9] rounded-lg overflow-hidden bg-ink/5 -mt-1">
           <AuthImage
             src={photo}
             alt={`${model}`}
@@ -167,7 +167,7 @@ export default function OwnerVehicleCard({
 
       {insuranceVerificationStickerPhoto && (
         <div className="flex items-center gap-2 text-xs text-muted">
-          <div className="w-14 h-10 rounded-md overflow-hidden bg-black/5 shrink-0">
+          <div className="w-14 h-10 rounded-md overflow-hidden bg-ink/5 shrink-0">
             <AuthImage
               src={insuranceVerificationStickerPhoto}
               alt="Insurance sticker"

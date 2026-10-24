@@ -94,10 +94,10 @@ export default function AdminUsersPage() {
           !isError && <EmptyState icon={Users} title="No accounts found" description="Try a different search or role." />
         ) : (
           <div className="flex flex-col gap-4">
-          <div className="table-scroll rounded-2xl border border-black/10">
+          <div className="table-scroll rounded-2xl border border-ink/10">
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-black/10">
+                <tr className="border-b border-ink/10">
                   {['Name', 'Email', 'Roles', 'Status', ''].map((col, i) => (
                     <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col || <span className="sr-only">Actions</span>}
@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/5">
+              <tbody className="divide-y divide-ink/5">
                 {pages.pageItems.map((user) => {
                   const open = () => navigate(`/admin/users/${user.id}`);
                   return (
@@ -117,7 +117,7 @@ export default function AdminUsersPage() {
                         if (e.key === 'Enter') open();
                       }}
                       aria-label={`Open ${userDisplayName(user)}`}
-                      className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
+                      className="cursor-pointer hover:bg-ink/5 transition-colors focus-ring"
                     >
                       <td className="stack-full px-4 py-3 text-sm text-ink">
                         <span className="flex items-center gap-3">

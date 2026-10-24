@@ -18,6 +18,8 @@ describe('DetailList', () => {
     expect(value.tagName).toBe('DD');
     expect(value).toHaveClass('text-left');
     expect(value).not.toHaveClass('text-right');
+    // A table: each pair is a row, the rows alternating white and light grey.
+    expect(value.parentElement).toHaveClass('odd:bg-surface', 'even:bg-subtle', 'grid-cols-subgrid');
   });
 
   it('stacks a free-text value under its label across the full width', () => {

@@ -55,7 +55,7 @@ export default function Verify2faPage() {
       <PageTitle title="Verify Code" />
       <div className="w-full max-w-sm flex flex-col gap-8">
 
-        <div className="bg-surface border border-black/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
+        <div className="bg-surface border border-ink/10 rounded-2xl shadow-card p-7 sm:p-8 flex flex-col gap-6 text-center">
           <div className="w-14 h-14 mx-auto rounded-full bg-accent/10 flex items-center justify-center">
             <ShieldCheck size={24} className="text-accent" aria-hidden="true" />
           </div>

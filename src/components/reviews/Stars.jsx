@@ -11,7 +11,7 @@ export function Stars({ rating = 0, size = 14 }) {
   return (
     <span role="img" aria-label={`${rating} out of 5`} className="inline-flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={size} aria-hidden="true" className={n <= filled ? 'fill-star text-star' : 'text-black/20'} />
+        <Star key={n} size={size} aria-hidden="true" className={n <= filled ? 'fill-star text-star' : 'text-ink/20'} />
       ))}
     </span>
   );
@@ -30,7 +30,7 @@ export function StarPicker({ value, onChange, label = 'Your rating' }) {
         {[1, 2, 3, 4, 5].map((n) => (
           <label key={n} className="cursor-pointer rounded-md p-0.5 focus-within:ring-2 focus-within:ring-accent">
             <input type="radio" name="rating" value={n} checked={value === n} onChange={() => onChange(n)} className="sr-only" aria-label={`${n} ${n === 1 ? 'star' : 'stars'}`} />
-            <Star size={26} aria-hidden="true" className={n <= value ? 'fill-star text-star' : 'text-black/25 hover:text-star'} />
+            <Star size={26} aria-hidden="true" className={n <= value ? 'fill-star text-star' : 'text-ink/25 hover:text-star'} />
           </label>
         ))}
       </div>

@@ -10,7 +10,7 @@ export default function Skeleton({ rounded = false, className = '' }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse bg-black/8 ${rounded ? 'rounded-full' : 'rounded-md'} ${className}`}
+      className={`animate-pulse bg-ink/8 ${rounded ? 'rounded-full' : 'rounded-md'} ${className}`}
     />
   );
 }

@@ -76,7 +76,7 @@ export default function MessagesPage() {
                   <Link
                     to={conversationPath(c)}
                     className={`flex items-start gap-4 rounded-2xl border p-4 transition-colors focus-ring ${
-                      unread > 0 ? 'border-accent/40 bg-accent/10 hover:bg-accent/15' : 'border-black/10 bg-black/[0.03] hover:bg-black/5'
+                      unread > 0 ? 'border-accent/40 bg-accent/10 hover:bg-accent/15' : 'border-ink/10 bg-black/[0.03] hover:bg-ink/5'
                     }`}
                   >
                     <span className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">

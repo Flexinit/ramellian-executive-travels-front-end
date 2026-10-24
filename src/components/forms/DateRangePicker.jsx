@@ -193,7 +193,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
           ref={panelRef}
           role="dialog"
           aria-label="Choose trip dates and times"
-          className="absolute z-50 top-full mt-2.5 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0 w-[300px] max-h-[75vh] overflow-y-auto bg-surface border border-black/10 rounded-2xl shadow-card p-3.5 origin-top animate-panel-in"
+          className="absolute z-50 top-full mt-2.5 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-0 w-[300px] max-h-[75vh] overflow-y-auto bg-surface border border-ink/10 rounded-2xl shadow-card p-3.5 origin-top animate-panel-in"
         >
           {/* Quick presets */}
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -222,7 +222,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
               type="button"
               onClick={() => setViewMonth((m) => subMonths(m, 1))}
               aria-label="Previous month"
-              className="p-1 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+              className="p-1 rounded-full text-muted hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
             >
               <ChevronLeft size={15} aria-hidden="true" />
             </button>
@@ -231,7 +231,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
               type="button"
               onClick={() => setViewMonth((m) => addMonths(m, 1))}
               aria-label="Next month"
-              className="p-1 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+              className="p-1 rounded-full text-muted hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
             >
               <ChevronRight size={15} aria-hidden="true" />
             </button>
@@ -282,7 +282,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
                   // and today a small gold dot. Gold marks what matters, never what can't be chosen.
                   className={[
                     'relative h-7 text-[11px] rounded-full transition-colors focus-ring',
-                    isEndpoint ? 'bg-brand-navy text-brand-gold font-bold' : !inMonth ? 'text-black/30' : booked ? 'bg-red-500/15 text-red-600 line-through font-semibold border border-red-500/30 cursor-not-allowed' : disabled ? 'text-muted cursor-not-allowed' : 'text-ink font-medium hover:bg-brand-gold/20',
+                    isEndpoint ? 'bg-brand-navy text-brand-gold font-bold' : !inMonth ? 'text-ink/30' : booked ? 'bg-red-500/15 text-red-600 line-through font-semibold border border-red-500/30 cursor-not-allowed' : disabled ? 'text-muted cursor-not-allowed' : 'text-ink font-medium hover:bg-brand-gold/20',
                     inRange && !isEndpoint ? 'bg-brand-gold/20' : '',
                   ].join(' ')}
                 >
@@ -296,7 +296,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
           </div>
 
           {/* Times */}
-          <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-black/10">
+          <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-ink/10">
             <label className="flex flex-col gap-0.5">
               <span className="text-[9px] font-semibold uppercase tracking-wider text-muted inline-flex items-center gap-1">
                 <Clock size={10} aria-hidden="true" /> Pick-up Time
@@ -305,7 +305,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
                 type="time"
                 value={startTime || DEFAULT_START_TIME}
                 onChange={(e) => onChange({ ...value, startTime: e.target.value })}
-                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-accent"
+                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </label>
             <label className="flex flex-col gap-0.5">
@@ -316,7 +316,7 @@ export default function DateRangePicker({ value, onChange, className = '', disab
                 type="time"
                 value={endTime || DEFAULT_END_TIME}
                 onChange={(e) => onChange({ ...value, endTime: e.target.value })}
-                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink [color-scheme:light] focus:outline-none focus:ring-2 focus:ring-accent"
+                className="bg-surface border border-line rounded-lg px-2 py-1 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </label>
           </div>

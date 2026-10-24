@@ -7,7 +7,7 @@ import { DetailList, DetailRow } from '../ui/DetailList';
 
 function Lines({ lines }) {
   return (
-    <DetailList className="gap-y-1.5">
+    <DetailList>
       {lines.map((line) => (
         <DetailRow key={line.label} label={line.label} valueClassName="tabular-nums">
           {formatCurrency(line.amount)}
@@ -49,7 +49,7 @@ export default function CartTotals({ items, quotes = {} }) {
                   {formatCurrency(subtotal)}
                 </DetailRow>
               </DetailList>
-              <div className="pl-3 border-l border-black/10">
+              <div className="pl-3 border-l border-ink/10">
                 <Lines lines={lines} />
               </div>
             </li>
@@ -59,8 +59,8 @@ export default function CartTotals({ items, quotes = {} }) {
         breakdowns[0] && <Lines lines={breakdowns[0].lines} />
       )}
 
-      <div aria-label="Total to pay" className="pt-3 border-t border-black/10">
-        <DetailList className="items-center">
+      <div aria-label="Total to pay" className="pt-3 border-t border-ink/10">
+        <DetailList>
           <DetailRow label={`${estimated ? 'Estimated total' : 'Total'}${several ? ` · ${items.length} vehicles` : ''}`}>
             <PriceDisplay amount={total} period="" size="lg" />
           </DetailRow>

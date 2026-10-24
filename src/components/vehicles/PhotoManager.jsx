@@ -14,7 +14,7 @@ function PhotoTile({ vehicle, photo, index, onRemove }) {
   const busy = replace.isPending;
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-xl border border-black/10 bg-black/5">
+    <li className="flex flex-col overflow-hidden rounded-xl border border-ink/10 bg-ink/5">
       <div className="aspect-[4/3] bg-subtle">
         <AuthImage
           src={photo.url}

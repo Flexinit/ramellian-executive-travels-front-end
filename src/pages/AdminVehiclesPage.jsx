@@ -98,7 +98,7 @@ export default function AdminVehiclesPage() {
           <Card className="table-scroll">
             <table className="stack-table w-full text-left">
               <thead>
-                <tr className="border-b border-black/10">
+                <tr className="border-b border-ink/10">
                   {['Vehicle', 'Owner', 'Place', 'Per day', 'Insurance', 'Approval', 'Status', ''].map((col, i) => (
                     <th key={col || i} scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider">
                       {col || <span className="sr-only">Actions</span>}
@@ -106,7 +106,7 @@ export default function AdminVehiclesPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-black/5">
+              <tbody className="divide-y divide-ink/5">
                 {pages.pageItems.map((v) => (
                   <tr key={v.id}>
                     <td className="stack-full px-4 py-3 text-sm text-ink">
@@ -178,7 +178,7 @@ export default function AdminVehiclesPage() {
         {gallery && (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={`Photos of ${gallery.model}`}>
             {(gallery.photos || []).map((photo, i) => (
-              <li key={photo.url || i} className="rounded-xl overflow-hidden border border-black/10 bg-subtle">
+              <li key={photo.url || i} className="rounded-xl overflow-hidden border border-ink/10 bg-subtle">
                 <AuthImage
                   src={photo.url}
                   alt={`${gallery.model} — photo ${i + 1}`}

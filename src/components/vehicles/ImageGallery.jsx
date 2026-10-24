@@ -32,7 +32,7 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
   if (images.length === 0) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-subtle">
+        <div className="w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-well">
           <GenericVehiclePlaceholder tier={tier} />
         </div>
         <p className="text-muted text-xs text-center">Photos coming soon for this vehicle.</p>
@@ -52,7 +52,7 @@ export default function ImageGallery({ photos = [], alt = 'Vehicle photo', tier 
         aria-roledescription="carousel"
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        className="relative w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-subtle focus-ring"
+        className="relative w-full aspect-[16/10] max-h-[55vh] rounded-card overflow-hidden bg-well focus-ring"
       >
         {/*
           No `srcSet` here: the backend serves one URL per photo with no

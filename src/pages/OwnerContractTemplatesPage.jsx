@@ -28,7 +28,7 @@ function TemplateCard({ template, onNewVersion }) {
         <Badge label={statusLabel(template.status)} variant={statusVariant(template.status)} />
       </div>
       {showing && (
-        <pre className="whitespace-pre-wrap break-words rounded-lg bg-black/5 border border-black/10 p-3 text-xs text-muted font-mono max-h-80 overflow-y-auto">
+        <pre className="whitespace-pre-wrap break-words rounded-lg bg-ink/5 border border-ink/10 p-3 text-xs text-muted font-mono max-h-80 overflow-y-auto">
           {template.content}
         </pre>
       )}

@@ -78,10 +78,10 @@ export default function VehiclePhotoGuide({ slots, onSlotChange, extras, onExtra
         {PHOTO_ANGLES.map((angle) => {
           const file = slots[angle.key];
           return (
-            <li key={angle.key} className="rounded-xl border border-black/10 bg-black/5 p-3 flex gap-3">
+            <li key={angle.key} className="rounded-xl border border-ink/10 bg-ink/5 p-3 flex gap-3">
               <div className="flex flex-col items-center gap-1.5">
                 {file ? (
-                  <div className="w-[88px] h-[66px] rounded-lg overflow-hidden bg-black/5 flex items-center justify-center">
+                  <div className="w-[88px] h-[66px] rounded-lg overflow-hidden bg-ink/5 flex items-center justify-center">
                     <Preview file={file} alt={`${angle.label} preview`} />
                   </div>
                 ) : (
@@ -98,7 +98,7 @@ export default function VehiclePhotoGuide({ slots, onSlotChange, extras, onExtra
                       type="button"
                       onClick={() => onSlotChange(angle.key, null)}
                       aria-label={`Remove ${angle.label} photo`}
-                      className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-black/10 focus-ring"
+                      className="p-0.5 rounded-full text-muted hover:text-ink hover:bg-ink/10 focus-ring"
                     >
                       <X size={12} aria-hidden="true" />
                     </button>
@@ -125,7 +125,7 @@ export default function VehiclePhotoGuide({ slots, onSlotChange, extras, onExtra
       </ul>
 
       <div className="flex flex-col gap-2">
-        <label className="inline-flex items-center gap-2 w-fit px-4 py-2 rounded-lg border border-dashed border-black/20 text-muted text-sm cursor-pointer hover:border-accent/50 hover:text-ink transition-colors focus-within:ring-2 focus-within:ring-accent">
+        <label className="inline-flex items-center gap-2 w-fit px-4 py-2 rounded-lg border border-dashed border-ink/20 text-muted text-sm cursor-pointer hover:border-accent/50 hover:text-ink transition-colors focus-within:ring-2 focus-within:ring-accent">
           <ImagePlus size={16} aria-hidden="true" />
           Add more photos
           <input type="file" accept="image/*" multiple className="sr-only" onChange={handleExtras} />
@@ -135,14 +135,14 @@ export default function VehiclePhotoGuide({ slots, onSlotChange, extras, onExtra
             {extras.map((file, i) => (
               <li
                 key={`${file.name}-${i}`}
-                className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full bg-black/5 border border-black/10 text-xs text-ink"
+                className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full bg-ink/5 border border-ink/10 text-xs text-ink"
               >
                 {file.name}
                 <button
                   type="button"
                   onClick={() => onExtrasChange(extras.filter((_, idx) => idx !== i))}
                   aria-label={`Remove ${file.name}`}
-                  className="p-0.5 rounded-full hover:bg-black/10 focus-ring"
+                  className="p-0.5 rounded-full hover:bg-ink/10 focus-ring"
                 >
                   <X size={12} aria-hidden="true" />
                 </button>

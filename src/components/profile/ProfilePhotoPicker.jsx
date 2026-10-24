@@ -64,7 +64,7 @@ export default function ProfilePhotoPicker({ name, size = 'xl' }) {
           type="button"
           onClick={clearPhoto}
           aria-label="Remove profile photo"
-          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-surface border border-black/20 text-muted hover:text-ink flex items-center justify-center focus-ring"
+          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-surface border border-ink/20 text-muted hover:text-ink flex items-center justify-center focus-ring"
         >
           <X size={11} aria-hidden="true" />
         </button>

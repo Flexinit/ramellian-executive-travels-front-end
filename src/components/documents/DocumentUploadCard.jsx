@@ -75,13 +75,13 @@ export default function DocumentUploadCard({ type, title, description, document 
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           className={`relative rounded-xl border-2 border-dashed px-4 py-6 flex flex-col items-center justify-center gap-2 text-center transition-colors ${
-            dragOver ? 'border-accent bg-accent/5' : 'border-black/15 hover:border-accent/40'
+            dragOver ? 'border-accent bg-accent/5' : 'border-ink/15 hover:border-accent/40'
           }`}
         >
           {upload.isPending ? (
             <>
               <Spinner size="md" label="Uploading" />
-              <div className="w-full max-w-[180px] h-1.5 rounded-full bg-black/10 overflow-hidden mt-1">
+              <div className="w-full max-w-[180px] h-1.5 rounded-full bg-ink/10 overflow-hidden mt-1">
                 <div
                   className="h-full bg-accent transition-all duration-200"
                   style={{ width: `${progress}%` }}

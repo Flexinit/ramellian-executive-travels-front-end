@@ -37,7 +37,7 @@ export default function ShotPicker({ label, file, onPick, onClear, disabled = fa
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-semibold text-ink">{label}</span>
       {file ? (
-        <div className="relative rounded-lg overflow-hidden border border-black/10">
+        <div className="relative rounded-lg overflow-hidden border border-ink/10">
           <img src={url} alt={`${label} preview`} className="w-full h-32 object-cover" />
           {!disabled && (
             <button
@@ -63,7 +63,7 @@ export default function ShotPicker({ label, file, onPick, onClear, disabled = fa
             !disabled && onPick(e.dataTransfer.files?.[0]);
           }}
           className={`h-32 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 text-center transition-colors ${
-            dragOver ? 'border-accent bg-accent/5' : 'border-black/15 hover:border-accent/40'
+            dragOver ? 'border-accent bg-accent/5' : 'border-ink/15 hover:border-accent/40'
           }`}
         >
           <Icon size={18} className="text-accent" aria-hidden="true" />

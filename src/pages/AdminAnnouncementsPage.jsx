@@ -166,7 +166,7 @@ export default function AdminAnnouncementsPage() {
                   aria-valuemin={0}
                   aria-valuemax={progress.total}
                   aria-valuenow={progress.sent + progress.failed.length}
-                  className="h-2 rounded-full bg-black/10 overflow-hidden"
+                  className="h-2 rounded-full bg-ink/10 overflow-hidden"
                 >
                   <div className="h-full bg-accent transition-all" style={{ width: `${((progress.sent + progress.failed.length) / Math.max(1, progress.total)) * 100}%` }} />
                 </div>
@@ -228,7 +228,7 @@ export default function AdminAnnouncementsPage() {
             It will go to <span className="text-ink font-medium">{plural(recipients.length, 'person', 'people')}</span> ({audienceLabel}). This can&apos;t be
             taken back.
           </p>
-          <p className="rounded-lg border border-black/10 bg-subtle px-3 py-2 text-sm text-ink whitespace-pre-line break-words max-h-48 overflow-y-auto" aria-label="What will be sent">
+          <p className="rounded-lg border border-ink/10 bg-subtle px-3 py-2 text-sm text-ink whitespace-pre-line break-words max-h-48 overflow-y-auto" aria-label="What will be sent">
             {clean.text}
           </p>
           {clean.removedPhone && <p className="text-xs text-muted">A phone number in your text was removed.</p>}

@@ -112,7 +112,7 @@ export default function BookingPolicyForm({ policy, onSave, saving = false }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 border-t border-black/10 pt-5">
+      <div className="flex flex-col gap-4 border-t border-ink/10 pt-5">
         <h3 className="font-heading text-ink text-base font-semibold">Moving the dates</h3>
         <Checkbox checked={values.postponementAllowed} onChange={set('postponementAllowed')} label="Renters can move their booking to new dates" />
         {values.postponementAllowed && (
@@ -123,7 +123,7 @@ export default function BookingPolicyForm({ policy, onSave, saving = false }) {
         )}
       </div>
 
-      <div className="rounded-xl bg-black/5 border border-black/10 px-4 py-3">
+      <div className="rounded-xl bg-ink/5 border border-ink/10 px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">What renters get</p>
         <ul className="mt-2 flex flex-col gap-1 text-sm text-ink list-disc pl-5">
           {policySummary({ ...values, postponementDeadlineHours: values.postponementDeadlineHours || 0, maxPostponements: values.maxPostponements || 0 }).map((line) => (

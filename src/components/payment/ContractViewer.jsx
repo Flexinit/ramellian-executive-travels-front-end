@@ -31,7 +31,7 @@ export default function ContractViewer({ contractText, pdfUrl, document: doc = {
   if (pdfUrl && !pdfError) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="rounded-2xl border border-black/10 bg-white overflow-auto max-h-[60vh] flex justify-center">
+        <div className="rounded-2xl border border-ink/10 bg-white overflow-auto max-h-[60vh] flex justify-center">
           <Document
             file={pdfUrl}
             onLoadSuccess={({ numPages: n }) => setNumPages(n)}

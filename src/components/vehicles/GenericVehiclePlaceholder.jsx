@@ -57,9 +57,9 @@ export default function GenericVehiclePlaceholder({ tier, className = '' }) {
 
   return (
     <div
-      className={`w-full h-full flex items-center justify-center bg-subtle ${className}`}
+      className={`w-full h-full flex items-center justify-center bg-well ${className}`}
     >
-      <Silhouette className="w-1/2 h-1/2 text-black/20" />
+      <Silhouette className="w-1/2 h-1/2 text-black/25" />
     </div>
   );
 }

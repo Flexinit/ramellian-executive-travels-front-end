@@ -114,11 +114,11 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
           if (e.key === 'Enter') toggle();
         }}
         aria-expanded={expanded}
-        className="cursor-pointer hover:bg-black/5 transition-colors focus-ring"
+        className="cursor-pointer hover:bg-ink/5 transition-colors focus-ring"
       >
         <td className="stack-full px-4 py-3 text-sm text-ink">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-9 rounded-lg overflow-hidden shrink-0 bg-black/5">
+            <div className="w-12 h-9 rounded-lg overflow-hidden shrink-0 bg-ink/5">
               {photoUrl ? (
                 <AuthImage
                   src={photoUrl}
@@ -188,7 +188,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
       {expanded && (
         <tr className="bg-black/[0.03]">
           <td colSpan={detailColSpan} className="px-4 py-5">
-            <DetailList className="sm:grid-cols-[minmax(0,max-content)_minmax(0,1fr)_minmax(0,max-content)_minmax(0,1fr)]">
+            <DetailList>
               <DetailRow label="Booking Reference">{booking.id}</DetailRow>
               <DetailRow label="Vehicle">{vehicle?.model || booking.vehicleModel || booking.vehicleId}</DetailRow>
               {vehicle?.location && (

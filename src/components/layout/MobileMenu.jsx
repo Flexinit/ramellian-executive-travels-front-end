@@ -25,7 +25,7 @@ export default function MobileMenu({ links = [] }) {
         aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={mobileMenuOpen}
         onClick={toggleMobileMenu}
-        className="lg:hidden p-2 rounded-lg text-ink hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+        className="lg:hidden p-2 rounded-lg text-ink hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
       >
         {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
       </button>
@@ -39,7 +39,7 @@ export default function MobileMenu({ links = [] }) {
           />
           <nav
             aria-label="Mobile navigation"
-            className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-surface border-l border-black/10 overflow-y-auto px-5 py-6 flex flex-col gap-1"
+            className="absolute right-0 top-0 h-full w-72 max-w-[85vw] bg-surface border-l border-ink/10 overflow-y-auto px-5 py-6 flex flex-col gap-1"
           >
             {links.map((item) =>
               item.dropdown && item.dropdown.length > 0 ? (
@@ -52,7 +52,7 @@ export default function MobileMenu({ links = [] }) {
                       key={sub.to}
                       to={sub.to}
                       onClick={closeMobileMenu}
-                      className="px-2 py-2 rounded-lg text-ink hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+                      className="px-2 py-2 rounded-lg text-ink hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
                     >
                       {sub.label}
                     </Link>
@@ -63,7 +63,7 @@ export default function MobileMenu({ links = [] }) {
                   key={item.label}
                   to={item.to}
                   onClick={closeMobileMenu}
-                  className="px-2 py-2.5 mt-3 first:mt-0 rounded-lg text-ink font-medium hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+                  className="px-2 py-2.5 mt-3 first:mt-0 rounded-lg text-ink font-medium hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
                 >
                   {item.label}
                 </Link>
@@ -71,7 +71,7 @@ export default function MobileMenu({ links = [] }) {
             )}
 
             {!isAuthenticated && (
-              <div className="flex flex-col gap-2 mt-5 pt-5 border-t border-black/10">
+              <div className="flex flex-col gap-2 mt-5 pt-5 border-t border-ink/10">
                 <Button to="/vehicles" onClick={closeMobileMenu}>
                   <CarFront size={16} aria-hidden="true" /> Rent a Car
                 </Button>

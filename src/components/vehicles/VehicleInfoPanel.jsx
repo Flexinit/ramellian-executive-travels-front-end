@@ -163,7 +163,7 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
         </div>
       )}
 
-      <div className="pt-4 border-t border-black/10">
+      <div className="pt-4 border-t border-ink/10">
         <PriceDisplay amount={dailyPrice} size="lg" />
       </div>
     </div>

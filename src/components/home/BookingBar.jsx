@@ -64,7 +64,7 @@ function BarField({ icon: Icon, label, renderInput, className = '' }) {
 }
 
 const fieldInputClass =
-  'w-full bg-transparent border-0 p-0 text-sm text-ink placeholder-muted focus:outline-none focus:ring-0 [color-scheme:light]';
+  'w-full bg-transparent border-0 p-0 text-sm text-ink placeholder-muted focus:outline-none focus:ring-0';
 
 /** A text field with an inline "use current location" button, shared by pickup and return. */
 function LocationField({ id, value, onChange, placeholder, locating, onLocate }) {
@@ -98,8 +98,8 @@ function LocationField({ id, value, onChange, placeholder, locating, onLocate })
 
 const Divider = () => (
   <>
-    <div className="hidden lg:block w-px my-2.5 bg-black/10" aria-hidden="true" />
-    <div className="block lg:hidden h-px mx-4 bg-black/10" aria-hidden="true" />
+    <div className="hidden lg:block w-px my-2.5 bg-ink/10" aria-hidden="true" />
+    <div className="block lg:hidden h-px mx-4 bg-ink/10" aria-hidden="true" />
   </>
 );
 
@@ -182,7 +182,7 @@ export default function BookingBar() {
         onChange={setMode}
       />
 
-      <div className="w-full bg-surface border border-black/10 rounded-2xl lg:rounded-full shadow-card flex flex-col lg:flex-row lg:items-stretch">
+      <div className="w-full bg-surface border border-ink/10 rounded-2xl lg:rounded-full shadow-card flex flex-col lg:flex-row lg:items-stretch">
         <BarField
           icon={MapPin}
           label="Pick-up Location"

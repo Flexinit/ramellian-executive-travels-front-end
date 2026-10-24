@@ -70,7 +70,7 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
           type="button"
           onClick={() => setViewMonth((m) => subMonths(m, 1))}
           aria-label="Previous month"
-          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
         >
           <ChevronLeft size={16} aria-hidden="true" />
         </button>
@@ -79,7 +79,7 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
           type="button"
           onClick={() => setViewMonth((m) => addMonths(m, 1))}
           aria-label="Next month"
-          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-black/5 transition-colors focus-ring"
+          className="p-1.5 rounded-full text-muted hover:text-accent hover:bg-ink/5 transition-colors focus-ring"
         >
           <ChevronRight size={16} aria-hidden="true" />
         </button>
@@ -110,10 +110,10 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
               aria-pressed={isSelected}
               className={[
                 'relative h-11 flex flex-col items-center justify-center gap-1 rounded-lg transition-colors focus-ring',
-                !inMonth ? 'text-black/25' : 'text-ink',
-                dayPeriods.length > 0 ? 'cursor-pointer hover:bg-black/10' : 'cursor-default',
+                !inMonth ? 'text-ink/25' : 'text-ink',
+                dayPeriods.length > 0 ? 'cursor-pointer hover:bg-ink/10' : 'cursor-default',
                 isSelected ? 'bg-accent/15 ring-1 ring-accent/50' : '',
-                isToday && !isSelected ? 'bg-black/5' : '',
+                isToday && !isSelected ? 'bg-ink/5' : '',
               ].join(' ')}
             >
               <span className="text-[11px]">{format(day, 'd')}</span>
@@ -141,7 +141,7 @@ export default function BookingCalendar({ periods, vehicleColor, initialMonth = 
       )}
 
       {selectedDay && (
-        <div className="flex flex-col gap-2 pt-3 border-t border-black/10">
+        <div className="flex flex-col gap-2 pt-3 border-t border-ink/10">
           <span className="text-xs font-semibold text-ink">{format(selectedDay, 'd MMMM yyyy')}</span>
           <ul className="flex flex-col gap-2.5">
             {selectedPeriods.map((p) => (

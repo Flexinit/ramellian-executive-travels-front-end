@@ -14,7 +14,7 @@ export default function DocumentFilePreview({ document }) {
 
   return (
     <>
-      <div className="rounded-xl border border-black/10 bg-black/5 overflow-hidden">
+      <div className="rounded-xl border border-ink/10 bg-ink/5 overflow-hidden">
         <DocumentPreview document={document} onOpen={() => setViewing(true)} />
       </div>
       {viewing && <DocumentViewer document={document} onClose={() => setViewing(false)} />}

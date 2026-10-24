@@ -22,7 +22,7 @@ export default function NotificationVehiclePhoto({ bookingId }) {
   if (!vehicle) return null;
 
   return (
-    <span className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-black/5">
+    <span className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-ink/5">
       {photoUrl ? (
         <AuthImage
           src={photoUrl}

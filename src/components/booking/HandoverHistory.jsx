@@ -16,7 +16,7 @@ function HandoverRecord({ handover }) {
   const Icon = meta.icon;
 
   return (
-    <div className="flex flex-col gap-2.5 py-3 border-t border-black/10 first:border-t-0 first:pt-0">
+    <div className="flex flex-col gap-2.5 py-3 border-t border-ink/10 first:border-t-0 first:pt-0">
       <div className="flex items-center justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
           <Icon size={15} className="text-accent" aria-hidden="true" />
@@ -80,7 +80,7 @@ export default function HandoverHistory({ bookingId }) {
   return (
     <div className="flex flex-col gap-1">
       <h2 className="text-sm font-semibold text-ink">Vehicle Handover</h2>
-      <div className="bg-surface border border-black/10 rounded-2xl px-5">
+      <div className="bg-surface border border-ink/10 rounded-2xl px-5">
         {handovers.map((h) => (
           <HandoverRecord key={h.id} handover={h} />
         ))}

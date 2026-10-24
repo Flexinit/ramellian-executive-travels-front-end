@@ -146,7 +146,7 @@ export default function OwnerProfileForm({ onSaved, submitLabel = 'Save Account 
             <label
               key={opt.value}
               className={`flex flex-col gap-0.5 rounded-xl border px-4 py-3 cursor-pointer transition-colors focus-within:ring-2 focus-within:ring-accent ${
-                accountType === opt.value ? 'border-accent bg-accent/10' : 'border-black/10 bg-black/5 hover:border-accent/40'
+                accountType === opt.value ? 'border-accent bg-accent/10' : 'border-ink/10 bg-ink/5 hover:border-accent/40'
               }`}
             >
               <span className="flex items-center gap-2 text-sm font-semibold text-ink">

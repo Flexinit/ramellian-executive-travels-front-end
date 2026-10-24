@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
             </div>
           </>
         )}
-        <p className="pt-5 border-t border-black/10 text-center text-muted text-sm">
+        <p className="pt-5 border-t border-ink/10 text-center text-muted text-sm">
           Remembered it?{' '}
           <Link to="/auth/login" className="text-accent hover:text-accent-hover font-semibold focus-ring rounded-md">
             Log in

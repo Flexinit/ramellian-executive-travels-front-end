@@ -46,7 +46,7 @@ export default function PhoneVerification({ phoneNumber, verified }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-black/10 bg-black/5 px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-xl border border-ink/10 bg-ink/5 px-4 py-3">
       <div id="phone-recaptcha" />
       {stage === 'code' || stage === 'verifying' ? (
         <>

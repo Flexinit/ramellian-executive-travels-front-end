@@ -30,7 +30,7 @@ export default function BookingSummaryCard({ vehicle, draft, actions, note, quot
   return (
     <Card className="p-5 flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="w-16 h-12 rounded-tile overflow-hidden shrink-0 bg-subtle">
+        <div className="w-16 h-12 rounded-tile overflow-hidden shrink-0 bg-well">
           {photoUrl ? (
             <AuthImage
               src={photoUrl}

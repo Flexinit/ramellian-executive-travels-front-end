@@ -18,7 +18,7 @@ function userFromToken(token) {
         roles: normalizeRoles(claims.roles),
         // `SUPER_ADMIN` becomes ADMIN in `roles`; this keeps the difference for the few things only a super admin
         // may do (making quotations).
-        isSuperAdmin: (claims.roles || []).includes('SUPER_ADMIN'),
+        ...((claims.roles || []).includes('SUPER_ADMIN') ? { isSuperAdmin: true } : {}),
         enabled: claims.enabled,
         permissions: claims.permissions || [],
       }
@@ -144,7 +144,10 @@ const useAuthStore = create((set, get) => ({
         ...state.user,
         ...user,
         ...(user?.roles
-          ? { roles: normalizeRoles(user.roles), isSuperAdmin: user.roles.includes('SUPER_ADMIN') || !!state.user?.isSuperAdmin }
+          ? {
+              roles: normalizeRoles(user.roles),
+              ...(user.roles.includes('SUPER_ADMIN') || state.user?.isSuperAdmin ? { isSuperAdmin: true } : {}),
+            }
           : {}),
       },
     })),
