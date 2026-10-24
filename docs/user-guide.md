@@ -446,6 +446,10 @@ verifying your email (which signs you in), and picks up where you left off.
    **Vehicle Handover** record (visible to the owner too, on their side of the same booking).
    **Moving your dates:** a Pending or Confirmed booking has **Move dates** next to **Cancel booking**. It checks the
    owner's policy first (whether moving is allowed, and how close to pick-up), then you pick the new pick-up and return.
+   **Changing the vehicle:** until the trip starts, a Pending or Confirmed booking has **Change vehicle** beside
+   **Message the owner**. Pick another car that's free for your dates (and add a reason if you like); the dates and
+   places stay the same, and the price follows the new car's daily rate. The car's owner can do the same from Fleet
+   Bookings (choosing from their own cars), and administrators from All Bookings (any approved car).
    **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay**, which takes
    you to Pesapal. The file icon next to **Receipt** downloads the official receipt as a PDF.
 11. **Cancel or review** — a booking that is still Pending or Confirmed has a **Cancel booking** button, both in
@@ -806,11 +810,12 @@ your permissions" above): an item is only shown if your account holds the permis
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
 - **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Paid** and
   **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what went wrong.
-- **Invoices** (`/admin/invoices`, administrators and super admins only) — draw up an invoice: who it's for, the
-  items (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an
-  optional discount. The invoice beside the form updates as you type; **Print / Save as PDF** prints just the
-  invoice once its required fields are filled in. Invoices aren't stored on the platform, so keep the PDF. The one
-  you're working on stays in your browser until you click **Start a new invoice**.
+- **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
+  (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
+  discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside
+  the form updates as you type; **Print / Save as PDF** prints just the quotation once its required fields are
+  filled in. Quotations aren't stored on the platform, so keep the PDF. The one you're working on stays in your
+  browser until you click **Start a new quotation**. (Invoices will be generated automatically — coming later.)
 - **Rental Terms** (`/admin/rental-terms`) — the platform's rental rules: add, edit, delete, and switch each one on
   or off, grouped by category and in your chosen order. Renters see the switched-on ones on the Terms page and from
   **Read the rental terms** at checkout.

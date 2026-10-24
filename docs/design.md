@@ -253,7 +253,7 @@ App
 | `Textarea` | `label`, `name`, `maxLength`, `error`, `register` | Same outlined field as Input; shows character count |
 | `Select` | `label`, `name`, `options[]`, `error`, `register` | Accessible `<select>`, same outlined field as Input, with a chevron |
 | `Card` | `children`, `className` | White card: hairline outline, 14px corners (`rounded-card`), soft shadow |
-| `DetailList` / `DetailRow` | `size` (sm/xs); row: `label`, `stacked`, `hidden`, `divider`, `valueClassName` | The one way to show label/value details (booking dates, locations, price lines, totals, handover readings, audit fields). Two columns: labels, then every value **left-aligned** just beside them — never pushed to the far edge. `stacked` for free text, `divider` for a line above (a Total). |
+| `DetailList` / `DetailRow` | `size` (sm/xs); row: `label`, `stacked`, `hidden`, `divider`, `valueClassName` | The one way to show label/value details (booking dates, locations, price lines, totals, handover readings, audit fields) — a small table: two columns (labels, then every value **left-aligned** beside them), rows alternating white/grey, thin outline. `stacked` for free text, `divider` for a line above (a Total). |
 | `Badge` | `label`, `variant` (success/warning/danger/info/neutral) | Status pill |
 | `Modal` | `isOpen`, `onClose`, `title`, `children` | Focus-trapped overlay |
 | `Spinner` | `size`, `color` | Loading indicator |
@@ -364,6 +364,11 @@ Navigation". Phones (below `md`) also get that floating charcoal tab bar (`compo
 for a signed-in person — Home, Search, Messages, Inbox, Profile — alongside the left menu, never instead of it.
 
 ```text
+**Dark mode** (signed-in people only, never automatic): a `dark` class on <html> swaps the `--c-*` colour variables in
+index.css (tailwind colours are `rgb(var(--c-…))`); accent becomes Ramellian gold with navy text. `lib/theme.js`,
+`ThemeToggle` (top bar, signed in), and an early script in index.html. Use the theme colours (and `ink/N` for faint
+lines/tints, never `black/N`); `well` is the light panel behind car photos in both themes. Printable documents stay white.
+
 Status colours on the light page use the -600/-700 shades (text-red-600, text-green-700…), never -300/-400.
 Ramellian colours are mixed in sparingly: buttons and selected states are navy (accent); gold marks section labels,
 the hero's highlighted word, today and the picked range in the date picker, the current phone tab, and the

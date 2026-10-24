@@ -3,6 +3,22 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-25 (quotations, change vehicle, dark mode, tables)
+
+- **Changed (super admins):** **Invoices** in the Admin Panel is now **Quotations** — the same tool, producing a
+  numbered quotation (QUO-…) valid for 30 days. Only super admins see it. Invoices will be generated automatically
+  later.
+- **Added:** **Change vehicle** on a booking that hasn't started (Pending or Confirmed) — for the renter (cars free for
+  their dates), the car's owner (their own cars) and administrators (any approved car).
+- **Added:** a dark mode for signed-in people — the sun/moon button in the top bar. It's light until you choose dark,
+  and your choice is remembered; visitors and the log-in and sign-up pages are always light. Car photos keep a light
+  panel in dark mode so every car shows clearly.
+- **Changed:** the left menu is Ramellian navy, with the logo above it on navy too.
+- **Changed:** booking details, price breakdowns, handover records and the like are small tables with alternating
+  row colours.
+- **Changed:** the log-in, sign-up and forgot-password pages use Ramellian's own coast and city photos behind a
+  see-through form (the house photo was taken out of the rotation, here and on the home page).
+
 ## 2026-10-25 (new sign-in pages; forgot password)
 
 - **Added:** **Forgot password?** on Log In — get a 6-digit code by email and choose a new password.
