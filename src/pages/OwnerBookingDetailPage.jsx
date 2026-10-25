@@ -22,6 +22,7 @@ import { stripPhoneNumbers } from '../lib/contactGuard';
 import { sessionContractId } from '../lib/contracts';
 import { DetailList, DetailRow } from '../components/ui/DetailList';
 import ChangeVehicleModal, { canChangeVehicle } from '../components/booking/ChangeVehicleModal';
+import BookingPayoutCard from '../components/admin/BookingPayoutCard';
 
 export default function OwnerBookingDetailPage() {
   const { bookingId } = useParams();
@@ -110,6 +111,9 @@ export default function OwnerBookingDetailPage() {
         <ConfirmPaymentForm booking={booking} />
 
         <HandoverHistory bookingId={booking.id} />
+
+        {/* Administrators: the owner's payout for this booking — paid from here once pickup is recorded. */}
+        {vehicleScope === 'admin' && <BookingPayoutCard booking={booking} />}
 
         {booking.status === 'COMPLETED' && !renterReviewed && (
           <Card className="p-5 flex flex-col gap-3">

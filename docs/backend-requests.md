@@ -1356,3 +1356,18 @@ sticker is listed among a vehicle's photos (the frontend keeps filtering it out)
 - `GET /admin/disbursements?status=` accepts `PROCESSING`, and `POST /admin/disbursements/{id}/sync` returns the
   updated `DisbursementResponse`. Owner Payouts has a Processing tab and **Check status**. No payouts existed yet,
   so what moves a payout into PROCESSING (presumably an automatic provider payout) hasn't been seen live.
+
+## 47. Paid, completed bookings with no owner payout — 2026-10-26
+
+**Seen live.** The admin report shows 10 completed bookings and 1 confirmed one, `successfulGrossAmount` ≈ 17.24 and
+`ownerPayout` ≈ 16.76 owed, yet `GET /admin/disbursements` (every status) is empty, and
+`GET /admin/disbursements/bookings/{id}` for those bookings answers `404 "Disbursement not yet created for this booking —
+pickup may not have occurred"`. There's no endpoint to create a payout, so the admin can't pay these owners from the
+portal.
+
+**Ask.** (1) Create the missing payouts for bookings that were paid (and completed) before payouts existed, or whose
+pickup was never recorded — or add `POST /admin/disbursements/bookings/{bookingId}` so an administrator can create one.
+(2) Confirm the rule: is a payout created only on the pickup handover, or also when a booking completes without one?
+(3) What moves a payout to `PROCESSING` — does `trigger` now send the money through the provider (then `reference`
+shouldn't be required from the admin), or is it still "mark as paid by hand"? The portal still asks for the payment
+reference when marking paid.

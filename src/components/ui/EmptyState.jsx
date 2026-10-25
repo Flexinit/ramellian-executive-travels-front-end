@@ -8,7 +8,7 @@ import Button from './Button';
  * @param {React.ReactNode} icon — custom icon component (defaults to SearchX)
  * @param {string} title
  * @param {string} description
- * @param {{ label: string, onClick: function }} action
+ * @param {{ label: string, onClick?: function, to?: string }} action — a button, or a link with `to`
  */
 export default function EmptyState({ icon, title, description, action }) {
   const Icon = icon || SearchX;
@@ -26,7 +26,7 @@ export default function EmptyState({ icon, title, description, action }) {
         )}
       </div>
       {action && (
-        <Button size="sm" onClick={action.onClick}>
+        <Button size="sm" onClick={action.onClick} to={action.to}>
           {action.label}
         </Button>
       )}

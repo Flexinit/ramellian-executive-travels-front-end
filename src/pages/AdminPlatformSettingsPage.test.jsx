@@ -35,7 +35,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })));
     renderUi();
 
-    expect(await screen.findByLabelText('Commission rate (%)')).toHaveValue(1);
+    expect(await screen.findByLabelText('Commission (%)')).toHaveValue(1);
   });
 
   it('saves a new rate with PUT /platform-settings', async () => {
@@ -50,7 +50,7 @@ describe('AdminPlatformSettingsPage', () => {
     );
     renderUi();
 
-    const input = await screen.findByLabelText('Commission rate (%)');
+    const input = await screen.findByLabelText('Commission (%)');
     await user.clear(input);
     await user.type(input, '2.5');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -66,7 +66,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.put(`${BASE}/platform-settings`, () => { called = true; return HttpResponse.json({}); }));
     renderUi();
 
-    const input = await screen.findByLabelText('Commission rate (%)');
+    const input = await screen.findByLabelText('Commission (%)');
     await user.clear(input);
     await user.type(input, '150');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -81,7 +81,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.put(`${BASE}/platform-settings`, () => HttpResponse.json({ message: 'Only an administrator can change this.' }, { status: 403 })));
     renderUi();
 
-    const input = await screen.findByLabelText('Commission rate (%)');
+    const input = await screen.findByLabelText('Commission (%)');
     await user.clear(input);
     await user.type(input, '5');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -149,6 +149,7 @@ describe('AdminPlatformSettingsPage', () => {
     }));
     renderUi();
 
+    await user.click(await screen.findByRole('tab', { name: 'Assistant' }));
     await user.click(await screen.findByRole('button', { name: 'Turn the assistant off' }));
 
     await waitFor(() => expect(body).toEqual({ enabled: false }));
@@ -165,7 +166,7 @@ describe('AdminPlatformSettingsPage', () => {
     }));
     renderUi();
 
-    await user.type(await screen.findByLabelText('Longer-booking commission (%)'), '10');
+    await user.type(await screen.findByLabelText('Longer bookings (%)'), '10');
     await user.click(screen.getByRole('button', { name: /save settings/i }));
     // A rate without the number of days it applies from isn't saved.
     expect(await screen.findByText(/enter from how many days it applies/i)).toBeInTheDocument();
@@ -180,7 +181,21 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.get(`${BASE}/platform-settings`, () =>
       HttpResponse.json({ id: 's1', commissionRatePct: 2, multiDayCommissionRatePct: 10, multiDayThresholdDays: 2 })));
     renderUi();
-    expect(await screen.findByLabelText('Longer-booking commission (%)')).toHaveValue(10);
+    expect(await screen.findByLabelText('Longer bookings (%)')).toHaveValue(10);
     expect(screen.getByLabelText('From (days)')).toHaveValue(2);
+  });
+
+  it('splits the settings into tabs, the open one kept in the address', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, botAssistantEnabled: true })));
+    renderUi();
+
+    expect(await screen.findByLabelText('Commission (%)')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Fees & commission' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('button', { name: /turn the assistant/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Booking policy' }));
+    expect(await screen.findByText('Standard booking policy')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Commission (%)')).not.toBeInTheDocument();
   });
 });

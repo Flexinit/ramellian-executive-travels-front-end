@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Bot, Save } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Bot, CalendarClock, Percent, Save } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -8,9 +9,17 @@ import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import ErrorBanner from '../components/ui/ErrorBanner';
+import SegmentedControl from '../components/ui/SegmentedControl';
 import BookingPolicyForm from '../components/booking/BookingPolicyForm';
 import { usePlatformPolicy, useSavePlatformPolicy } from '../hooks/useBookingPolicies';
 import { usePlatformSettings, useSavePlatformSettings, useToggleBotAssistant } from '../hooks/usePlatformSettings';
+
+/** The page's tabs — so each part is one short screen instead of one long scroll (product owner, 2026-10-26). */
+const TABS = [
+  { value: 'fees', label: 'Fees & commission', icon: Percent },
+  { value: 'policy', label: 'Booking policy', icon: CalendarClock },
+  { value: 'assistant', label: 'Assistant', icon: Bot },
+];
 
 const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThresholdDays', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge'];
 
@@ -26,6 +35,10 @@ const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThres
  * itself is switched on its own card (`PUT /platform-settings/bot`).
  */
 export default function AdminPlatformSettingsPage() {
+  // The open tab lives in the address (?tab=policy), so it survives a reload and can be linked to.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = TABS.some((t) => t.value === searchParams.get('tab')) ? searchParams.get('tab') : 'fees';
+  const setTab = (value) => setSearchParams(value === 'fees' ? {} : { tab: value }, { replace: true });
   const { data, isLoading, isError, refetch } = usePlatformSettings();
   const save = useSavePlatformSettings();
   const [values, setValues] = useState(Object.fromEntries(FIELDS.map((f) => [f, ''])));
@@ -81,137 +94,85 @@ export default function AdminPlatformSettingsPage() {
     if (Object.keys(problems).length === 0) save.mutate(next);
   }
 
+  // One field of the fees form: a short heading line is the field's own label, the explanation its hint.
+  const field = (name, label, hint, extra) => (
+    <Input
+      label={label}
+      name={name}
+      type="number"
+      min="0"
+      hint={hint}
+      value={values[name]}
+      onChange={set(name)}
+      error={errors[name]}
+      {...extra}
+    />
+  );
+  const percent = { max: '100', step: '0.1', inputMode: 'decimal' };
+  const money = { step: '50', inputMode: 'numeric' };
+
   return (
     <PageWrapper className="max-w-3xl">
       <PageTitle title="Platform Settings" />
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Platform Settings</h1>
 
-        <Card className="p-5">
-          {isLoading ? (
-            <div className="flex justify-center py-6">
-              <Spinner label="Loading the platform settings" />
-            </div>
-          ) : isError ? (
-            <ErrorBanner message="Could not load the platform settings." onRetry={refetch} />
-          ) : (
-            <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-              <div>
-                <h2 className="font-heading text-ink text-base font-semibold">Commission rate</h2>
-                <p className="text-muted text-sm mt-1">The platform's percentage on each booking — taken from the owner's share. Longer bookings can have their own rate (below).</p>
-              </div>
-              <Input
-                label="Commission rate (%)"
-                name="commissionRatePct"
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                inputMode="decimal"
-                value={values.commissionRatePct}
-                onChange={set('commissionRatePct')}
-                error={errors.commissionRatePct}
-              />
+        <SegmentedControl kind="tab" label="Settings" options={TABS} value={tab} onChange={setTab} />
 
-              <div className="border-t border-ink/10 pt-5">
-                <h2 className="font-heading text-ink text-base font-semibold">Commission on longer bookings</h2>
-                <p className="text-muted text-sm mt-1">
-                  A different commission for bookings of this many days or more — e.g. 10% from 2 days. Shorter bookings
-                  keep the rate above. Leave both empty to use one rate for every booking.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Longer-booking commission (%)"
-                  name="multiDayCommissionRatePct"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  inputMode="decimal"
-                  value={values.multiDayCommissionRatePct}
-                  onChange={set('multiDayCommissionRatePct')}
-                  error={errors.multiDayCommissionRatePct}
-                />
-                <Input
-                  label="From (days)"
-                  name="multiDayThresholdDays"
-                  type="number"
-                  min="1"
-                  step="1"
-                  inputMode="numeric"
-                  value={values.multiDayThresholdDays}
-                  onChange={set('multiDayThresholdDays')}
-                  error={errors.multiDayThresholdDays}
-                />
-              </div>
+        <div role="tabpanel" aria-label={TABS.find((t) => t.value === tab).label}>
+          {tab === 'fees' && (
+            <Card className="p-5">
+              {isLoading ? (
+                <div className="flex justify-center py-6">
+                  <Spinner label="Loading the platform settings" />
+                </div>
+              ) : isError ? (
+                <ErrorBanner message="Could not load the platform settings." onRetry={refetch} />
+              ) : (
+                <form onSubmit={submit} noValidate className="flex flex-col gap-6">
+                  <fieldset className="flex flex-col gap-4">
+                    <legend className="font-heading text-ink text-base font-semibold mb-1">Commission</legend>
+                    <p className="text-muted text-sm -mt-2">
+                      The platform's share of each booking, taken from the owner's share. Longer bookings can have their
+                      own rate — leave those two empty to use one rate for every booking.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {field('commissionRatePct', 'Commission (%)', 'Every booking', percent)}
+                      {field('multiDayCommissionRatePct', 'Longer bookings (%)', 'e.g. 10', percent)}
+                      {field('multiDayThresholdDays', 'From (days)', 'e.g. 2 = 2 days or more', { min: '1', step: '1', inputMode: 'numeric' })}
+                    </div>
+                  </fieldset>
 
-              <div className="border-t border-ink/10 pt-5">
-                <h2 className="font-heading text-ink text-base font-semibold">Payment processing fee</h2>
-                <p className="text-muted text-sm mt-1">The Pesapal transaction fee, as a percentage of each payment.</p>
-              </div>
-              <Input
-                label="Pesapal transaction fee (%)"
-                name="pesapalTransactionFeeRatePct"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                inputMode="decimal"
-                value={values.pesapalTransactionFeeRatePct}
-                onChange={set('pesapalTransactionFeeRatePct')}
-                error={errors.pesapalTransactionFeeRatePct}
-              />
+                  <fieldset className="flex flex-col gap-4 border-t border-ink/10 pt-5">
+                    <legend className="sr-only">Fees and charges</legend>
+                    <p className="font-heading text-ink text-base font-semibold" aria-hidden="true">Fees and charges</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {field('pesapalTransactionFeeRatePct', 'Pesapal transaction fee (%)', 'Of each payment', { ...percent, step: '0.01' })}
+                      {field('deliveryFlatFee', 'Delivery flat fee (KES)', 'When the car is delivered; 0 = free', money)}
+                      {field('driverFlatCharge', 'Driver flat charge (KES)', 'Chauffeured bookings; 0 = none', money)}
+                    </div>
+                  </fieldset>
 
-              <div className="border-t border-ink/10 pt-5">
-                <h2 className="font-heading text-ink text-base font-semibold">Delivery fee</h2>
-                <p className="text-muted text-sm mt-1">
-                  A flat amount added to a booking when the renter asks for the vehicle to be delivered to them.
-                  Renters who collect the vehicle themselves pay nothing extra. Set 0 for free delivery.
-                </p>
-              </div>
-              <Input
-                label="Delivery flat fee (KES)"
-                name="deliveryFlatFee"
-                type="number"
-                min="0"
-                step="50"
-                inputMode="numeric"
-                value={values.deliveryFlatFee}
-                onChange={set('deliveryFlatFee')}
-                error={errors.deliveryFlatFee}
-              />
-
-              <div className="border-t border-ink/10 pt-5">
-                <h2 className="font-heading text-ink text-base font-semibold">Driver charge</h2>
-                <p className="text-muted text-sm mt-1">
-                  A flat amount added to a chauffeured booking for the driver. Self-drive bookings pay nothing extra.
-                  Set 0 for no driver charge.
-                </p>
-              </div>
-              <Input
-                label="Driver flat charge (KES)"
-                name="driverFlatCharge"
-                type="number"
-                min="0"
-                step="50"
-                inputMode="numeric"
-                value={values.driverFlatCharge}
-                onChange={set('driverFlatCharge')}
-                error={errors.driverFlatCharge}
-              />
-
-              <Button type="submit" className="self-start" loading={save.isPending}>
-                {!save.isPending && <Save size={15} aria-hidden="true" />}
-                Save settings
-              </Button>
-            </form>
+                  <Button type="submit" className="self-start" loading={save.isPending}>
+                    {!save.isPending && <Save size={15} aria-hidden="true" />}
+                    Save settings
+                  </Button>
+                </form>
+              )}
+            </Card>
           )}
-        </Card>
 
-        {data && <AssistantCard enabled={data.botAssistantEnabled !== false} />}
+          {tab === 'policy' && <PlatformPolicyCard />}
 
-        <PlatformPolicyCard />
+          {tab === 'assistant' &&
+            (data ? (
+              <AssistantCard enabled={data.botAssistantEnabled !== false} />
+            ) : isError ? (
+              <ErrorBanner message="Could not load the platform settings." onRetry={refetch} />
+            ) : (
+              <div className="flex justify-center py-6"><Spinner label="Loading the platform settings" /></div>
+            ))}
+        </div>
       </div>
     </PageWrapper>
   );

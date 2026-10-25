@@ -830,7 +830,10 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Processing**,
   **Paid** and **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what
   went wrong. A **Processing** payout has been sent and is waiting for the payment provider to confirm it — **Check
-  status** asks for the latest, and it moves to Paid or Failed once the provider answers.
+  status** asks for the latest, and it moves to Paid or Failed once the provider answers. **A payout only exists once
+  the vehicle's pickup has been recorded** on the booking (Handover), not as soon as the renter pays. Each booking's own
+  page (All Bookings → open one) has an **Owner payout** section: it says if there's no payout yet, and otherwise
+  shows it with the same **Mark paid** / **Failed** / **Check status** buttons.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside
@@ -843,7 +846,8 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Add a renter** (Users page) — creates a renter account for someone booking through staff (name, email, optional
   phone) and shows a temporary password once to hand over. **Upload a document for this user** (a user's page) adds a
   document handed in to staff; it's reviewed like any other.
-- **Platform Settings** (`/admin/settings`) — the commission rate (as a percentage) added on top of a vehicle's
+- **Platform Settings** (`/admin/settings`) — three tabs: **Fees & commission**, **Booking policy** and
+  **Assistant** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
   charged on a booking that already exists. Next to it: the **Pesapal transaction fee** (%), the **Delivery fee** (a

@@ -5,6 +5,11 @@ first.
 
 ## 2026-10-26 (longer-booking commission, payout status)
 
+- **Changed (administrators):** **Platform Settings** is split into tabs — **Fees & commission**, **Booking policy**,
+  **Assistant** — and the fees sit side by side, so nothing needs scrolling.
+- **Added (administrators):** an **Owner payout** section on each booking's page: pay it (**Mark paid** / **Failed**)
+  or **Check status** right there, or see that there's no payout yet because the pickup hasn't been recorded. Owner
+  Payouts now explains when payouts appear.
 - **Added (administrators):** **Platform Settings → Commission on longer bookings** — a different commission for
   bookings of a set number of days or more.
 - **Added (administrators):** **Owner Payouts** has a **Processing** tab for payouts sent but not yet confirmed, with
