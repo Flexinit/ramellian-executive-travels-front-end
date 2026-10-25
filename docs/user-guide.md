@@ -317,7 +317,11 @@ verifying your email (which signs you in), and picks up where you left off.
    special instructions (**Add special instructions** opens the box), then either:
    **Travelling from** and **Travelling to** are required: where your trip starts and where you're going (not the same
    as where you collect the car). They're written into the contract.
-   The whole booking panel fits on screen beside the vehicle, so **Book now** is always visible without scrolling.
+   The whole booking panel fits on screen beside the vehicle, so **Book now** is always visible without scrolling. On a
+   phone or tablet, where the panel comes after the vehicle's details, the price, **Book now** and the basket button
+   (**Add to booking** / **Update booking**) float along the bottom of the screen until you reach the panel — if
+   something is missing (your dates, say), tapping them brings the form into view and says what to fill in. Checkout
+   does the same with the total and **Continue** (or **Sign up** / **Log in**).
    - **Book now** — goes straight to checkout. If you're not signed in, choose **Sign up to continue** or **I have an
      account** there (nothing opens by itself). Anything else already in your booking comes along too.
    - **Add to booking** — puts it in **Your Booking** (step 3) so you can add more vehicles first.

@@ -11,6 +11,9 @@ first.
   While it's off, signed-in people don't see the chat button, the top-bar icon or the Assistant menu item.
 - **Added:** **Terms & Conditions** and **Privacy Policy** in the top bar, next to About (on smaller screens, in the
   ☰ menu).
+- **Added (phones and tablets):** **Book now** and **Add to booking / Update booking** float along the bottom of a
+  vehicle's page, with the price, until you reach the booking panel; Checkout floats its total and **Continue** (or
+  **Sign up** / **Log in**) the same way. No more scrolling to the end to book.
 - **Fixed (phones, especially with large text):** on Checkout the Edit / Remove buttons covered the car's name — they now
   sit on their own row; Log In no longer breaks over two lines; booking details show each label above its value
   instead of a squeezed column (price lines stay side by side); the "Continue: Log In" tab left after closing the

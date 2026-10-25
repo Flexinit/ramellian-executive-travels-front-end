@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ShoppingCart, RotateCcw, ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
 import PriceDisplay from '../ui/PriceDisplay';
+import FloatingActionBar from '../ui/FloatingActionBar';
 import Step2_TripDetails from './Step2_TripDetails';
 import ContractPreviewLink from './ContractPreviewLink';
 import { useBookingStore } from '../../store/bookingStore';
@@ -107,13 +108,23 @@ export default function AddToBookingPanel({ vehicle }) {
    * route Your Booking's own Book button takes).
    * @param {boolean} [bookNow]
    */
+  // The panel (for scrolling it into view) and its own buttons (the floating bar steps aside once they're on screen).
+  const panelRef = useRef(null);
+  const actionsRef = useRef(null);
+
+  /** Says what's missing — and, if Book now was tapped on the floating bar far above, brings the form into view. */
+  function fail(message) {
+    toast.error(message);
+    panelRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  }
+
   function handleAdd(bookNow = false) {
     if (!draft.startTime || !draft.endTime || days === 0) {
-      toast.error('Please choose your start and end dates.');
+      fail('Please choose your start and end dates.');
       return;
     }
     if (!draft.bookingMode) {
-      toast.error('Please choose Self-Drive or Chauffeured.');
+      fail('Please choose Self-Drive or Chauffeured.');
       return;
     }
     const problem =
@@ -121,24 +132,24 @@ export default function AddToBookingPanel({ vehicle }) {
       bookingWindowProblem(vehicle, draft.startTime, draft.endTime) ||
       tripTypeProblem(vehicle, draft.tripType);
     if (problem) {
-      toast.error(problem);
+      fail(problem);
       return;
     }
     if (windowBooked.isBooked) {
-      toast.error('This vehicle is already booked for those dates. Please choose different dates.');
+      fail('This vehicle is already booked for those dates. Please choose different dates.');
       return;
     }
     if (renterOverlap.isBooked) {
-      toast.error('You already have a booking on this vehicle covering those dates. Please choose different dates.');
+      fail('You already have a booking on this vehicle covering those dates. Please choose different dates.');
       return;
     }
     const noRoute = routeProblem(draft.tripOrigin, draft.tripDestination);
     if (noRoute) {
-      toast.error(noRoute);
+      fail(noRoute);
       return;
     }
     if (draft.deliveryRequested && !String(draft.pickupLocation || '').trim()) {
-      toast.error('Please enter the delivery address, or choose to collect the vehicle yourself.');
+      fail('Please enter the delivery address, or choose to collect the vehicle yourself.');
       return;
     }
     const result = addItem({
@@ -178,7 +189,7 @@ export default function AddToBookingPanel({ vehicle }) {
   return (
     // See-through like Browse Vehicles' search and filters, and kept short enough that the Book button is on
     // screen without scrolling the page (the column sticks beside the vehicle's details).
-    <div className="p-5 flex flex-col gap-3.5 rounded-card border border-line bg-surface shadow-card">
+    <div ref={panelRef} className="p-5 flex flex-col gap-3.5 rounded-card border border-line bg-surface shadow-card scroll-mt-24">
       {alreadyBooked && (
         <p className="text-xs text-muted bg-ink/5 border border-ink/10 rounded-lg px-3 py-2">
           You already have a booking for this vehicle (<span className="text-ink font-medium">My Bookings</span>) — new dates start a separate one.
@@ -200,7 +211,7 @@ export default function AddToBookingPanel({ vehicle }) {
         </p>
       )}
 
-      <div className="pt-2.5 border-t border-ink/10 flex flex-col gap-2.5">
+      <div ref={actionsRef} className="pt-2.5 border-t border-ink/10 flex flex-col gap-2.5">
         <div className="flex items-end justify-between gap-4">
           <div className="text-sm text-muted">
             {days > 0 ? (
@@ -229,6 +240,30 @@ export default function AddToBookingPanel({ vehicle }) {
         </div>
       </div>
 
+
+      {/* Phones and tablets: Book now / Add to booking float along the bottom until this panel's own buttons are on
+          screen, so the vehicle's details don't have to be scrolled through first. */}
+      <FloatingActionBar
+        watch={actionsRef}
+        label="Book this vehicle"
+        summary={
+          <PriceDisplay amount={days > 0 ? total : vehicle.dailyPrice} period={days > 0 ? 'estimated' : '/ day'} size="sm" />
+        }
+      >
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={windowBooked.isBooked || renterOverlap.isBooked}
+          onClick={() => handleAdd(false)}
+          aria-label={inCart && !alreadyBooked ? 'Update booking' : 'Add to booking'}
+        >
+          <ShoppingCart size={14} aria-hidden="true" />
+          <span className="max-[379px]:hidden">{inCart && !alreadyBooked ? 'Update' : 'Add'}</span>
+        </Button>
+        <Button size="sm" disabled={windowBooked.isBooked || renterOverlap.isBooked} onClick={() => handleAdd(true)}>
+          {alreadyBooked ? 'Book Again' : 'Book now'}
+        </Button>
+      </FloatingActionBar>
     </div>
   );
 }

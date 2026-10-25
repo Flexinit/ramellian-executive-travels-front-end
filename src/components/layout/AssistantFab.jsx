@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useBotAssistantEnabled } from '../../hooks/usePlatformSettings';
+import { useUiStore } from '../../store/uiStore';
 
 /**
  * A floating WhatsApp-style button, bottom-right, global on every page — signed in or not, the same way a
@@ -29,6 +30,8 @@ import { useBotAssistantEnabled } from '../../hooks/usePlatformSettings';
 export default function AssistantFab() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const assistantOn = useBotAssistantEnabled();
+  // A page's floating action bar ("Book now"…) along the bottom: sit above it instead of on it.
+  const raised = useUiStore((s) => s.actionBarVisible);
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -53,12 +56,21 @@ export default function AssistantFab() {
 
   // A conversation (`/messages/…`) has its own message box, whose Send button sits exactly where this button
   // floats on a phone — so it isn't shown there.
+  // Where the button floats: above the phone tab bar when signed in, and further up while an action bar shows (the
+  // bar is never shown from lg up, so there it's back at the corner).
+  const buttonBottom = raised
+    ? isAuthenticated ? 'bottom-[10.5rem] md:bottom-[6.5rem] lg:bottom-5' : 'bottom-[6.5rem] lg:bottom-5'
+    : isAuthenticated ? 'bottom-24 md:bottom-5' : 'bottom-5';
+  const panelBottom = raised
+    ? isAuthenticated ? 'bottom-[15rem] md:bottom-[11rem] lg:bottom-24' : 'bottom-[11rem] lg:bottom-24'
+    : isAuthenticated ? 'bottom-44 md:bottom-24' : 'bottom-24';
+
   if (pathname === '/assistant' || pathname.startsWith('/messages/') || !assistantOn) return null;
 
   return (
     <>
       {open && (
-        <div className={`fixed ${isAuthenticated ? 'bottom-44 md:bottom-24' : 'bottom-24'} right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-2xl`}>
+        <div className={`fixed ${panelBottom} right-5 z-40 flex w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-2xl`}>
           <div className="flex shrink-0 items-center justify-between gap-3 bg-[#25D366] px-4 py-3">
             <span className="inline-flex items-center gap-2 font-heading text-sm font-semibold text-white">
               <FaWhatsapp size={18} aria-hidden="true" />
@@ -99,7 +111,7 @@ export default function AssistantFab() {
         aria-label={open ? 'Minimize chat' : 'Chat with the assistant'}
         aria-expanded={open}
         tabIndex={tucked ? -1 : undefined}
-        className={`fixed ${isAuthenticated ? 'bottom-24 md:bottom-5' : 'bottom-5'} right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-300 hover:scale-105 focus-ring ${
+        className={`fixed ${buttonBottom} right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-300 hover:scale-105 focus-ring ${
           tucked ? 'translate-y-24 opacity-0 pointer-events-none' : ''
         }`}
       >

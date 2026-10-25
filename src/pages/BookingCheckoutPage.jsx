@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Pencil, Trash2, FileText, ArrowLeft, UserPlus, LogIn } from 'lucide-react';
 import { useQueries } from '@tanstack/react-query';
@@ -8,6 +8,9 @@ import BookingProgress from '../components/booking/BookingProgress';
 import BookingSummaryCard from '../components/booking/BookingSummaryCard';
 import CheckoutPhonePrompt from '../components/booking/CheckoutPhonePrompt';
 import CartTotals from '../components/booking/CartTotals';
+import FloatingActionBar from '../components/ui/FloatingActionBar';
+import PriceDisplay from '../components/ui/PriceDisplay';
+import { quoteBreakdown } from '../lib/quoteBreakdown';
 import DocumentGateModal from '../components/documents/DocumentGateModal';
 import RentalTermsList from '../components/booking/RentalTermsList';
 import TermsAcceptance from '../components/booking/TermsAcceptance';
@@ -83,6 +86,8 @@ export default function BookingCheckoutPage() {
   const [termsOpen, setTermsOpen] = useState(false);
   // Renters must read and accept the Terms of Service and the rental terms before booking (product rule 2026-10-17).
   const [termsAccepted, setTermsAccepted] = useState(false);
+  // The page's own buttons — the floating bar (phones/tablets) steps aside once they're on screen.
+  const actionsRef = useRef(null);
   const { data: rentalTerms = [] } = useRentalTerms();
   // null | 'login' | 'register' — one piece of state for both, so "Create one"/"Log in" inside either modal
   // can switch straight to the other without a moment where neither is open.
@@ -145,6 +150,17 @@ export default function BookingCheckoutPage() {
   const gateMissing = gateStatus === 422 || gateStatus === 403
     ? [start.error?.response?.data?.message || 'Your identity and licence documents must be approved before booking.']
     : missingDocs;
+
+  const barTotal = current.reduce((sum, item) => sum + quoteBreakdown(item, quotes[item.vehicleId]).total, 0);
+
+  /** The floating bar's Continue: goes straight on when nothing is missing, else brings the terms / phone up. */
+  function continueFromBar() {
+    if (blocked || needsPhone || !termsAccepted) {
+      actionsRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    handleContinue();
+  }
 
   function handleContinue() {
     start.mutate(undefined, {
@@ -216,7 +232,7 @@ export default function BookingCheckoutPage() {
 
 
             {isAuthenticated ? (
-              <div className="flex flex-col gap-3">
+              <div ref={actionsRef} className="flex flex-col gap-3 scroll-mt-24">
                 {needsPhone && <CheckoutPhonePrompt />}
                 {missingDocs.length > 0 && (
                   <p className="text-amber-700/90 text-xs bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
@@ -236,7 +252,7 @@ export default function BookingCheckoutPage() {
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div ref={actionsRef} className="flex flex-col gap-3">
                 <Button size="lg" onClick={() => setAuthModal('register')}>
                   <UserPlus size={16} aria-hidden="true" /> Sign up to continue
                 </Button>
@@ -248,6 +264,23 @@ export default function BookingCheckoutPage() {
                 </Button>
               </div>
             )}
+            {/* Phones and tablets: the next step floats along the bottom until the buttons above are on screen. */}
+            <FloatingActionBar
+              watch={actionsRef}
+              label="Continue your booking"
+              summary={<PriceDisplay amount={barTotal} period="total" size="sm" />}
+            >
+              {isAuthenticated ? (
+                <Button size="sm" loading={start.isPending} onClick={continueFromBar}>
+                  {!start.isPending && <FileText size={14} aria-hidden="true" />} Continue
+                </Button>
+              ) : (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => setAuthModal('login')}>Log in</Button>
+                  <Button size="sm" onClick={() => setAuthModal('register')}>Sign up</Button>
+                </>
+              )}
+            </FloatingActionBar>
             {/* After the actions, not before them: the buttons that move the booking on stay on screen without
                 scrolling; this is reading for anyone who wants it. */}
             <Card className="p-4 flex flex-col gap-2">

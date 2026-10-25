@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { SelfDriveIcon, ChauffeurIcon } from '../components/ui/TripModeIcons';
 import { Car, MapPin, Star } from 'lucide-react';
 
@@ -6,6 +6,7 @@ import Button       from '../components/ui/Button';
 import ToggleChip   from '../components/ui/ToggleChip';
 import { TripTypeLabel } from '../components/ui/TripTypeIcon';
 import { TRIP_TYPES } from '../lib/constants';
+import FloatingActionBar from '../components/ui/FloatingActionBar';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import Input        from '../components/ui/Input';
 import Textarea     from '../components/ui/Textarea';
@@ -122,6 +123,11 @@ export default function WidgetShowcase() {
         {Object.values(TRIP_TYPES).map((type) => (
           <ToggleChip key={type} active={false}><TripTypeLabel type={type} /></ToggleChip>
         ))}
+      </Section>
+
+      {/* Floating action bar */}
+      <Section title="Floating action bar">
+        <FloatingActionDemo />
       </Section>
 
       {/* Badges */}
@@ -348,6 +354,19 @@ export default function WidgetShowcase() {
         </Modal>
       </Section>
 
+    </div>
+  );
+}
+
+/** Phones/tablets: the bar floats along the bottom while this section is still further down the page. */
+function FloatingActionDemo() {
+  const ref = useRef(null);
+  return (
+    <div ref={ref} className="flex items-center gap-3">
+      <p className="text-sm text-muted">Scroll up on a phone: these buttons float along the bottom until this point.</p>
+      <FloatingActionBar watch={ref} label="Demo actions" summary={<PriceDisplay amount={12000} size="sm" />}>
+        <Button size="sm">Book now</Button>
+      </FloatingActionBar>
     </div>
   );
 }
