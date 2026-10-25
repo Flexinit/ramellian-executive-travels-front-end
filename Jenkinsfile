@@ -21,7 +21,7 @@ pipeline {
             when { branch 'master' }
             steps {
                 // The same push started GitHub Actions, which tests and builds first. Its file appears only if the
-                // tests passed, so a failed run never gets deployed.
+                // tests passed, so a failed run never gets deployed at all.
                 sh '''
                     URL="$BUILDS_URL/site-$GIT_COMMIT.tar.gz"
                     for i in $(seq 1 90); do
