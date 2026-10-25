@@ -1339,3 +1339,20 @@ browsing. The frontend now drops any photo whose file name matches the sticker's
 photo list (and out of the public response, as it can carry personal details), or add a `kind` field to
 `VehiclePhotoResponse`. The stopgap for item 45 (Recommended sent as `price_asc`) is in `useVehicles.js`'s
 `withWorkingSort`; remove it once that sort is fixed.
+
+## 45 / 46 / 26 (update, 2026-10-26). Fixed on the backend; new fields consumed
+
+**Fixed (checked live 2026-10-26):** `GET /vehicles` with no sort, `recommended` and `rating_desc` all answer 200, so
+the frontend's stopgap (sending `price_asc` for Recommended) is removed. `GET /platform-settings`, `/bookings/mine`
+and the assistant work again: the `bot_assistant_enabled` column now exists. `GET /platform-settings` still needs a
+login (401 without), so the assistant can only be hidden for signed-in people. Still open from item 46: the insurance
+sticker is listed among a vehicle's photos (the frontend keeps filtering it out).
+
+**New in the spec, consumed:**
+- `PlatformSettingsRequest`/`Response` gained `multiDayCommissionRatePct` (0–100) and `multiDayThresholdDays`
+  (int). Checked with quotes on a KES 1/day car at 2% / 10% from 2 days: 1 day → `platformFee` 0.02; 2 days → 0.20;
+  3 days → 0.30, so the threshold is **inclusive** ("from N days"). The renter's `totalAmount` is base + transaction
+  fee in all three, so commission comes out of the owner's share as before. Set on Platform Settings.
+- `GET /admin/disbursements?status=` accepts `PROCESSING`, and `POST /admin/disbursements/{id}/sync` returns the
+  updated `DisbursementResponse`. Owner Payouts has a Processing tab and **Check status**. No payouts existed yet,
+  so what moves a payout into PROCESSING (presumably an automatic provider payout) hasn't been seen live.

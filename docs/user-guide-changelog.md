@@ -3,6 +3,15 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (longer-booking commission, payout status)
+
+- **Added (administrators):** **Platform Settings → Commission on longer bookings** — a different commission for
+  bookings of a set number of days or more.
+- **Added (administrators):** **Owner Payouts** has a **Processing** tab for payouts sent but not yet confirmed, with
+  **Check status** to ask the payment provider for the latest.
+- **Changed:** Browse Vehicles asks the backend for its own "Recommended" order again (the backend's sort is fixed;
+  the temporary price-order workaround is gone).
+
 ## 2026-10-25 (platform settings: driver charge, assistant switch; vehicles load as you scroll; trip type icons)
 
 - **Added (administrators):** **Platform Settings** has a **Driver charge** — a flat amount added to chauffeured

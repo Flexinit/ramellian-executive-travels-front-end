@@ -827,8 +827,10 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time
   (20 entries). Filter by **action** (`LOGIN` finds `AUTH_LOGIN`), the **person's email** and the **kind of
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
-- **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Paid** and
-  **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what went wrong.
+- **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Processing**,
+  **Paid** and **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what
+  went wrong. A **Processing** payout has been sent and is waiting for the payment provider to confirm it — **Check
+  status** asks for the latest, and it moves to Paid or Failed once the provider answers.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside
@@ -846,7 +848,10 @@ your permissions" above): an item is only shown if your account holds the permis
   quote and baked into every booking going forward; changing it here does not change the amount already
   charged on a booking that already exists. Next to it: the **Pesapal transaction fee** (%), the **Delivery fee** (a
   flat amount when the renter has the car delivered; 0 = free) and the **Driver charge** (a flat amount added to a
-  chauffeured booking; 0 = none). **Save settings** saves all of them together.
+  chauffeured booking; 0 = none). **Commission on longer bookings** sets a different rate for bookings of a given
+  number of days or more (e.g. 10% from 2 days: a 1-day booking takes the normal rate, a 2-day one 10%); leave both
+  empty for one rate on every booking. Like the normal rate, it comes out of the owner's share — the renter's total
+  doesn't change. **Save settings** saves all of them together.
   The **Assistant** card turns the in-app chat assistant on or off for everyone — **Turn the assistant off** /
   **Turn the assistant on**; its badge shows which it is now.
   It also holds the **Standard booking policy**: the cancellation and date-moving rules for owners who haven't set their own.

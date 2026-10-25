@@ -97,18 +97,8 @@ function nextPageAfter(data, page, size) {
 
 const MAX_PAGES = 50; // a guard, should the backend ever keep answering with `last: false`
 
-/**
- * Stopgap (docs/backend-requests.md item 45): since 2026-10-25 the backend's own "recommended" order — which is
- * also what it uses when no sort is sent — fails with a 500. The portal orders Recommended and Newest itself
- * anyway, so in those cases the backend is asked for price order, which works. Remove once the backend is fixed.
- */
-function withWorkingSort(filters) {
-  return isRecommendedSort(filters.sort) ? { ...filters, sort: 'price_asc' } : filters;
-}
-
 /** Every vehicle matching `filters`, reading page after page — as one plain array. */
-async function fetchAllVehicles(rawFilters) {
-  const filters = withWorkingSort(rawFilters);
+async function fetchAllVehicles(filters) {
   const size = 100;
   const all = [];
   for (let page = 0; page < MAX_PAGES; page += 1) {
@@ -168,7 +158,8 @@ export function useVehicleFacets() {
 export function useVehicleAvailability(filters = {}) {
   // "Newest" is the portal's own sort: the backend refuses it (400), so it's never sent.
   const newest = filters.sort === CLIENT_SORTS.NEWEST;
-  const apiFilters = withWorkingSort({ ...filters, sort: newest ? undefined : filters.sort });
+  const apiFilters = { ...filters };
+  if (newest) delete apiFilters.sort;
   const query = useInfiniteQuery({
     queryKey: ['vehicles', 'paged', apiFilters],
     queryFn: ({ pageParam }) => apiGet('/vehicles', { ...apiFilters, page: pageParam, size: VEHICLE_PAGE_SIZE }),

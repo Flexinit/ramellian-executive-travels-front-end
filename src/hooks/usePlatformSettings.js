@@ -8,7 +8,8 @@ import { useAuthStore } from '../store/authStore';
  * Platform-wide settings — `platform-settings-controller` (docs/backend-requests.md item 26). Confirmed
  * against the live spec 2026-10-25: `GET`/`PUT /platform-settings` (it was `/platform-settings/commission`
  * until then), `PlatformSettingsResponse` is `{ id, commissionRatePct, pesapalTransactionFeeRatePct,
- * deliveryFlatFee, driverFlatCharge, botAssistantEnabled }` and `PlatformSettingsRequest` takes the same five
+ * deliveryFlatFee, driverFlatCharge, botAssistantEnabled, multiDayCommissionRatePct, multiDayThresholdDays }` (the
+ * last two added 2026-10-26) and `PlatformSettingsRequest` takes the same
  * (`commissionRatePct` required, the two rates 0–100, the two fees ≥ 0). `PUT /platform-settings/bot`
  * (`BotAssistantToggleRequest { enabled }`, required) switches only the assistant. `GET` needs auth and was
  * readable by any signed-in role when last probed; `PUT` refuses a non-admin token (403).
@@ -32,8 +33,8 @@ export function usePlatformSettings({ enabled = true } = {}) {
 export const usePlatformCommission = usePlatformSettings;
 
 /**
- * Saves the platform settings (admin only). Pass all of them:
- * `{ commissionRatePct, pesapalTransactionFeeRatePct, deliveryFlatFee, driverFlatCharge, botAssistantEnabled }`.
+ * Saves the platform settings (admin only). Pass all of them: `{ commissionRatePct, multiDayCommissionRatePct,
+ * multiDayThresholdDays, pesapalTransactionFeeRatePct, deliveryFlatFee, driverFlatCharge, botAssistantEnabled }`.
  */
 export function useSavePlatformSettings() {
   const queryClient = useQueryClient();

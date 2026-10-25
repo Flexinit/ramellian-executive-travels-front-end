@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -25,10 +25,15 @@ import { formatCurrency, formatDateTime } from '../lib/utils';
  * status, who triggered it and when, reference, notes). A pending one is **marked paid** with the payment's reference
  * (`POST /admin/disbursements/{id}/trigger` { reference, notes }) or **marked failed** with a reason
  * (`POST .../fail` { reference?, notes }).
+ *
+ * Since 2026-10-26 (live spec) a payout can also be **PROCESSING** — sent, but not yet confirmed by the payment
+ * provider — and `POST /admin/disbursements/{id}/sync` (no body) asks the provider for its latest status and
+ * returns the updated `DisbursementResponse`. No payouts existed yet to try it on, so the page shows whatever status
+ * comes back rather than assuming one.
  */
-const STATUSES = ['PENDING', 'COMPLETED', 'FAILED'];
-const LABEL = { PENDING: 'To pay', COMPLETED: 'Paid', FAILED: 'Failed' };
-const VARIANT = { PENDING: 'warning', COMPLETED: 'success', FAILED: 'danger' };
+const STATUSES = ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'];
+const LABEL = { PENDING: 'To pay', PROCESSING: 'Processing', COMPLETED: 'Paid', FAILED: 'Failed' };
+const VARIANT = { PENDING: 'warning', PROCESSING: 'info', COMPLETED: 'success', FAILED: 'danger' };
 
 function useDisbursements(status) {
   return useQuery({ queryKey: ['admin', 'disbursements', status], queryFn: () => apiGet('/admin/disbursements', { status }) });
@@ -45,11 +50,26 @@ function useResolve() {
   });
 }
 
+/** Asks the payment provider for a processing payout's latest status (`POST /admin/disbursements/{id}/sync`). */
+function useSync() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiPost(`/admin/disbursements/${id}/sync`),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'disbursements'] });
+      const status = updated?.status;
+      toast.success(status ? `Payout status: ${(LABEL[status] || status).toLowerCase()}.` : 'Payout status checked.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check the payout's status.")),
+  });
+}
+
 export default function AdminPayoutsPage() {
   const [status, setStatus] = useState('PENDING');
   const { data, isLoading, isError, error, refetch } = useDisbursements(status);
   const list = Array.isArray(data) ? data : [];
   const resolve = useResolve();
+  const sync = useSync();
   const [acting, setActing] = useState(null); // { item, action }
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
@@ -70,7 +90,11 @@ export default function AdminPayoutsPage() {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Owner Payouts</h1>
-          <p className="text-muted text-sm mt-1.5">What each owner is owed for a paid booking. Mark it paid once the money is sent, with its reference.</p>
+          <p className="text-muted text-sm mt-1.5">
+            What each owner is owed for a paid booking. Mark it paid once the money is sent, with its reference. A payout
+            that's <strong className="text-ink font-medium">Processing</strong> has been sent and is waiting for the payment
+            provider — <strong className="text-ink font-medium">Check status</strong> asks for the latest.
+          </p>
         </div>
 
         <SegmentedControl
@@ -102,13 +126,23 @@ export default function AdminPayoutsPage() {
                   <p className="text-xs text-muted">
                     {d.bookingId && <Link to={`/admin/bookings/${d.bookingId}`} className="text-accent hover:underline focus-ring rounded">Booking</Link>}
                     {d.createdAt && ` · created ${formatDateTime(d.createdAt)}`}
-                    {d.triggeredAt && ` · ${d.status === 'FAILED' ? 'failed' : 'paid'} ${formatDateTime(d.triggeredAt)}${d.triggeredBy ? ` by ${d.triggeredBy}` : ''}`}
+                    {d.triggeredAt && ` · ${d.status === 'FAILED' ? 'failed' : d.status === 'PROCESSING' ? 'sent' : 'paid'} ${formatDateTime(d.triggeredAt)}${d.triggeredBy ? ` by ${d.triggeredBy}` : ''}`}
                     {d.reference && ` · ref ${d.reference}`}
                   </p>
                   {d.notes && <p className="text-xs text-muted italic">{d.notes}</p>}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                   <span className="text-lg font-bold text-ink tabular-nums">{formatCurrency(d.amount ?? 0)}</span>
+                  {d.status === 'PROCESSING' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={sync.isPending && sync.variables === d.id}
+                      onClick={() => sync.mutate(d.id)}
+                    >
+                      <RefreshCw size={14} aria-hidden="true" /> Check status
+                    </Button>
+                  )}
                   {d.status === 'PENDING' && (
                     <>
                       <Button size="sm" onClick={() => open(d, 'trigger')}><CheckCircle2 size={14} aria-hidden="true" /> Mark paid</Button>

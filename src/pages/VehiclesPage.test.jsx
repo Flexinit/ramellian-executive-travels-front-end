@@ -72,8 +72,7 @@ describe('VehiclesPage (the main search page)', () => {
     renderPage('/vehicles?sort=recommended');
 
     expect(await screen.findByRole('heading', { name: 'Mercedes Benz' })).toBeInTheDocument();
-    // Recommended is asked for as price order (docs/backend-requests.md item 45 — the backend's own fails).
-    expect(query).toContain('sort=price_asc');
+    expect(query).toContain('sort=recommended');
   });
 
   it('clears every filter it arrives with, keeping only the price range and the sort', async () => {
@@ -91,8 +90,7 @@ describe('VehiclesPage (the main search page)', () => {
     expect(query).not.toContain('location');
     expect(query).toContain('minPrice=9000');
     expect(query).toContain('maxPrice=20000');
-    // Recommended is asked for as price order (docs/backend-requests.md item 45 — the backend's own fails).
-    expect(query).toContain('sort=price_asc');
+    expect(query).toContain('sort=recommended');
   });
 
   it('keeps what was just searched for on the home page, and remembers it for the vehicle opened next', async () => {

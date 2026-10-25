@@ -12,12 +12,15 @@ import BookingPolicyForm from '../components/booking/BookingPolicyForm';
 import { usePlatformPolicy, useSavePlatformPolicy } from '../hooks/useBookingPolicies';
 import { usePlatformSettings, useSavePlatformSettings, useToggleBotAssistant } from '../hooks/usePlatformSettings';
 
-const FIELDS = ['commissionRatePct', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge'];
+const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThresholdDays', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge'];
 
 /**
  * Platform-wide settings — `GET`/`PUT /platform-settings` (docs/backend-requests.md item 26): the commission
  * rate, the Pesapal transaction fee rate, the flat fee for delivering a vehicle to a renter and the flat charge
- * for a driver on a chauffeured booking (live spec 2026-10-25). `POST /bookings/quote` applies them, so a
+ * for a driver on a chauffeured booking (live spec 2026-10-25), and — since 2026-10-26 — a separate commission
+ * rate for longer bookings (`multiDayCommissionRatePct`, 0–100) from `multiDayThresholdDays` days on (inclusive:
+ * checked live with 2% / 10% from 2 days — a 1-day quote took 2%, 2- and 3-day quotes 10%). Both are optional in
+ * the spec; they're set together or left empty together. `POST /bookings/quote` applies them all, so a
  * change here reprices every future quote and booking. They're saved together, since the `PUT` replaces the
  * settings as a whole — which is why the save also sends the assistant switch back unchanged. The assistant
  * itself is switched on its own card (`PUT /platform-settings/bot`).
@@ -25,7 +28,7 @@ const FIELDS = ['commissionRatePct', 'pesapalTransactionFeeRatePct', 'deliveryFl
 export default function AdminPlatformSettingsPage() {
   const { data, isLoading, isError, refetch } = usePlatformSettings();
   const save = useSavePlatformSettings();
-  const [values, setValues] = useState({ commissionRatePct: '', pesapalTransactionFeeRatePct: '', deliveryFlatFee: '', driverFlatCharge: '' });
+  const [values, setValues] = useState(Object.fromEntries(FIELDS.map((f) => [f, ''])));
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -53,6 +56,17 @@ export default function AdminPlatformSettingsPage() {
       return undefined;
     };
     pct('commissionRatePct', true);
+    // The longer-booking rate and the number of days it starts at only mean something together.
+    const multiRate = String(values.multiDayCommissionRatePct).trim();
+    const multiDays = String(values.multiDayThresholdDays).trim();
+    if (multiRate !== '' || multiDays !== '') {
+      if (multiRate === '') problems.multiDayCommissionRatePct = 'Enter the rate for longer bookings, or clear the number of days.';
+      else pct('multiDayCommissionRatePct', true);
+      const d = Number(multiDays);
+      if (multiDays === '') problems.multiDayThresholdDays = 'Enter from how many days it applies, or clear the rate.';
+      else if (!Number.isInteger(d) || d < 1) problems.multiDayThresholdDays = 'Enter a whole number of days, 1 or more.';
+      else next.multiDayThresholdDays = d;
+    }
     pct('pesapalTransactionFeeRatePct', false);
     const amount = (field, message) => {
       const n = values[field] === '' ? 0 : Number(values[field]);
@@ -84,7 +98,7 @@ export default function AdminPlatformSettingsPage() {
             <form onSubmit={submit} noValidate className="flex flex-col gap-5">
               <div>
                 <h2 className="font-heading text-ink text-base font-semibold">Commission rate</h2>
-                <p className="text-muted text-sm mt-1">The platform's percentage on every booking.</p>
+                <p className="text-muted text-sm mt-1">The platform's percentage on each booking — taken from the owner's share. Longer bookings can have their own rate (below).</p>
               </div>
               <Input
                 label="Commission rate (%)"
@@ -98,6 +112,39 @@ export default function AdminPlatformSettingsPage() {
                 onChange={set('commissionRatePct')}
                 error={errors.commissionRatePct}
               />
+
+              <div className="border-t border-ink/10 pt-5">
+                <h2 className="font-heading text-ink text-base font-semibold">Commission on longer bookings</h2>
+                <p className="text-muted text-sm mt-1">
+                  A different commission for bookings of this many days or more — e.g. 10% from 2 days. Shorter bookings
+                  keep the rate above. Leave both empty to use one rate for every booking.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Longer-booking commission (%)"
+                  name="multiDayCommissionRatePct"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  inputMode="decimal"
+                  value={values.multiDayCommissionRatePct}
+                  onChange={set('multiDayCommissionRatePct')}
+                  error={errors.multiDayCommissionRatePct}
+                />
+                <Input
+                  label="From (days)"
+                  name="multiDayThresholdDays"
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputMode="numeric"
+                  value={values.multiDayThresholdDays}
+                  onChange={set('multiDayThresholdDays')}
+                  error={errors.multiDayThresholdDays}
+                />
+              </div>
 
               <div className="border-t border-ink/10 pt-5">
                 <h2 className="font-heading text-ink text-base font-semibold">Payment processing fee</h2>

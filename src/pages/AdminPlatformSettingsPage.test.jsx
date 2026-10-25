@@ -154,4 +154,33 @@ describe('AdminPlatformSettingsPage', () => {
     await waitFor(() => expect(body).toEqual({ enabled: false }));
     expect(await screen.findByRole('button', { name: 'Turn the assistant on' })).toBeInTheDocument();
   });
+
+  it('sets a different commission for longer bookings — the rate and the days it starts at, together', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2 })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    await user.type(await screen.findByLabelText('Longer-booking commission (%)'), '10');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    // A rate without the number of days it applies from isn't saved.
+    expect(await screen.findByText(/enter from how many days it applies/i)).toBeInTheDocument();
+    expect(body).toBeUndefined();
+
+    await user.type(screen.getByLabelText('From (days)'), '2');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, multiDayCommissionRatePct: 10, multiDayThresholdDays: 2 }));
+  });
+
+  it('shows the saved longer-booking commission', async () => {
+    server.use(http.get(`${BASE}/platform-settings`, () =>
+      HttpResponse.json({ id: 's1', commissionRatePct: 2, multiDayCommissionRatePct: 10, multiDayThresholdDays: 2 })));
+    renderUi();
+    expect(await screen.findByLabelText('Longer-booking commission (%)')).toHaveValue(10);
+    expect(screen.getByLabelText('From (days)')).toHaveValue(2);
+  });
 });
