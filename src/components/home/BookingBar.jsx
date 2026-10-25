@@ -84,7 +84,7 @@ function LocationField({ id, value, onChange, placeholder, locating, onLocate })
         disabled={locating}
         aria-label="Use my current location"
         title="Use my current location"
-        className="shrink-0 p-1 -m-1 rounded-full text-muted hover:text-accent transition-colors focus-ring disabled:opacity-60"
+        className="shrink-0 p-2.5 -m-2.5 rounded-full text-muted hover:text-accent transition-colors focus-ring disabled:opacity-60"
       >
         {locating ? (
           <Loader2 size={15} className="animate-spin" aria-hidden="true" />
@@ -244,7 +244,7 @@ export default function BookingBar() {
           if (returnElsewhere) setReturnLocation('');
           setReturnElsewhere(!returnElsewhere);
         }}
-        className="self-center sm:self-start inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.45)] focus-ring rounded-md px-1"
+        className="self-center sm:self-start inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.45)] focus-ring rounded-md px-1 py-1.5 -my-1.5"
       >
         {returnElsewhere ? <Minus size={14} aria-hidden="true" /> : <Plus size={14} aria-hidden="true" />}
         {returnElsewhere ? 'Return to the same place' : 'Return to a different location'}

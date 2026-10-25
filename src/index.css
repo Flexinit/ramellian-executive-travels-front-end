@@ -95,12 +95,13 @@
   }
 }
 
-/* A table that turns into a stack of cards on a phone (below `md`), instead of being squeezed or scrolled
-   sideways. The markup stays a real table, so nothing changes from `md` up. Each cell labels itself from its
+/* A table that turns into a stack of cards on a phone or tablet (below `lg`), instead of being squeezed or scrolled
+   sideways — these tables sit beside the 256px left menu, so at tablet width only ~460px is left for them, too
+   narrow for their columns. The markup stays a real table, so nothing changes from `lg` up. Each cell labels itself from its
    `data-label` (the column heading the hidden header row would have given it); `stack-full` makes a cell take
    the card's whole width and `stack-end` lines it up on the right. A cell spanning every column (an expanded
    details panel) always takes the whole width. */
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .stack-table,
   .stack-table > tbody {
     display: block;

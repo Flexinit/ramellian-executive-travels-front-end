@@ -47,7 +47,13 @@ function ShimmerImg({ className = '', onLoad, onError, ...props }) {
 export default function AuthImage({ src, alt = '', fallback = null, ...imgProps }) {
   const url = photoSrc(src);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
-  const [plainFailed, setPlainFailed] = useState(false);
+  // The picture couldn't be drawn — a missing file, or one that downloads but isn't a real image (e.g. an 8-byte
+  // upload, seen live 2026-10-25): show the fallback instead of the browser's broken-image box and alt text.
+  const [failed, setFailed] = useState(false);
+  const onError = (e) => {
+    setFailed(true);
+    imgProps.onError?.(e);
+  };
 
   const { data: blobUrl, isError } = useQuery({
     queryKey: ['vehicle-photo', url],
@@ -67,8 +73,8 @@ export default function AuthImage({ src, alt = '', fallback = null, ...imgProps 
   if (/^(blob:|data:)/i.test(url)) return <ShimmerImg src={url} alt={alt} {...imgProps} />;
 
   if (isAuthenticated) {
-    if (blobUrl) return <ShimmerImg src={blobUrl} alt={alt} {...imgProps} />;
-    if (isError) return fallback;
+    if (isError || failed) return fallback;
+    if (blobUrl) return <ShimmerImg src={blobUrl} alt={alt} {...imgProps} onError={onError} />;
     return (
       <div
         role="img"
@@ -79,5 +85,5 @@ export default function AuthImage({ src, alt = '', fallback = null, ...imgProps 
     );
   }
 
-  return plainFailed ? fallback : <ShimmerImg src={url} alt={alt} onError={() => setPlainFailed(true)} {...imgProps} />;
+  return failed ? fallback : <ShimmerImg src={url} alt={alt} {...imgProps} onError={onError} />;
 }

@@ -72,6 +72,16 @@ describe('AuthImage', () => {
     expect(await screen.findByText('No photo')).toBeInTheDocument();
   });
 
+  it('shows the fallback when a signed-in download is not a real image (no broken-image box)', async () => {
+    server.use(http.get(HOST + '/uploads/vehicles/tiny.png', () => new HttpResponse(new Uint8Array([137, 80, 78, 71]), { headers: { 'Content-Type': 'image/png' } })));
+    act(() => useAuthStore.setState({ token: 'test-token', user: { id: 'u1', roles: [] } }));
+    renderImage({ src: '/uploads/vehicles/tiny.png', alt: 'Insurance sticker', fallback: <p>No photo</p> });
+
+    fireEvent.error(await screen.findByAltText('Insurance sticker'));
+    expect(await screen.findByText('No photo')).toBeInTheDocument();
+    expect(screen.queryByAltText('Insurance sticker')).not.toBeInTheDocument();
+  });
+
   it('uses a plain image when signed out, and the fallback if the server refuses it', async () => {
     renderImage({ src: '/uploads/vehicles/a.png', fallback: <p>No photo</p> });
 

@@ -26,7 +26,7 @@ export default function ContractPreviewLink({ ownerId }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
+        className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md py-1.5 -my-1.5"
       >
         <FileText size={14} aria-hidden="true" />
         Preview rental terms

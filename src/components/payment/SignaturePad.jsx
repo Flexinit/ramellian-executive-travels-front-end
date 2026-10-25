@@ -49,7 +49,7 @@ export default function SignaturePad({ onChange, tone = 'dark', label = 'Your Si
         type="button"
         onClick={handleClear}
         disabled={empty}
-        className={`self-start inline-flex items-center gap-1.5 text-xs ${paper ? 'text-slate-500 hover:text-slate-900' : 'text-muted hover:text-ink'} disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md`}
+        className={`self-start inline-flex items-center gap-1.5 text-xs ${paper ? 'text-slate-500 hover:text-slate-900' : 'text-muted hover:text-ink'} disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus-ring rounded-md py-2 -my-2`}
       >
         <RotateCcw size={12} aria-hidden="true" />
         Clear

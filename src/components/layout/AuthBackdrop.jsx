@@ -68,7 +68,7 @@ export default function AuthBackdrop({
         </p>
         <p className="max-w-sm text-sm text-white/90 sm:text-base [text-shadow:0_1px_8px_rgba(0,0,0,0.4)]">{subtitle}</p>
         {photos.length > 1 && (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-0.5 flex items-center gap-2">
             {photos.map((src, i) => (
               <button
                 key={src}
@@ -76,10 +76,15 @@ export default function AuthBackdrop({
                 onClick={() => setIndex(i)}
                 aria-label={`Show photo ${i + 1} of ${photos.length}`}
                 aria-current={i === index ? 'true' : undefined}
-                className={`h-1.5 rounded-full transition-all duration-300 focus-ring ${
-                  i === index ? 'w-12 bg-white' : 'w-6 bg-white/45 hover:bg-white/70'
-                }`}
-              />
+                // The bar is drawn inside a 24px-tall button, so the dot is easy to tap on a phone.
+                className="group flex h-6 items-center rounded-full focus-ring"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${
+                    i === index ? 'w-12 bg-white' : 'w-6 bg-white/45 group-hover:bg-white/70'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}

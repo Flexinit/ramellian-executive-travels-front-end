@@ -119,3 +119,11 @@ describe('AssistantFab — switched off by an administrator', () => {
     await waitFor(() => expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument());
   });
 });
+
+describe('AssistantFab — in a conversation', () => {
+  it('stays out of the way of the message box (its Send button is where the chat button floats)', () => {
+    signIn();
+    renderAt('/messages/user/u2');
+    expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument();
+  });
+});

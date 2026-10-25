@@ -121,7 +121,7 @@ export default function ContractPage() {
         <ErrorBanner message="We couldn't find which booking this contract is for. Please start again from your booking." />
         <Link
           to={`/vehicles/${vehicleId}`}
-          className="text-accent text-sm font-semibold hover:text-accent-hover focus-ring rounded-md"
+          className="text-accent text-sm font-semibold hover:text-accent-hover focus-ring rounded-md py-1.5 -my-1.5"
         >
           Back to vehicle
         </Link>

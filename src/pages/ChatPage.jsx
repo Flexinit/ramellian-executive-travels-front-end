@@ -38,7 +38,7 @@ export default function ChatPage() {
       <PageTitle title={`Chat with ${otherName}`} />
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
-          <Link to="/messages" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink w-fit focus-ring rounded-md">
+          <Link to="/messages" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink w-fit focus-ring rounded-md py-1.5 -my-1.5">
             <ArrowLeft size={14} aria-hidden="true" />
             All messages
           </Link>

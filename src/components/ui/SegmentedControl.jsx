@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
  * A pill-shaped "pick one of a few" switch (booking mode, fleet tier…). One is
@@ -22,8 +22,22 @@ export default function SegmentedControl({ options, value, onChange, label, kind
   };
   const isRadio = kind === 'radio';
 
+  // On a phone the options can be wider than the screen (the control then scrolls sideways): keep the chosen one in
+  // view, so it never starts off the edge, cut in half. Only the control scrolls — never the page.
+  const track = useRef(null);
+  useEffect(() => {
+    const el = track.current;
+    const chosen = el?.querySelector('[aria-checked="true"], [aria-selected="true"]');
+    if (!el || !chosen || el.scrollWidth <= el.clientWidth) return;
+    const left = chosen.offsetLeft - el.offsetLeft;
+    if (left < el.scrollLeft || left + chosen.offsetWidth > el.scrollLeft + el.clientWidth) {
+      el.scrollLeft = Math.max(0, left - (el.clientWidth - chosen.offsetWidth) / 2);
+    }
+  }, [value]);
+
   return (
     <div
+      ref={track}
       role={isRadio ? 'radiogroup' : 'tablist'}
       aria-label={label}
       className={`inline-flex rounded-full bg-surface border border-line p-1 w-fit max-w-full overflow-x-auto no-scrollbar ${className}`}

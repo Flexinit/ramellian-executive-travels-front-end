@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { axe } from 'jest-axe';
@@ -49,7 +49,18 @@ describe('MobileMenu', () => {
     renderMenu();
     const toggle = screen.getByRole('button', { name: /open menu/i });
     await user.click(toggle);
-    await user.click(screen.getByRole('button', { name: /close menu/i }));
+    await user.click(toggle);
+    expect(screen.queryByRole('navigation', { name: /mobile navigation/i })).not.toBeInTheDocument();
+  });
+
+  it('opens over the whole page (not inside the header) and closes from its own button', async () => {
+    const user = userEvent.setup();
+    const { container } = renderMenu();
+    await user.click(screen.getByRole('button', { name: /open menu/i }));
+    const nav = screen.getByRole('navigation', { name: /mobile navigation/i });
+    // Rendered into document.body, so the blurred header can't squeeze it into its own 80px strip.
+    expect(container.contains(nav)).toBe(false);
+    await user.click(within(nav).getByRole('button', { name: /close menu/i }));
     expect(screen.queryByRole('navigation', { name: /mobile navigation/i })).not.toBeInTheDocument();
   });
 

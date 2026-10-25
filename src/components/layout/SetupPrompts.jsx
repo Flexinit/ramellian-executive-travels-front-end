@@ -11,7 +11,7 @@ function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
       <p className="flex-1 min-w-0 text-sm text-ink">{message}</p>
       <Link
         to={to}
-        className="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md"
+        className="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md py-1.5 -my-1.5"
       >
         {cta}
         <ArrowRight size={14} aria-hidden="true" />
@@ -20,7 +20,7 @@ function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss"
-        className="p-1 rounded-full text-muted hover:text-ink hover:bg-ink/10 transition-colors focus-ring"
+        className="p-2 -m-1 rounded-full text-muted hover:text-ink hover:bg-ink/10 transition-colors focus-ring"
       >
         <X size={14} aria-hidden="true" />
       </button>

@@ -131,7 +131,7 @@ export default function SetupSteps({ onFinish, onAllDone }) {
           <button
             type="button"
             onClick={() => setManual(index - 1)}
-            className="text-sm text-muted hover:text-ink transition-colors focus-ring rounded-md"
+            className="text-sm text-muted hover:text-ink transition-colors focus-ring rounded-md py-1.5 -my-1.5"
           >
             ← Back
           </button>
@@ -141,7 +141,7 @@ export default function SetupSteps({ onFinish, onAllDone }) {
         <button
           type="button"
           onClick={later}
-          className="text-sm text-muted hover:text-ink underline underline-offset-2 transition-colors focus-ring rounded-md"
+          className="text-sm text-muted hover:text-ink underline underline-offset-2 transition-colors focus-ring rounded-md py-1.5 -my-1.5"
         >
           {isLast ? 'Finish' : 'Do this later'}
         </button>

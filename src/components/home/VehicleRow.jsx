@@ -49,7 +49,7 @@ export default function VehicleRow({ title, filters = {} }) {
           <Link
             to={`/vehicles${query ? `?${query}` : ''}`}
             state={{ fromSearch: true }}
-            className="focus-ring rounded-md inline-flex items-center gap-1 text-xs text-muted hover:text-ink"
+            className="focus-ring rounded-md inline-flex items-center gap-1 text-xs text-muted hover:text-ink py-2 -my-2"
           >
             See all <span className="sr-only">{title}</span> <ArrowRight size={12} aria-hidden="true" />
           </Link>

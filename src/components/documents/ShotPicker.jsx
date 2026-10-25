@@ -72,7 +72,7 @@ export default function ShotPicker({ label, file, onPick, onClear, disabled = fa
               type="button"
               disabled={disabled}
               onClick={() => setCameraOpen(true)}
-              className="text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded-md px-1"
+              className="text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded-md px-1 py-2 -my-2"
             >
               Take selfie
             </button>

@@ -19,14 +19,14 @@ Borrowed from otto.rentals' marketplace approach:
 ## 2. Top Navigation Bar (Desktop)
 
 *Updated 2026-09-24: "Vehicles" and "Services" are not in the top bar (browsing is **Rent a Car**; Services
-stays in the footer). It is one line: the logo is always at the top left, and **About** and **Contact** are
-at the far right end, after the buttons (visitor) or icons and avatar (signed in). The left menu does not
+stays in the footer). It is one line: the logo is always at the top left, and **About**, **Terms & Conditions**, **Privacy Policy** (both added 2026-10-25) and **Contact** are at the far
+right end (from `xl`; below that they're in the ☰ menu), after the buttons (visitor) or icons and avatar (signed in). The left menu does not
 repeat the logo.*
 
 **Visitor:**
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────┐
-│  [RAMELLIAN LOGO]      (Rent a Car) (List Your Car) (Log In)  │  About   Contact  │
+│  [LOGO]  (Rent a Car) (List Your Car) (Log In)  │  About  Terms & Conditions  Privacy Policy  Contact  │
 └───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -183,7 +183,8 @@ owners on `/owner` (or `/dashboard` if that was their last side), everyone else 
 rendered by `DashboardLayout`): an administrator sees **Administration** (Users, All Bookings, All Vehicles, Review
 Documents, Add Vehicle, Reports, Contract Templates) and, if they also own vehicles, **My Fleet** (My Vehicles,
 Fleet Bookings); an owner who also rents sees **My Fleet** and **My Rentals**. The heading holding the current
-page is open, the rest are folded; on phones the strip stays flat. Single-role menus stay flat. Each heading has an
+page is open, the rest are folded. On phones (below `md`) the menu is a drawer from the left, opened with ☰ at
+the top-left of the top bar (2026-10-25; it used to be a sideways-scrolling strip), with the site links below it. Single-role menus stay flat. Each heading has an
 icon (Administration, Documents, My Fleet, My Rentals). The administrator's **Documents** heading holds Review
 Documents, Approved Documents and Rejected Documents (all `DOCUMENT_REVIEW`).*
 

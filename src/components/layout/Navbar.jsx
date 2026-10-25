@@ -10,20 +10,15 @@ import Button from '../ui/Button';
 import NotificationBell from './NotificationBell';
 import CartLink from './CartLink';
 import ThemeToggle from './ThemeToggle';
+import { SITE_LINKS } from '../../lib/siteLinks';
 
-/**
- * The primary links. "Vehicles" and "Services" are deliberately not here: browsing is the
- * "Rent a Car" button, and the Footer still links to Services.
- */
-const NAV_LINKS = [
-  { label: 'About', to: '/about' },
-  { label: 'Contact', to: '/contact' },
-];
+/** The primary links — the site's own pages (lib/siteLinks.js). */
+const NAV_LINKS = SITE_LINKS;
 
 /**
  * Global site header — sticky, one line. Top left: the logo, always — for a signed-in person it fills
- * the same column as the left menu beneath it, so it sits exactly at the top of that menu. At the far right end: the About
- * and Contact links, preceded by the booking basket (once a vehicle has been added) and — for a visitor — the "Rent a Car", "List Your Car" and "Log In" buttons, in that order, or
+ * the same column as the left menu beneath it, so it sits exactly at the top of that menu. At the far right end: the About,
+ * Terms & Conditions, Privacy Policy and Contact links, preceded by the booking basket (once a vehicle has been added) and — for a visitor — the "Rent a Car", "List Your Car" and "Log In" buttons, in that order, or
  * once signed in the Messages and Inbox icons and the account avatar. A hamburger replaces the right
  * side on mobile (a visitor's Log In button stays in the bar beside it). Wraps the entire app (see docs/design.md §4 component tree).
  */
@@ -37,6 +32,10 @@ export default function Navbar() {
           isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
         }`}
       >
+        {/* The menu button opens a drawer from the left, so on a phone it sits at the left end, before the logo; from
+            md up it moves to the right end (`md:order-last`) — there the signed-in logo heads the navy left column. */}
+        <MobileMenu links={NAV_LINKS} className="md:order-last" />
+
         {/* Signed in: the logo fills the same 16rem-wide navy column as the left menu below it, so menu and logo read as one
             navy strip down the left. */}
         <Link
@@ -45,9 +44,12 @@ export default function Navbar() {
             isAuthenticated ? 'md:w-64 md:h-full md:flex md:items-center md:pl-5 md:rounded-none md:bg-brand-navy' : ''
           }`}
         >
-          <Logo size="md" compactOnTinyScreens invertFromMd={isAuthenticated} />
+          {/* Signed in, a phone's top bar also holds four icons and the menu button: just the R mark fits beside them. */}
+          <Logo size="md" compactOnTinyScreens compactOnPhones={isAuthenticated} invertFromMd={isAuthenticated} />
         </Link>
 
+        {/* The buttons and icons from lg up; the four links (About, Terms & Conditions, Privacy Policy, Contact) only from
+            xl — at lg they wrapped onto two lines — and in the menu drawer below that. */}
         <div className="hidden lg:flex items-center gap-8 ml-auto">
           <div className="flex items-center gap-3 shrink-0">
             {isAuthenticated && <ThemeToggle />}
@@ -72,9 +74,9 @@ export default function Navbar() {
             )}
           </div>
 
-          <span aria-hidden="true" className="h-6 w-px bg-ink/15" />
+          <span aria-hidden="true" className="hidden xl:block h-6 w-px bg-ink/15" />
 
-          <nav aria-label="Primary" className="flex items-center gap-8">
+          <nav aria-label="Primary" className="hidden xl:flex items-center gap-8">
             {NAV_LINKS.map((link) => (
               <NavLink key={link.label} {...link} />
             ))}
@@ -91,7 +93,6 @@ export default function Navbar() {
           {isAuthenticated && <ThemeToggle />}
           <CartLink />
           <NotificationBell />
-          <MobileMenu links={NAV_LINKS} />
         </div>
       </div>
     </header>

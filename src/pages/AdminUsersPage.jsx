@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
                           {userDisplayName(user)}
                         </span>
                       </td>
-                      <td data-label="Email" className="stack-full px-4 py-3 text-sm text-muted break-all md:break-normal">{user.email}</td>
+                      <td data-label="Email" className="stack-full px-4 py-3 text-sm text-muted break-all lg:break-normal">{user.email}</td>
                       <td data-label="Roles" className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
                           {roleBadges(user.roles).map((label) => (

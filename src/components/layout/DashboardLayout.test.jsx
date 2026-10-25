@@ -9,11 +9,13 @@ import { axe } from 'jest-axe';
 import DashboardLayout from './DashboardLayout';
 import { useAuthStore } from '../../store/authStore';
 import { useProfilePhotoStore } from '../../store/profilePhotoStore';
+import { useUiStore } from '../../store/uiStore';
 
 afterEach(() => {
   act(() => {
     useAuthStore.setState({ token: null, user: null });
     useProfilePhotoStore.setState({ photoUrl: null, userId: null });
+    useUiStore.setState({ mobileMenuOpen: false });
   });
   localStorage.clear();
 });
@@ -67,15 +69,40 @@ describe('DashboardLayout', () => {
     expect(screen.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current');
   });
 
-  it('is a single menu that reshapes with the screen (strip on phones, sidebar from md up), not one that disappears', () => {
+  it('is a sidebar from md up; on a phone the same menu opens from the left (no sideways strip)', () => {
     const { container } = renderLayout();
     expect(screen.getAllByRole('navigation', { name: 'Dashboard' })).toHaveLength(1);
-    const nav = screen.getByRole('navigation', { name: 'Dashboard' });
-    expect(nav.className).toContain('flex-row');
-    expect(nav.className).toContain('md:flex-col');
-    expect(nav.className).toContain('overflow-x-auto');
-    // No `hidden` on the menu itself at any size.
-    expect(container.querySelector('aside').className).not.toMatch(/(^|\s)hidden(\s|$)/);
+    expect(screen.getByRole('navigation', { name: 'Dashboard' }).className).not.toContain('overflow-x-auto');
+    expect(container.querySelector('aside').className).toContain('md:flex');
+    // The drawer only exists while the top bar's menu button has it open.
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
+  });
+
+  it("the phone drawer holds the whole menu plus the site's pages, and closes on a tap", async () => {
+    renderLayout();
+    act(() => useUiStore.setState({ mobileMenuOpen: true }));
+
+    const drawer = screen.getByRole('dialog', { name: 'Menu' });
+    expect(drawer.className).toContain('left-0');
+    const menu = within(drawer).getByRole('navigation', { name: 'Menu' });
+    expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual(['Overview', 'My Bookings']);
+    const site = within(drawer).getByRole('navigation', { name: 'Site' });
+    expect(within(site).getAllByRole('link').map((l) => l.textContent)).toEqual(['About', 'Terms & Conditions', 'Privacy Policy', 'Contact']);
+
+    act(() => within(menu).getByRole('link', { name: 'My Bookings' }).click());
+    expect(await screen.findByText('Bookings content')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
+  });
+
+  it('the phone drawer closes with its close button and with Escape', () => {
+    renderLayout();
+    act(() => useUiStore.setState({ mobileMenuOpen: true }));
+    act(() => screen.getByRole('button', { name: 'Close menu' }).click());
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
+
+    act(() => useUiStore.setState({ mobileMenuOpen: true }));
+    act(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+    expect(screen.queryByRole('dialog', { name: 'Menu' })).not.toBeInTheDocument();
   });
 
   it("opens with the signed-in person's photo and name — the logo is in the top bar, not repeated here", () => {

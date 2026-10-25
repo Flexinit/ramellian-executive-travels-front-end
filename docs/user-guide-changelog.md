@@ -9,6 +9,17 @@ first.
   bookings (0 = none).
 - **Added (administrators):** an **Assistant** card on **Platform Settings** to turn the chat assistant on or off.
   While it's off, signed-in people don't see the chat button, the top-bar icon or the Assistant menu item.
+- **Added:** **Terms & Conditions** and **Privacy Policy** in the top bar, next to About (on smaller screens, in the
+  ☰ menu).
+- **Changed (phones):** the menu is a proper left menu: ☰ at the top-left opens it from the left, with your profile,
+  the whole menu and the site's pages. It replaces the strip you had to swipe sideways.
+- **Fixed:** the phone menu (☰) opened squashed into the top bar, showing only its first link; it now opens full
+  height, with its own close button.
+- **Fixed (phones and tablets):** small links and buttons (Forgot password?, See all, Preview rental terms, Back,
+  Do this later, View sticker, the photo dots on the sign-in pages and others) are easier to tap; the chat button no
+  longer covers **Send** in a conversation; tabs that don't fit the screen open scrolled to the one you're on; on a
+  tablet, All Vehicles, Users, the Audit Log and booking lists show as cards instead of a squeezed table; a broken
+  insurance-sticker image shows a sticker icon instead of a broken-picture box.
 - **Fixed:** car photos now show for every visitor (they used to appear only in the browser that uploaded them), and
   a car's insurance sticker is never shown as one of its photos.
 - **Fixed:** Browse Vehicles showed no cars while the backend's "Recommended" order was failing; it works again.

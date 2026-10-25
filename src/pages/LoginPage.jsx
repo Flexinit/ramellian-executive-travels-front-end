@@ -79,7 +79,7 @@ export default function LoginPage() {
             />
             <Link
               to="/auth/forgot-password"
-              className="-mt-2 self-end text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded-md"
+              className="-mt-3.5 -mb-1.5 py-1.5 self-end text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded-md"
             >
               Forgot password?
             </Link>

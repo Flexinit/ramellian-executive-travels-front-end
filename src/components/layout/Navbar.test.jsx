@@ -29,10 +29,10 @@ describe('Navbar', () => {
     expect(screen.getByText('RAMELLIAN')).toBeInTheDocument();
   });
 
-  it('has only About and Contact as primary links — no Vehicles or Services menus', () => {
+  it('has only About, Terms & Conditions, Privacy Policy and Contact as primary links — no Vehicles or Services menus', () => {
     renderNavbar();
     const primary = screen.getByRole('navigation', { name: 'Primary' });
-    expect(within(primary).getAllByRole('link').map((l) => l.textContent)).toEqual(['About', 'Contact']);
+    expect(within(primary).getAllByRole('link').map((l) => l.textContent)).toEqual(['About', 'Terms & Conditions', 'Privacy Policy', 'Contact']);
     expect(screen.queryByRole('button', { name: /^vehicles/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^services/i })).not.toBeInTheDocument();
   });

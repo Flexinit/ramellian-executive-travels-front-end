@@ -51,7 +51,9 @@ export default function AssistantFab() {
   }, [phone]);
   const tucked = phone && scrollingDown && !open;
 
-  if (pathname === '/assistant' || !assistantOn) return null;
+  // A conversation (`/messages/…`) has its own message box, whose Send button sits exactly where this button
+  // floats on a phone — so it isn't shown there.
+  if (pathname === '/assistant' || pathname.startsWith('/messages/') || !assistantOn) return null;
 
   return (
     <>

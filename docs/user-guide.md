@@ -69,9 +69,12 @@ document tools under a **Documents** heading (Review Documents, Approved Documen
 **Menus for people with two roles are grouped.** Instead of one long list, related items sit under a heading
 you can click to fold or open (**Administration**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
 **My Rentals**), each with its own icon.
-The heading holding the page you're on is open by itself and the others are folded away; on a phone the strip
-stays flat. Menus for a single role aren't grouped. On a phone the menu is a strip along the top that you swipe
-sideways; it fades at its right edge when there's more to see, and it opens scrolled to the page you're on.
+The heading holding the page you're on is open by itself and the others are folded away. Menus for a single role
+aren't grouped. On a phone the same menu opens from the left: tap **☰** at the top-left corner. It slides in with your
+photo and name, the whole menu (headings included) and, underneath, **About**, **Terms & Conditions**, **Privacy
+Policy** and **Contact**. Tapping a page, **✕**, the dimmed page beside it or Escape closes it. Visitors' ☰ menu opens
+from the left too. On a big screen **About**, **Terms & Conditions**, **Privacy Policy** and **Contact** are at the right
+end of the top bar; on smaller ones they're in the ☰ menu.
 Once you're signed in, a phone also shows a dark bar floating along the bottom of the screen with five shortcuts —
 **Home**, **Search** (Browse Vehicles), **Messages**, **Inbox** and **Profile**. The one you're on is lit up, and
 Messages and Inbox show how many unread items you have. It is extra to the menu, not a replacement for it.

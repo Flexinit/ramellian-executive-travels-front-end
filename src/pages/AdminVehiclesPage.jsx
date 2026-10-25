@@ -60,9 +60,7 @@ export default function AdminVehiclesPage() {
             <p className="text-muted text-sm mt-1">Every vehicle on the platform and who owns it.</p>
             <p className="text-muted text-xs mt-1 max-w-2xl">
               New vehicles need approval before renters see them — decide on them under <strong className="text-ink font-medium">Vehicle Approvals</strong>.
-              Photos: the backend doesn&apos;t list a vehicle&apos;s photos (a photo&apos;s address is only revealed to whoever uploads it), so the
-              pictures shown are the ones uploaded from this browser. The insurance sticker is stored with the vehicle, so it shows for any
-              vehicle that has one.
+              The insurance sticker is never shown as one of a vehicle&apos;s photos — open it with <strong className="text-ink font-medium">View sticker</strong>.
             </p>
           </div>
           <Button to="/admin/vehicles/new">
@@ -118,7 +116,7 @@ export default function AdminVehiclesPage() {
                         </span>
                       </div>
                     </td>
-                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-muted break-all md:break-normal">{v.ownerEmail || '—'}</td>
+                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-muted break-all lg:break-normal">{v.ownerEmail || '—'}</td>
                     <td data-label="Place" className="px-4 py-3 text-sm text-muted">{v.location}</td>
                     <td data-label="Per day" className="px-4 py-3 text-sm text-ink">{formatCurrency(v.pricePerDay)}</td>
                     <td data-label="Insurance" className="px-4 py-3">
@@ -132,7 +130,7 @@ export default function AdminVehiclesPage() {
                             type="button"
                             onClick={() => setSticker(v)}
                             aria-label={`View insurance sticker: ${v.model}`}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent-hover focus-ring rounded py-2 -my-2"
                           >
                             <ShieldCheck size={12} aria-hidden="true" />
                             View sticker

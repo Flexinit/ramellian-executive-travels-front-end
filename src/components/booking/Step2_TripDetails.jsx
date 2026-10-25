@@ -143,7 +143,7 @@ export default function Step2_TripDetails({ vehicle }) {
         <button
           type="button"
           onClick={() => setNotesOpen(true)}
-          className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md"
+          className="inline-flex items-center gap-1.5 self-start text-accent text-sm font-semibold hover:text-accent-hover transition-colors focus-ring rounded-md py-1.5 -my-1.5"
         >
           <Plus size={14} aria-hidden="true" />
           Add passengers or special instructions

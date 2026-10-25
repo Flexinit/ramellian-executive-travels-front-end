@@ -493,6 +493,6 @@ describe('vehicle photos in All Vehicles', () => {
     renderUi(<AdminVehiclesPage />);
     expect(await screen.findByRole('img', { name: 'No photos available for Toyota Prado' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /view photos/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/the backend doesn.t list a vehicle.s photos/i)).toBeInTheDocument();
+    expect(screen.getByText(/never shown as one of a vehicle.s photos/i)).toBeInTheDocument();
   });
 });
