@@ -7,7 +7,7 @@ import { DetailList, DetailRow } from '../ui/DetailList';
 
 function Lines({ lines }) {
   return (
-    <DetailList>
+    <DetailList inline>
       {lines.map((line) => (
         <DetailRow key={line.label} label={line.label} valueClassName="tabular-nums">
           {formatCurrency(line.amount)}
@@ -44,7 +44,7 @@ export default function CartTotals({ items, quotes = {} }) {
         <ul className="flex flex-col gap-3">
           {breakdowns.map(({ item, lines, total: subtotal }) => (
             <li key={item.vehicleId} className="flex flex-col gap-1.5">
-              <DetailList>
+              <DetailList inline>
                 <DetailRow label={<span className="text-ink font-semibold">{item.vehicle.model}</span>} valueClassName="font-semibold tabular-nums">
                   {formatCurrency(subtotal)}
                 </DetailRow>

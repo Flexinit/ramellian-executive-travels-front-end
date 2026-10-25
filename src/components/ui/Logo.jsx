@@ -6,8 +6,8 @@ import React from 'react';
  *
  * @param {'sm'|'md'|'lg'} size
  * @param {boolean} wordmarkOnly — hide image, show text only
- * @param {boolean} compactOnTinyScreens — on the narrowest phones (under 360px) show only the mark, not the
- *   wordmark, so a full header row still fits (the top bar)
+ * @param {boolean} compactOnTinyScreens — on narrow phones (under 400px) show only the mark, not the wordmark, so a
+ *   full header row still fits (the top bar) — also on a 360px phone set to large text, where it didn't
  * @param {boolean} [compactOnPhones] — below `md`, only the mark (the signed-in top bar, which also holds four icons
  *   and the menu button)
  * @param {boolean} [invertFromMd] — from `md` up, white wordmark and gold subtitle, for the navy column the logo sits in
@@ -43,7 +43,7 @@ export default function Logo({ size = 'md', wordmarkOnly = false, compactOnTinyS
           onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
-      <div className={`flex flex-col leading-tight ${compactOnTinyScreens && !wordmarkOnly ? 'max-[359px]:hidden' : ''} ${compactOnPhones && !wordmarkOnly ? 'max-md:hidden' : ''}`}>
+      <div className={`flex flex-col leading-tight ${compactOnTinyScreens && !wordmarkOnly ? 'max-[399px]:hidden' : ''} ${compactOnPhones && !wordmarkOnly ? 'max-md:hidden' : ''}`}>
         <span className={`font-heading font-bold text-accent ${invertFromMd ? 'md:text-white' : ''} ${textSizes[size]}`}>
           RAMELLIAN
         </span>

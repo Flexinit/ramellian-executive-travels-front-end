@@ -54,8 +54,9 @@ export default function Button({
 
   const sizes = {
     xs: 'px-3 py-1.5 text-[11px] whitespace-nowrap', // the design's small "Book now" pill on a car card
-    sm: 'px-4 py-1.5 text-sm',
-    md: 'px-5 py-2.5 text-sm',
+    // A short label never breaks over two lines (e.g. "Log In" on a phone set to large text).
+    sm: 'px-4 py-1.5 text-sm whitespace-nowrap',
+    md: 'px-5 py-2.5 text-sm whitespace-nowrap',
     lg: 'px-7 py-3.5 text-base',
     icon: 'h-12 min-w-12 px-0 text-sm', // a round icon-only button
   };

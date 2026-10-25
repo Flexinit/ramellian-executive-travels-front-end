@@ -11,6 +11,10 @@ first.
   While it's off, signed-in people don't see the chat button, the top-bar icon or the Assistant menu item.
 - **Added:** **Terms & Conditions** and **Privacy Policy** in the top bar, next to About (on smaller screens, in the
   ☰ menu).
+- **Fixed (phones, especially with large text):** on Checkout the Edit / Remove buttons covered the car's name — they now
+  sit on their own row; Log In no longer breaks over two lines; booking details show each label above its value
+  instead of a squeezed column (price lines stay side by side); the "Continue: Log In" tab left after closing the
+  log-in panel sits in the bottom-left corner instead of over the page.
 - **Changed (phones):** the menu is a proper left menu: ☰ at the top-left opens it from the left, with your profile,
   the whole menu and the site's pages. It replaces the strip you had to swipe sideways.
 - **Fixed:** the phone menu (☰) opened squashed into the top bar, showing only its first link; it now opens full

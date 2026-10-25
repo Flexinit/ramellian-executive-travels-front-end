@@ -19,7 +19,19 @@ describe('DetailList', () => {
     expect(value).toHaveClass('text-left');
     expect(value).not.toHaveClass('text-right');
     // A table: each pair is a row, the rows alternating white and light grey.
-    expect(value.parentElement).toHaveClass('odd:bg-surface', 'even:bg-subtle', 'grid-cols-subgrid');
+    // From sm up the pair sits side by side in the shared columns; on a phone the label goes above the value.
+    expect(value.parentElement).toHaveClass('odd:bg-surface', 'even:bg-subtle', 'flex-col', 'sm:grid-cols-subgrid');
+  });
+
+  it('keeps label and value side by side on phones too when inline (price lines)', () => {
+    render(
+      <DetailList inline>
+        <DetailRow label="2 days × KES 1">KES 2</DetailRow>
+      </DetailList>
+    );
+    const row = screen.getByText('KES 2').parentElement;
+    expect(row).toHaveClass('grid-cols-subgrid');
+    expect(row).not.toHaveClass('flex-col');
   });
 
   it('stacks a free-text value under its label across the full width', () => {

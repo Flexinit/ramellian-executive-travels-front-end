@@ -30,7 +30,9 @@ export default function BookingSummaryCard({ vehicle, draft, actions, note, quot
 
   return (
     <Card className="p-5 flex flex-col gap-4">
-      <div className="flex items-center gap-3">
+      {/* On a narrow phone (or one set to large text) the buttons drop to their own row under the name instead of
+          sitting on top of it. */}
+      <div className="flex flex-wrap items-center gap-3">
         <div className="w-16 h-12 rounded-tile overflow-hidden shrink-0 bg-well">
           {photoUrl ? (
             <AuthImage
@@ -45,13 +47,13 @@ export default function BookingSummaryCard({ vehicle, draft, actions, note, quot
             <GenericVehiclePlaceholder tier={vehicle?.tier} />
           )}
         </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-heading text-ink font-semibold">{vehicle?.model}</h3>
+        <div className="min-w-[8rem] flex-1">
+          <h3 className="font-heading text-ink font-semibold break-words">{vehicle?.model}</h3>
           <p className="text-muted text-xs">
             {bookingMode === BOOKING_MODES.CHAUFFEURED ? 'Chauffeured' : 'Self-Drive'}
           </p>
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2 shrink-0 max-sm:w-full">{actions}</div>}
       </div>
 
       <DetailList>

@@ -86,7 +86,9 @@ export default function Drawer({ isOpen, onClose, onReopen, title, children, siz
             setJustDismissed(false);
             onReopen();
           }}
-          className="fixed right-4 top-1/2 z-50 -translate-y-1/2 shadow-xl"
+          // Phones: tucked into the bottom-left corner (the chat button has the right), not over the middle of the
+          // page where it covered what was being read; from sm up, docked mid-height on the right edge.
+          className="fixed left-4 bottom-5 sm:left-auto sm:bottom-auto sm:right-4 sm:top-1/2 z-50 sm:-translate-y-1/2 shadow-xl"
         >
           <PanelRightOpen size={16} aria-hidden="true" /> Continue: {title}
         </Button>,
