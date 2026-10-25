@@ -21,10 +21,8 @@ const KEEP_ON_ARRIVAL = ['minPrice', 'maxPrice', 'sort'];
 
 /**
  * Reads filters straight from the URL (shareable/bookmarkable searches) and
- * passes them to `useVehicles`. Pagination shape is assumed to be either a
- * Spring Data `Page` (`{ content: [...] }`) or a plain array — the exact
- * response shape wasn't confirmable against a reachable backend; adjust
- * the `vehicles` extraction below once verified against Swagger.
+ * passes them to `useVehicleAvailability`, which loads the results lazily — a page at a time as the person
+ * scrolls (`GET /vehicles` is a Spring `Page`, live spec 2026-10-25).
  */
 export default function VehiclesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,7 +76,7 @@ export default function VehiclesPage() {
     });
   }, [query, setSearch]);
 
-  const { vehicles: found, isLoading, isError, error, refetch } = useVehicleAvailability(filters);
+  const { vehicles: found, isLoading, isError, error, refetch, total, hasMore, loadMore, loadingMore } = useVehicleAvailability(filters);
   // Searched from the home page with a pick-up place: the cars based near it, or — if none are — every car, with a
   // note saying so (never an empty page just because no car is based at that exact address).
   const nearby = near ? vehiclesNear(found, near) : null;
@@ -86,6 +84,10 @@ export default function VehiclesPage() {
   // One continuous grid, never split into a section per place (product owner, 2026-10-25): with a few cars per
   // place, sections left half-empty rows. The place is on each card and in the "Available in" filter; the order is
   // the chosen sort, or Recommended (free for the dates first — lib/vehicleRanking.js).
+
+  // Vehicles load a page at a time, so the backend's own total says how many match — except when the list is
+  // narrowed here to the cars near a pick-up place, where only what's shown can be counted.
+  const count = !nearby && typeof total === 'number' ? total : vehicles.length;
 
   function handleClearFilters() {
     setSearchParams(new URLSearchParams(), { replace: true });
@@ -101,7 +103,7 @@ export default function VehiclesPage() {
           <div>
             <h1 className="font-heading text-ink text-xl sm:text-2xl font-semibold">Browse Vehicles</h1>
             <p className="text-muted text-xs sm:text-sm mt-1">
-              {isLoading ? 'Searching…' : `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} found`}
+              {isLoading ? 'Searching…' : `${count} vehicle${count === 1 ? '' : 's'} found`}
             </p>
             {nearby && !isLoading && !isError && (
               <p role="status" className="mt-1.5 text-xs sm:text-sm text-ink">
@@ -196,6 +198,9 @@ export default function VehiclesPage() {
               error={error}
               onRetry={refetch}
               onClearFilters={handleClearFilters}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              loadingMore={loadingMore}
             />
           </div>
         </div>

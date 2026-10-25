@@ -41,6 +41,21 @@ afterEach(() => {
 });
 
 describe('normalizeVehicle', () => {
+  it('never shows the insurance sticker as a car photo, though the backend lists it in photoUrls', () => {
+    const v = normalizeVehicle({
+      id: 'v-sticker',
+      insuranceVerificationStickerPhoto: 'http://192.168.8.9:8080/uploads/vehicles/sticker.png',
+      photoUrls: ['/uploads/vehicles/sticker.png', '/uploads/vehicles/car.jpg'],
+    });
+    expect(v.photos).toHaveLength(1);
+    expect(v.photos[0].url).toContain('/uploads/vehicles/car.jpg');
+  });
+
+  it('uses the photoUrls the backend sends, so every visitor sees the photos', () => {
+    const v = normalizeVehicle({ id: 'v-urls', photoUrls: ['/uploads/vehicles/a.png', '/uploads/vehicles/b.jpg'] });
+    expect(v.photos.map((p) => p.url)).toEqual([expect.stringContaining('/uploads/vehicles/a.png'), expect.stringContaining('/uploads/vehicles/b.jpg')]);
+  });
+
   it("aliases the backend's pricePerDay as dailyPrice, which the display components read", () => {
     expect(normalizeVehicle({ id: 'v1', pricePerDay: 8000 }).dailyPrice).toBe(8000);
   });
@@ -82,9 +97,10 @@ describe('reading vehicles', () => {
     expect(result.current.data[0].dailyPrice).toBe(15000);
 
     server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json({ content: [VEHICLE], totalElements: 1 })));
-    const paged = renderHook(() => useVehicles({ page: 1 }), { wrapper });
+    const paged = renderHook(() => useVehicles({ query: 'paged' }), { wrapper });
     await waitFor(() => expect(paged.result.current.data).toBeTruthy());
-    expect(paged.result.current.data.content[0].dailyPrice).toBe(15000);
+    // Every page is read and joined into one plain list.
+    expect(paged.result.current.data[0].dailyPrice).toBe(15000);
   });
 });
 
@@ -101,10 +117,10 @@ describe('available vs unavailable vehicles', () => {
 
   it('drops them from a paged response too', async () => {
     server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json({ content: [VEHICLE, OFF], totalElements: 2 })));
-    const { result } = renderHook(() => useVehicles({ page: 1 }), { wrapper });
+    const { result } = renderHook(() => useVehicles({ query: 'paged' }), { wrapper });
 
     await waitFor(() => expect(result.current.data).toBeTruthy());
-    expect(result.current.data.content.map((v) => v.id)).toEqual(['v1']);
+    expect(result.current.data.map((v) => v.id)).toEqual(['v1']);
   });
 
   it("an owner's own list keeps their unavailable vehicles", async () => {
@@ -142,6 +158,46 @@ describe('useVehicleAvailability', () => {
     const { result } = renderHook(() => useVehicleAvailability({ startTime: '2026-10-01T09:00:00Z', endTime: '2026-10-02T09:00:00Z' }), { wrapper });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.hasDates).toBe(true);
+  });
+});
+
+describe('paged GET /vehicles (lazy loading)', () => {
+  const page = (number, ids, totalPages) =>
+    HttpResponse.json({ content: ids.map((id) => ({ ...VEHICLE, id })), number, totalPages, totalElements: 3, last: number + 1 >= totalPages });
+
+  it('loads one page first, then the next on loadMore, keeping the cards already shown in place', async () => {
+    const asked = [];
+    server.use(http.get(`${BASE}/vehicles`, ({ request }) => {
+      const url = new URL(request.url);
+      asked.push([url.searchParams.get('page'), url.searchParams.get('size')]);
+      return url.searchParams.get('page') === '0' ? page(0, ['a', 'b'], 2) : page(1, ['c'], 2);
+    }));
+    const { result } = renderHook(() => useVehicleAvailability({ sort: 'pricePerDay,asc' }), { wrapper });
+
+    await waitFor(() => expect(result.current.vehicles.map((v) => v.id)).toEqual(['a', 'b']));
+    expect(asked).toEqual([['0', '12']]);
+    expect(result.current.hasMore).toBe(true);
+    expect(result.current.total).toBe(3);
+
+    act(() => result.current.loadMore());
+    await waitFor(() => expect(result.current.vehicles.map((v) => v.id)).toEqual(['a', 'b', 'c']));
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('reads every page where the whole list is needed (useVehicles)', async () => {
+    server.use(http.get(`${BASE}/vehicles`, ({ request }) =>
+      new URL(request.url).searchParams.get('page') === '0' ? page(0, ['a', 'b'], 2) : page(1, ['c'], 2)));
+    const { result } = renderHook(() => useVehicles(), { wrapper });
+
+    await waitFor(() => expect(result.current.data?.map((v) => v.id)).toEqual(['a', 'b', 'c']));
+  });
+
+  it('still accepts a plain array, as one page', async () => {
+    server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json([VEHICLE])));
+    const { result } = renderHook(() => useVehicleAvailability(), { wrapper });
+
+    await waitFor(() => expect(result.current.vehicles).toHaveLength(1));
+    expect(result.current.hasMore).toBe(false);
   });
 });
 

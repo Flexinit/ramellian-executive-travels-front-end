@@ -14,9 +14,10 @@ import HandoverHistory from './HandoverHistory';
 import { useVehicle } from '../../hooks/useVehicles';
 import { sessionContractId } from '../../lib/contracts';
 import { stripPhoneNumbers } from '../../lib/contactGuard';
-import { TRIP_TYPE_LABELS, BOOKING_MODES, BOOKING_STATUSES } from '../../lib/constants';
+import { BOOKING_MODES, BOOKING_STATUSES } from '../../lib/constants';
 import { formatDateRange, formatDateTime, formatTime, formatDate, formatCurrency, calculateTotalPrice, canRecordPickup as pickupDateReached } from '../../lib/utils';
 import { DetailList, DetailRow } from '../ui/DetailList';
+import { TripTypeLabel } from '../ui/TripTypeIcon';
 
 const RENTER_BASE_PATH = '/dashboard/bookings';
 
@@ -213,7 +214,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
               )}
               <DetailRow label="Mode">{booking.bookingMode === BOOKING_MODES.CHAUFFEURED ? 'Chauffeured' : 'Self-Drive'}</DetailRow>
               {booking.tripType && (
-                <DetailRow label="Trip Type">{TRIP_TYPE_LABELS[booking.tripType] || booking.tripType}</DetailRow>
+                <DetailRow label="Trip Type"><TripTypeLabel type={booking.tripType} /></DetailRow>
               )}
               {booking.bookingMode === BOOKING_MODES.CHAUFFEURED && (
                 <DetailRow label="Chauffeur">{chauffeur || 'Not assigned'}</DetailRow>

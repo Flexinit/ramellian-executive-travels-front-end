@@ -1307,3 +1307,35 @@ every signed-in role, as `/commission` was. If renters now get 403, the assistan
 (2) Whether `POST /bot/inapp` itself refuses requests while the switch is off. (3) A visitor who isn't signed in
 can't read the settings, so they still see the chat button (it asks them to log in). A public read of
 `botAssistantEnabled` would let it hide for them too.
+
+## 45. `GET /vehicles` is now paged — consumed with lazy loading; two backend errors found — 2026-10-25
+
+**Spec change.** `GET /vehicles` gained `page` (default 0) and `size` (default 20) and now answers
+`PageVehicleResponse` (`content`, `number`, `totalPages`, `totalElements`, `last`, …) instead of a plain array.
+Confirmed live: `?page=0&size=2&sort=price_asc` → 2 of 6 vehicles, `totalPages: 3`, `last: false`, and it works without a token.
+
+**Built.** `useVehicleAvailability` (Browse Vehicles, Our Fleet, the home rows, Change vehicle) loads 12 at a time
+with `useInfiniteQuery` and fetches the next page as the grid's end scrolls into view. "Recommended"/"Newest" are
+ordered per page, so the cards already shown don't move, and a car repeated on a later page shows once. What
+needs every vehicle (`useVehicles` for the filter facets, `useVehicleWindowBooked`) reads all pages, 100 at a time.
+
+**Ask (backend errors, office backend 192.168.8.31, 2026-10-25):**
+1. `GET /vehicles` with no `sort`, `sort=recommended` or `sort=rating_desc` → **500**
+   `for SELECT DISTINCT, ORDER BY expressions must appear in select list`. `price_asc` and `capacity_desc` work.
+   Browse Vehicles uses the default sort, so it shows an error until this is fixed.
+2. `GET /platform-settings` and `POST /bot/inapp` → **500** `column ps1_0.bot_assistant_enabled does not exist`: the
+   new column was never added to the `platform_settings` table (missing migration). The Platform Settings page shows
+   its error banner, and the assistant can't answer, until it's added. The 2026-10-25 item 26 update still applies.
+
+## 46. Vehicle photos now come from the backend — but the insurance sticker is listed as a car photo — 2026-10-25
+
+**Spec change.** `VehicleResponse` gained `photoUrls` (string[]), and `GET /vehicles/{id}/photos` returns
+`VehiclePhotoResponse[]` (`id`, `fileName`, `contentType`, `url`). **Built:** `normalizeVehicle` now uses
+`photoUrls`, so every visitor sees a car's photos, not just the browser that uploaded them.
+
+**Ask.** On every vehicle checked live, the file in `insuranceVerificationStickerPhoto` is also in `photoUrls` and
+in `/vehicles/{id}/photos`, so insurance papers (one looks like an ID page) showed as car photos to anyone
+browsing. The frontend now drops any photo whose file name matches the sticker's. Please keep the sticker out of the
+photo list (and out of the public response, as it can carry personal details), or add a `kind` field to
+`VehiclePhotoResponse`. The stopgap for item 45 (Recommended sent as `price_asc`) is in `useVehicles.js`'s
+`withWorkingSort`; remove it once that sort is fixed.

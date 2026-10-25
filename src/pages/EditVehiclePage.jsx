@@ -24,6 +24,7 @@ import { useAuthStore } from '../store/authStore';
 import { FUEL_OPTIONS, TRANSMISSION_OPTIONS, vehicleSchema, vehicleToFormValues, windowErrors } from '../lib/vehicleForm';
 import { USER_ROLES } from '../lib/constants';
 import { VEHICLE_TRIP_TYPES, isOwnVehicle } from '../lib/vehicleOptions';
+import { TripTypeLabel } from '../components/ui/TripTypeIcon';
 
 function Section({ title, hint, children }) {
   return (
@@ -270,7 +271,7 @@ export default function EditVehiclePage() {
               <div className="flex flex-wrap gap-2" role="group" aria-label="Trip types">
                 {VEHICLE_TRIP_TYPES.map((t) => (
                   <ToggleChip key={t.value} active={tripTypes.includes(t.value)} onClick={() => toggleTripType(t.value)}>
-                    {t.label}
+                    <TripTypeLabel type={t.value} />
                   </ToggleChip>
                 ))}
               </div>

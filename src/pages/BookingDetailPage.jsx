@@ -24,11 +24,12 @@ import GenericVehiclePlaceholder from '../components/vehicles/GenericVehiclePlac
 import { sessionContractId } from '../lib/contracts';
 import { formatDateRange, formatDate, formatCurrency, calculateTotalPrice, isBookingUnfulfilled, canRecordPickup } from '../lib/utils';
 import { stripPhoneNumbers } from '../lib/contactGuard';
-import { TRIP_TYPE_LABELS, BOOKING_STATUSES } from '../lib/constants';
+import { BOOKING_STATUSES } from '../lib/constants';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import { DetailList, DetailRow } from '../components/ui/DetailList';
 import ChangeVehicleModal, { canChangeVehicle } from '../components/booking/ChangeVehicleModal';
+import { TripTypeLabel } from '../components/ui/TripTypeIcon';
 
 export default function BookingDetailPage() {
   const { bookingId } = useParams();
@@ -141,7 +142,7 @@ export default function BookingDetailPage() {
                 {vehicle?.ownerEmail}
               </span>
             </DetailRow>
-            <DetailRow label="Trip Type">{booking.tripType ? TRIP_TYPE_LABELS[booking.tripType] || booking.tripType : '—'}</DetailRow>
+            <DetailRow label="Trip Type">{booking.tripType ? <TripTypeLabel type={booking.tripType} /> : '—'}</DetailRow>
             <DetailRow label="Pickup Location" hidden={!booking.pickupLocation}>{booking.pickupLocation}</DetailRow>
             <DetailRow label="Drop-off Location" hidden={!booking.dropoffLocation}>{booking.dropoffLocation}</DetailRow>
             <DetailRow label="Notes">{stripPhoneNumbers(booking.renterNotes).text || '—'}</DetailRow>

@@ -2,11 +2,10 @@ import React, { useMemo, useState } from 'react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import VehicleGrid from '../components/vehicles/VehicleGrid';
-import { useVehicles } from '../hooks/useVehicles';
+import { useVehicleAvailability } from '../hooks/useVehicles';
 import { VEHICLE_TIERS } from '../lib/constants';
 import SegmentedControl from '../components/ui/SegmentedControl';
 
-const PAGE_SIZE = 9;
 
 const TABS = [
   { value: '', label: 'All Vehicles' },
@@ -23,8 +22,8 @@ const TABS = [
  */
 export default function FleetPage() {
   const [tier, setTier] = useState('');
-  const { data, isLoading, isError, error, refetch } = useVehicles();
-  const vehicles = Array.isArray(data) ? data : data?.content || [];
+  // Loaded lazily, a page at a time as the person scrolls (useVehicleAvailability).
+  const { vehicles, isLoading, isError, error, refetch, hasMore, loadMore, loadingMore } = useVehicleAvailability();
 
   const filtered = useMemo(
     () => (tier ? vehicles.filter((v) => v.tier === tier) : vehicles),
@@ -60,8 +59,9 @@ export default function FleetPage() {
           error={error}
           onRetry={refetch}
           onClearFilters={tier ? () => setTier('') : undefined}
-          pageSize={PAGE_SIZE}
-          resetKey={tier}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          loadingMore={loadingMore}
         />
       </div>
     </PageWrapper>

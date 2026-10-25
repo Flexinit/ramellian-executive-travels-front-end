@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { apiDelete, apiGet, apiPost, apiPut, apiUpload } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
@@ -35,16 +35,26 @@ import {
 
 /**
  * Shapes a `VehicleResponse` for the display components:
- *  - `photos` — the vehicle's photos as `{ url, alt? }`. The backend returns none
- *    (see lib/vehiclePhotos.js), so the photos remembered from this browser's
- *    uploads are attached; if the server ever sends `photos`, those win.
+ *  - `photos` — the vehicle's photos as `{ url, alt? }`. Since 2026-10-25 `VehicleResponse` carries
+ *    `photoUrls` (live spec; e.g. `/uploads/vehicles/<uuid>.png`), so every visitor sees them; a photo this
+ *    browser uploaded keeps what it remembered about it (its angle). A server `photos` list would win; with
+ *    neither, the photos remembered from this browser's uploads are used (lib/vehiclePhotos.js).
  *  - `dailyPrice` — an alias of the backend's `pricePerDay`, which VehicleCard,
  *    PriceDisplay usages etc. read.
  */
+const fileNameOf = (url) => (typeof url === 'string' && url ? url.split(/[?#]/)[0].split('/').pop() : '');
+
 export function normalizeVehicle(vehicle) {
   if (!vehicle || typeof vehicle !== 'object') return vehicle;
   const fromServer = Array.isArray(vehicle.photos) ? vehicle.photos : [];
-  const raw = fromServer.length ? fromServer : getCachedPhotos(vehicle.id);
+  const cached = getCachedPhotos(vehicle.id);
+  // The backend lists the insurance sticker among `photoUrls` (checked live 2026-10-25: every vehicle's
+  // `insuranceVerificationStickerPhoto` file is in it). A sticker is a paper — sometimes with personal details on
+  // it — never a picture of the car, so it's left out (matched by file name: the two differ in host).
+  const sticker = fileNameOf(vehicle.insuranceVerificationStickerPhoto);
+  const urls = Array.isArray(vehicle.photoUrls) ? vehicle.photoUrls.filter((u) => u && (!sticker || fileNameOf(u) !== sticker)) : [];
+  const fromUrls = urls.map((u) => cached.find((p) => (typeof p === 'string' ? p : p?.url) === u) || u);
+  const raw = fromServer.length ? fromServer : fromUrls.length ? fromUrls : cached;
   const photos = raw.map((p) => (typeof p === 'string' ? { url: photoSrc(p) } : { ...p, url: photoSrc(p.url) }));
   return { ...vehicle, dailyPrice: vehicle.dailyPrice ?? vehicle.pricePerDay, photos };
 }
@@ -67,6 +77,49 @@ const listSelector = (includeUnavailable) => (data) => {
 };
 
 /**
+ * `GET /vehicles` is paged (live spec 2026-10-25: `page`/`size` query params, answering a Spring
+ * `PageVehicleResponse` — `{ content, number, totalPages, totalElements, last, … }`; it was a plain array
+ * before, and an array is still accepted). The search grids load it a page at a time as the person scrolls
+ * (`useVehicleAvailability`); what needs every vehicle (the filter facets, the window check) reads every page.
+ */
+export const VEHICLE_PAGE_SIZE = 12; // fills whole rows of the 2-, 3- and 4-column grids
+
+const pageItems = (data) => (Array.isArray(data) ? data : data?.content || []);
+
+/** The page after `data`, or `undefined` once there is none (a plain array is everything at once). */
+function nextPageAfter(data, page, size) {
+  if (!data || Array.isArray(data)) return undefined;
+  if (data.last === true || data.empty === true) return undefined;
+  if (typeof data.totalPages === 'number' && page + 1 >= data.totalPages) return undefined;
+  if (data.last == null && pageItems(data).length < size) return undefined;
+  return page + 1;
+}
+
+const MAX_PAGES = 50; // a guard, should the backend ever keep answering with `last: false`
+
+/**
+ * Stopgap (docs/backend-requests.md item 45): since 2026-10-25 the backend's own "recommended" order — which is
+ * also what it uses when no sort is sent — fails with a 500. The portal orders Recommended and Newest itself
+ * anyway, so in those cases the backend is asked for price order, which works. Remove once the backend is fixed.
+ */
+function withWorkingSort(filters) {
+  return isRecommendedSort(filters.sort) ? { ...filters, sort: 'price_asc' } : filters;
+}
+
+/** Every vehicle matching `filters`, reading page after page — as one plain array. */
+async function fetchAllVehicles(rawFilters) {
+  const filters = withWorkingSort(rawFilters);
+  const size = 100;
+  const all = [];
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const data = await apiGet('/vehicles', { ...filters, page, size });
+    all.push(...pageItems(data));
+    if (nextPageAfter(data, page, size) === undefined) break;
+  }
+  return all;
+}
+
+/**
  * Searches vehicles with the renter-friendly filters the backend supports:
  * query, location, minPrice, maxPrice, capacity, fuelType,
  * transmissionType, selfDrive, chauffeured, startTime, endTime, sort.
@@ -81,7 +134,7 @@ const listSelector = (includeUnavailable) => (data) => {
 export function useVehicles(filters = {}, { includeUnavailable = false } = {}) {
   return useQuery({
     queryKey: ['vehicles', filters],
-    queryFn: () => apiGet('/vehicles', filters),
+    queryFn: () => fetchAllVehicles(filters),
     select: listSelector(includeUnavailable),
     // Availability changes minute to minute (an owner switches a car on, a booking lands), so a visit to a
     // list always fetches fresh instead of trusting a copy that may be minutes old — or fetched while the
@@ -103,7 +156,8 @@ export function useVehicleFacets() {
 }
 
 /**
- * The search grid's own list, each vehicle marked `isBooked` rather than dropped — a vehicle someone else
+ * The search grids' own list, loaded lazily — one page of `VEHICLE_PAGE_SIZE` first, the next whenever
+ * `loadMore` is called (the grid calls it as the person scrolls near the end). Each vehicle is marked `isBooked` rather than dropped — a vehicle someone else
  * already has (a CONFIRMED/ACTIVE booking covering the window) stays visible, just not bookable for it.
  * Reads the backend's own `VehicleResponse.booked` boolean directly (confirmed live: present on both
  * `GET /vehicles` and `GET /vehicles/{id}`, respects `startTime`/`endTime` when given, and — checked
@@ -114,18 +168,31 @@ export function useVehicleFacets() {
 export function useVehicleAvailability(filters = {}) {
   // "Newest" is the portal's own sort: the backend refuses it (400), so it's never sent.
   const newest = filters.sort === CLIENT_SORTS.NEWEST;
-  const apiFilters = { ...filters };
-  if (newest) delete apiFilters.sort;
-  const query = useVehicles(apiFilters);
-  const list = Array.isArray(query.data) ? query.data : query.data?.content || [];
+  const apiFilters = withWorkingSort({ ...filters, sort: newest ? undefined : filters.sort });
+  const query = useInfiniteQuery({
+    queryKey: ['vehicles', 'paged', apiFilters],
+    queryFn: ({ pageParam }) => apiGet('/vehicles', { ...apiFilters, page: pageParam, size: VEHICLE_PAGE_SIZE }),
+    initialPageParam: 0,
+    getNextPageParam: (data, _all, page) => nextPageAfter(data, page, VEHICLE_PAGE_SIZE),
+    refetchOnMount: 'always', // see useVehicles
+  });
+  const pages = query.data?.pages || [];
   // "Booked" only means something for the dates being looked at: without dates the backend's flag says the
   // car has a booking *somewhere*, and a "BOOKED" badge then reads as "unavailable" when it may be free on the
   // renter's own dates. So a vehicle is only marked once dates are chosen.
   const hasDates = !!(filters.startTime && filters.endTime);
-  const marked = list.map((v) => ({ ...v, isBooked: hasDates && v.booked === true }));
   // "Recommended" (the default) and "Newest" are ordered here — the backend has neither (lib/vehicleRanking.js).
-  // Any other sort the renter picks is the backend's, left exactly as it came.
-  const vehicles = newest ? newestOrder(marked) : isRecommendedSort(filters.sort) ? recommendedOrder(marked) : marked;
+  // Any other sort the renter picks is the backend's, left exactly as it came. Each page is ordered on its own
+  // and added after the ones before, so the cards already on screen never jump about when more arrive. A car that
+  // turns up on a second page as well (the list shifted while scrolling — one added or switched on) shows once.
+  const seen = new Set();
+  const vehicles = pages.flatMap((data) => {
+    const fresh = pageItems(data).filter((v) => v?.id == null || (!seen.has(v.id) && seen.add(v.id)));
+    const marked = onlyAvailable(fresh.map(normalizeVehicle)).map((v) => ({ ...v, isBooked: hasDates && v.booked === true }));
+    return newest ? newestOrder(marked) : isRecommendedSort(filters.sort) ? recommendedOrder(marked) : marked;
+  });
+  const first = pages[0];
+  const total = first && !Array.isArray(first) && typeof first.totalElements === 'number' ? first.totalElements : undefined;
 
   return {
     vehicles,
@@ -134,6 +201,13 @@ export function useVehicleAvailability(filters = {}) {
     error: query.error,
     refetch: query.refetch,
     hasDates,
+    /** How many vehicles match in all, from the backend (`undefined` when it doesn't say). */
+    total,
+    hasMore: !!query.hasNextPage,
+    loadingMore: query.isFetchingNextPage,
+    loadMore: () => {
+      if (query.hasNextPage && !query.isFetchingNextPage) query.fetchNextPage();
+    },
   };
 }
 
@@ -151,11 +225,8 @@ export function useVehicleWindowBooked(vehicleId, startTime, endTime) {
     // single-vehicle endpoint ignores the dates and says `booked: true` for any window once the vehicle has a booking
     // anywhere (docs/backend-requests.md item 39), while the list answers for exactly the window asked. A vehicle
     // missing from the list (switched off, not approved) isn't reported booked here — the page handles that itself.
-    queryFn: () => apiGet('/vehicles', { startTime, endTime }),
-    select: (data) => {
-      const list = Array.isArray(data) ? data : data?.content || [];
-      return list.find((v) => v?.id === vehicleId)?.booked === true;
-    },
+    queryFn: () => fetchAllVehicles({ startTime, endTime }),
+    select: (list) => list.find((v) => v?.id === vehicleId)?.booked === true,
     enabled,
   });
   return { isBooked: enabled && query.data === true, isLoading: enabled && query.isLoading };

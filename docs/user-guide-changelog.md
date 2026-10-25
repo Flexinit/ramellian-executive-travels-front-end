@@ -3,12 +3,19 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
-## 2026-10-25 (platform settings: driver charge, assistant switch)
+## 2026-10-25 (platform settings: driver charge, assistant switch; vehicles load as you scroll; trip type icons)
 
 - **Added (administrators):** **Platform Settings** has a **Driver charge** — a flat amount added to chauffeured
   bookings (0 = none).
 - **Added (administrators):** an **Assistant** card on **Platform Settings** to turn the chat assistant on or off.
   While it's off, signed-in people don't see the chat button, the top-bar icon or the Assistant menu item.
+- **Fixed:** car photos now show for every visitor (they used to appear only in the browser that uploaded them), and
+  a car's insurance sticker is never shown as one of its photos.
+- **Fixed:** Browse Vehicles showed no cars while the backend's "Recommended" order was failing; it works again.
+- **Added:** each trip type has its own icon (plane for Airport Transfer, ring for Wedding, binoculars for Safari…),
+  shown wherever trip types appear.
+- **Changed:** **Browse Vehicles** and **Our Fleet** load 12 cars at a time and fetch more as you scroll (or press
+  **Show more vehicles**). Our Fleet no longer has numbered pages.
 
 ## 2026-10-25 (quotations, change vehicle, dark mode, tables)
 

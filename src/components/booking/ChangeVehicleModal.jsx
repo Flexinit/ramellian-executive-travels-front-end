@@ -21,8 +21,8 @@ export function canChangeVehicle(booking, now = Date.now()) {
 
 /** The cars free for the booking's dates — what a renter can switch to. */
 function RenterChoices(props) {
-  const { vehicles, isLoading } = useVehicleAvailability({ startTime: props.booking.startTime, endTime: props.booking.endTime });
-  return <Choices {...props} vehicles={vehicles.filter((v) => !v.isBooked)} isLoading={isLoading} />;
+  const { vehicles, isLoading, hasMore, loadMore, loadingMore } = useVehicleAvailability({ startTime: props.booking.startTime, endTime: props.booking.endTime });
+  return <Choices {...props} vehicles={vehicles.filter((v) => !v.isBooked)} isLoading={isLoading} hasMore={hasMore} onLoadMore={loadMore} loadingMore={loadingMore} />;
 }
 /** The owner's own cars. */
 function OwnerChoices(props) {
@@ -36,7 +36,7 @@ function AdminChoices(props) {
 }
 const CHOICES = { renter: RenterChoices, owner: OwnerChoices, admin: AdminChoices };
 
-function Choices({ booking, vehicles, isLoading, selected, onSelect }) {
+function Choices({ booking, vehicles, isLoading, selected, onSelect, hasMore, onLoadMore, loadingMore }) {
   const currentId = booking.vehicleId || booking.vehicle?.id;
   const options = vehicles.filter((v) => v.id !== currentId);
   if (isLoading) {
@@ -46,7 +46,7 @@ function Choices({ booking, vehicles, isLoading, selected, onSelect }) {
       </div>
     );
   }
-  if (options.length === 0) {
+  if (options.length === 0 && !hasMore) {
     return <p className="rounded-tile bg-subtle px-4 py-3 text-sm text-muted">There&apos;s no other vehicle to switch to for these dates.</p>;
   }
   return (
@@ -77,6 +77,12 @@ function Choices({ booking, vehicles, isLoading, selected, onSelect }) {
           </button>
         );
       })}
+      {/* The renter's list is loaded a page at a time (useVehicleAvailability). */}
+      {hasMore && (
+        <Button variant="outline" size="sm" className="self-center" loading={loadingMore} onClick={onLoadMore}>
+          Show more vehicles
+        </Button>
+      )}
     </div>
   );
 }

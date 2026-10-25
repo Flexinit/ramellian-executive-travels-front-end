@@ -5,7 +5,8 @@ import { DetailList, DetailRow } from '../ui/DetailList';
 import GenericVehiclePlaceholder from '../vehicles/GenericVehiclePlaceholder';
 import { formatCurrency, formatDateTime } from '../../lib/utils';
 import { billableDays } from '../../lib/cart';
-import { TRIP_TYPE_LABELS, BOOKING_MODES } from '../../lib/constants';
+import { BOOKING_MODES } from '../../lib/constants';
+import { TripTypeLabel } from '../ui/TripTypeIcon';
 
 /**
  * One vehicle of a booking: what, when, how, and its own daily rate. Every place this is used (the basket,
@@ -62,7 +63,7 @@ export default function BookingSummaryCard({ vehicle, draft, actions, note, quot
         <DetailRow label="Route" hidden={!tripOrigin && !tripDestination}>
           {tripOrigin || '—'} → {tripDestination || '—'}
         </DetailRow>
-        <DetailRow label="Trip Type" hidden={!tripType}>{TRIP_TYPE_LABELS[tripType] || tripType}</DetailRow>
+        <DetailRow label="Trip Type" hidden={!tripType}><TripTypeLabel type={tripType} /></DetailRow>
         <DetailRow label="Getting the vehicle">
           {deliveryRequested
             ? `Delivered to you${deliveryFee > 0 ? ` — ${formatCurrency(deliveryFee)} fee` : ''}`

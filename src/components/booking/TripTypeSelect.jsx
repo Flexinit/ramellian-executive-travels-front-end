@@ -1,8 +1,8 @@
 import React from 'react';
 import { useBookingStore } from '../../store/bookingStore';
-import { TRIP_TYPE_LABELS } from '../../lib/constants';
 import { bookableTripTypes } from '../../lib/vehicleOptions';
 import ToggleChip from '../ui/ToggleChip';
+import { TripTypeLabel } from '../ui/TripTypeIcon';
 
 /**
  * Trip types as selectable chips — exactly the ones `vehicle` can be booked for (`bookableTripTypes`), so
@@ -25,7 +25,7 @@ export default function TripTypeSelect({ vehicle }) {
           const active = tripType === type;
           return (
             <ToggleChip key={type} active={active} onClick={() => setDraft({ tripType: active ? null : type })}>
-              {TRIP_TYPE_LABELS[type] || type}
+              <TripTypeLabel type={type} />
             </ToggleChip>
           );
         })}

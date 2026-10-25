@@ -4,6 +4,8 @@ import { Car, MapPin, Star } from 'lucide-react';
 
 import Button       from '../components/ui/Button';
 import ToggleChip   from '../components/ui/ToggleChip';
+import { TripTypeLabel } from '../components/ui/TripTypeIcon';
+import { TRIP_TYPES } from '../lib/constants';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import Input        from '../components/ui/Input';
 import Textarea     from '../components/ui/Textarea';
@@ -105,14 +107,21 @@ export default function WidgetShowcase() {
 
       {/* Chips and segmented controls */}
       <Section title="Toggle chips &amp; segmented control">
-        <ToggleChip active={chipOn} onClick={() => setChipOn(!chipOn)}>Safari</ToggleChip>
-        <ToggleChip active={false}>Wedding</ToggleChip>
+        <ToggleChip active={chipOn} onClick={() => setChipOn(!chipOn)}><TripTypeLabel type={TRIP_TYPES.SAFARI} /></ToggleChip>
+        <ToggleChip active={false}><TripTypeLabel type={TRIP_TYPES.WEDDING} /></ToggleChip>
         <SegmentedControl
           label="Booking mode"
           options={[{ value: 'SELF', label: 'Self-Drive', icon: SelfDriveIcon }, { value: 'CHAUFFEURED', label: 'Chauffeured', icon: ChauffeurIcon }]}
           value={segment}
           onChange={setSegment}
         />
+      </Section>
+
+      {/* Trip type icons */}
+      <Section title="Trip type icons">
+        {Object.values(TRIP_TYPES).map((type) => (
+          <ToggleChip key={type} active={false}><TripTypeLabel type={type} /></ToggleChip>
+        ))}
       </Section>
 
       {/* Badges */}

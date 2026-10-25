@@ -267,6 +267,11 @@ identity documents, and book a car for self-drive or chauffeured trips. The
 > an earlier version refused them). If the backend ever refuses a visitor again, Browse Vehicles
 > says "Please log in to browse vehicles". Vehicle lists are fetched fresh every time you open
 > them, so a car an owner has just switched on appears straight away.
+>
+> **Browse Vehicles** and **Our Fleet** show 12 cars at first and load the next 12 as you scroll down. **Show more
+> vehicles** at the end of the list does the same. The "… vehicles found" count is the full number that match,
+> not just the ones shown so far. **Change vehicle** on a booking lists the cars the same way, with **Show more
+> vehicles** at the bottom.
 
 **You don't need an account to choose a vehicle.** The account comes at checkout: you find vehicles, put the ones
 you want in your booking, see the price, and only then sign up. Your booking is saved through registering and
@@ -321,6 +326,10 @@ verifying your email (which signs you in), and picks up where you left off.
    Location** and **Drop-off Location** — where the chauffeur meets you and drops you off. Your booking and
    checkout show which you chose ("Getting the vehicle") and the fee. Administrators set the fee under
    **Platform Settings → Delivery fee** (0 means free delivery).
+   Each trip type has its own icon: General (a route), Airport Transfer (a plane), Wedding (a ring), Corporate (a
+   briefcase), Safari (binoculars), Family Journey (people), Self-Drive Rental (a steering wheel) and Cake
+   Transportation (a cake). The same icons show in a vehicle's **Suited for** list, the trip-type choices when adding
+   or editing a vehicle, and the booking details.
    Trip Type only offers what this particular vehicle is set up for (see its **Suited for** list). A vehicle
    whose list includes **General** — or that the owner hasn't restricted at all — is fine for any trip, so it
    offers all of them (a Wedding on a General car is allowed). Owners: tick **General** for an all-purpose car;
@@ -761,12 +770,10 @@ your permissions" above): an item is only shown if your account holds the permis
 - **All Vehicles** (`/admin/vehicles`, needs `VEHICLE_MANAGE`) — every vehicle and who owns it (now including ones
   switched off, read from `GET /vehicles/admin/all`), with an **Approval** column, searchable; **Edit** any vehicle
   (same editor as owners), put one on or off the market, or **remove** it (after a confirmation). Each row has a **photo thumbnail** (click for
-  all the photos) — or a plain car icon saying no photo is available. **Why photos are often missing:** the
-  backend never sends a vehicle's photos (the vehicle record has no photo field, and its photo-list call fails),
-  and a photo's address is revealed only to the person who uploads it, so the portal can only show photos uploaded
-  **from the same browser**. The **insurance sticker** is different — its address is saved on the vehicle itself, so
-  it shows for any vehicle that has one (a vehicle added before the sticker was required may have none). Showing
-  every vehicle's photos to every administrator needs the backend to return them with the vehicle.
+  all the photos) — or a plain car icon saying no photo is available. Since 2026-10-25 the backend sends each
+  vehicle's photos, so they show for everyone, whichever browser uploaded them. The **insurance sticker** is kept
+  apart: it's never shown as one of the car's photos (the backend lists it among them, so the portal leaves it out),
+  only through **View sticker**.
 - **Review Documents** (`/admin/documents`, needs `DOCUMENT_REVIEW`) — every uploaded document waiting for a
   decision, with **the document itself shown on its card** (a picture, or a PDF in a reader) so it can be
   checked at a glance; **View full size** opens it large. Then **Approve** or **Reject** it, with optional notes

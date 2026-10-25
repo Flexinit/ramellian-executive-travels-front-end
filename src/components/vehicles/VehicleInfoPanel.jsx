@@ -9,7 +9,7 @@ import { SelfDriveIcon, ChauffeurIcon } from '../ui/TripModeIcons';
 import AuthImage from './AuthImage';
 import { VEHICLE_TIERS } from '../../lib/constants';
 import { formatDateTime } from '../../lib/utils';
-import { tripTypeLabel } from '../../lib/vehicleOptions';
+import { TripTypeLabel } from '../ui/TripTypeIcon';
 
 function titleCase(value) {
   return value.charAt(0) + value.slice(1).toLowerCase();
@@ -115,7 +115,7 @@ export default function VehicleInfoPanel({ vehicle, isOwner = false }) {
           <ul className="flex flex-wrap gap-2" aria-label="Suited for">
             {tripTypes.map((t) => (
               <li key={t} className="px-3 py-1.5 rounded-full border border-line bg-surface text-ink text-xs font-medium">
-                {tripTypeLabel(t)}
+                <TripTypeLabel type={t} />
               </li>
             ))}
           </ul>

@@ -22,6 +22,7 @@ import StickerPreview from '../components/vehicles/StickerPreview';
 import { useAttachInsuranceSticker, useCreateVehicle, useUploadVehiclePhoto } from '../hooks/useVehicles';
 import { FUEL_OPTIONS, TRANSMISSION_OPTIONS, VEHICLE_DEFAULTS as DEFAULTS, vehicleSchema as schema, windowErrors } from '../lib/vehicleForm';
 import { VEHICLE_TRIP_TYPES } from '../lib/vehicleOptions';
+import { TripTypeLabel } from '../components/ui/TripTypeIcon';
 
 /** The vehicle is added in short steps so the form never looks like one long wall of fields. */
 const STEPS = [
@@ -439,7 +440,7 @@ export default function AddVehiclePage() {
                     <div className="flex flex-wrap gap-2" role="group" aria-label="Trip types">
                       {VEHICLE_TRIP_TYPES.map((t) => (
                         <ToggleChip key={t.value} active={tripTypes.includes(t.value)} onClick={() => toggleTripType(t.value)}>
-                          {t.label}
+                          <TripTypeLabel type={t.value} />
                         </ToggleChip>
                       ))}
                     </div>
