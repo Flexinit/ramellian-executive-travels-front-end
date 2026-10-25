@@ -141,6 +141,8 @@ there in a small panel without leaving the page, click it again to put it away. 
 signed in offers **Log In**/**Create Account** instead of the chat box — the assistant itself needs an
 account. Unlike Messages, this isn't a saved conversation between two people: the backend doesn't keep a history of
 it, so it starts fresh every time you open it, and reloading the page loses whatever you'd asked.
+An administrator can switch the assistant off (**Platform Settings → Assistant**); while it's off, signed-in people
+don't see the button, the top-bar icon or the menu item, and `/assistant` says it's switched off.
 
 **No phone numbers, anywhere.** Phone numbers can't be shared through the portal. Anything that
 looks like one — a number starting `07` or `01` (including `011`), or with a country code such as
@@ -280,7 +282,10 @@ verifying your email (which signs you in), and picks up where you left off.
    slider with two handles for the lowest and highest price you'll pay (drag them, or use the arrow keys;
    the results update when you let go). The results are one grid — not split up by place — with each car's
    place on its card; use **Available in** to narrow to a place. The grid follows the **Sort by** order.
-   **Searching from the home page:** give the **Pick-up Location** and your dates. Returning the car somewhere
+   **Searching from the home page:** give the **Pick-up Location** and your dates. Browse Vehicles then shows the cars
+   based near that place first (any area named in it counts — "Eastleigh, Nairobi" finds cars in Eastleigh and in
+   Nairobi), with **Show all** to see every car; if none is based near it, it shows every available car and says so.
+   The place is also filled in as the pick-up location when you book. Returning the car somewhere
    else? Click **Return to a different location** under the search bar to add a **Return Location**
    (**Return to the same place** removes it again).
    The search box and filters stay in view while you scroll the vehicles. The full-width search box stays
@@ -825,7 +830,11 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Platform Settings** (`/admin/settings`) — the commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
-  charged on a booking that already exists.
+  charged on a booking that already exists. Next to it: the **Pesapal transaction fee** (%), the **Delivery fee** (a
+  flat amount when the renter has the car delivered; 0 = free) and the **Driver charge** (a flat amount added to a
+  chauffeured booking; 0 = none). **Save settings** saves all of them together.
+  The **Assistant** card turns the in-app chat assistant on or off for everyone — **Turn the assistant off** /
+  **Turn the assistant on**; its badge shows which it is now.
   It also holds the **Standard booking policy**: the cancellation and date-moving rules for owners who haven't set their own.
 - **Insurance and vehicle papers.** **All Vehicles** has an **Insurance** column — *No insurance*, *Insured · no
   sticker* or *Insured · sticker* — and **View sticker** opens the sticker photo with an automatic **QR code

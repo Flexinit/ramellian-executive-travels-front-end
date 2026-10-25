@@ -4,6 +4,7 @@ import { Bell, MessageSquare, Bot } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { useUnreadMessageCount } from '../../hooks/useChat';
+import { useBotAssistantEnabled } from '../../hooks/usePlatformSettings';
 
 export const LINK =
   'relative inline-flex items-center justify-center w-10 h-10 rounded-full text-ink hover:text-accent hover:bg-ink/5 transition-colors focus-ring';
@@ -42,6 +43,8 @@ function MessagesLink() {
 
 /** No unread count — the assistant has no notion of unread (it's not a saved conversation, see `AssistantThread`). */
 function AssistantLink() {
+  const assistantOn = useBotAssistantEnabled();
+  if (!assistantOn) return null;
   return (
     <Link to="/assistant" aria-label="Assistant" className={LINK}>
       <Bot size={20} aria-hidden="true" />

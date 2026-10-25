@@ -17,6 +17,7 @@ import AssistantFab from './components/layout/AssistantFab';
 import MobileTabBar from './components/layout/MobileTabBar';
 import { useSyncCurrentUser } from './hooks/useProfile';
 import { useSessionExpiry, useReturnToCheckoutAfterAuth } from './hooks/useAuth';
+import { useBotAssistantEnabled } from './hooks/usePlatformSettings';
 import { USER_ROLES } from './lib/constants';
 import { PERMISSIONS as P, hasPermission } from './lib/permissions';
 import { useAuthStore } from './store/authStore';
@@ -350,7 +351,10 @@ function AccountLayout() {
   }, [requested, isOwner, mode, pathname, setMode]);
 
   const isSuperAdmin = useAuthStore((s) => !!s.user?.isSuperAdmin);
-  const { items, heading } = menuFor(roles, mode, permissions, isSuperAdmin);
+  const { items: menu, heading } = menuFor(roles, mode, permissions, isSuperAdmin);
+  // An administrator can switch the assistant off for everyone (Platform Settings): its menu item goes too.
+  const assistantOn = useBotAssistantEnabled();
+  const items = assistantOn ? menu : menu.filter((item) => item.to !== '/assistant');
   return <DashboardLayout items={items} heading={heading} />;
 }
 

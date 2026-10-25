@@ -11,6 +11,7 @@ import PageTitle from '../components/layout/PageTitle';
 import { useVehicleAvailability } from '../hooks/useVehicles';
 import { useBookingStore } from '../store/bookingStore';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { vehiclesNear } from '../lib/vehicleLocations';
 import { BOOKING_MODES } from '../lib/constants';
 
 // Kept across a fresh arrival at the page — everything else (location, dates, mode, tier, fuel,
@@ -49,14 +50,15 @@ export default function VehiclesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filters = Object.fromEntries(searchParams.entries());
+  // `near` (the home search's pick-up place) isn't sent to the backend: it orders the results here instead.
+  const { near, ...filters } = Object.fromEntries(searchParams.entries());
   // The narrow-screen Filters button: whether the panel is open, and how many filters are in use (the sort
   // isn't a filter; the free-text search shows in its own box).
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Tailwind's `lg` breakpoint: where the filters become a column beside the results. Assumed wide where it
   // can't be measured (tests).
   const wide = useMediaQuery('(min-width: 1024px)', true);
-  const activeFilters = [...searchParams.keys()].filter((k) => k !== 'sort' && k !== 'query').length;
+  const activeFilters = [...searchParams.keys()].filter((k) => k !== 'sort' && k !== 'query' && k !== 'near').length;
 
   // The dates, mode and places searched for here go with the renter to whichever vehicle they open, so its
   // booking form starts filled in (AddToBookingPanel) instead of asking for them again.
@@ -71,12 +73,16 @@ export default function VehiclesPage() {
       startTime: params.get('startTime') || undefined,
       endTime: params.get('endTime') || undefined,
       bookingMode: mode,
-      pickupLocation: params.get('location') || undefined,
+      pickupLocation: params.get('near') || params.get('location') || undefined,
       dropoffLocation: params.get('returnLocation') || undefined,
     });
   }, [query, setSearch]);
 
-  const { vehicles, isLoading, isError, error, refetch } = useVehicleAvailability(filters);
+  const { vehicles: found, isLoading, isError, error, refetch } = useVehicleAvailability(filters);
+  // Searched from the home page with a pick-up place: the cars based near it, or — if none are — every car, with a
+  // note saying so (never an empty page just because no car is based at that exact address).
+  const nearby = near ? vehiclesNear(found, near) : null;
+  const vehicles = nearby ? nearby.vehicles : found;
   // One continuous grid, never split into a section per place (product owner, 2026-10-25): with a few cars per
   // place, sections left half-empty rows. The place is on each card and in the "Available in" filter; the order is
   // the chosen sort, or Recommended (free for the dates first — lib/vehicleRanking.js).
@@ -97,6 +103,32 @@ export default function VehiclesPage() {
             <p className="text-muted text-xs sm:text-sm mt-1">
               {isLoading ? 'Searching…' : `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} found`}
             </p>
+            {nearby && !isLoading && !isError && (
+              <p role="status" className="mt-1.5 text-xs sm:text-sm text-ink">
+                {nearby.matched ? (
+                  <>
+                    Cars based near <span className="font-semibold">{near}</span>.{' '}
+                  </>
+                ) : (
+                  <>
+                    No cars are based near <span className="font-semibold">{near}</span> yet — showing every available car.{' '}
+                  </>
+                )}
+                {nearby.matched && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = new URLSearchParams(searchParams);
+                      next.delete('near');
+                      setSearchParams(next, { replace: true });
+                    }}
+                    className="font-semibold text-accent hover:text-accent-hover focus-ring rounded-md"
+                  >
+                    Show all
+                  </button>
+                )}
+              </p>
+            )}
           </div>
           <SortDropdown />
         </div>

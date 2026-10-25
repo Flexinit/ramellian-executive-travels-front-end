@@ -166,6 +166,31 @@
   padding-top: 1.25rem;
 }
 
+/* A car photo still loading (AuthImage): a soft light band sweeping across the photo panel, then the photo fades in
+   once it has arrived. On the image element itself (its background, which the photo covers when it paints), so no
+   page needs an extra wrapper. Still, with no sweep, for anyone whose device asks for reduced motion. */
+.photo-shimmer {
+  background-color: rgb(var(--c-well));
+  background-image: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.7) 50%, transparent 80%);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: photo-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes photo-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+.photo-fade-in {
+  animation: photo-fade-in 400ms ease-out;
+}
+@keyframes photo-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-shimmer, .photo-fade-in { animation: none; }
+}
+
 /* Print / Save as PDF on a contract or an invoice (lib/printContract.js): only that document is printed. */
 @media print {
   body.printing-contract *,

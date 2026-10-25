@@ -156,7 +156,9 @@ export default function BookingBar() {
     const start = combineDateAndTime(dateRange.startDate, dateRange.startTime);
     const end = combineDateAndTime(dateRange.endDate, dateRange.endTime);
     const query = buildQueryString({
-      location: location || undefined,
+      // `near`, not `location`: a pick-up address is a preference (cars based near it come first — vehiclesNear),
+      // never the backend's strict place filter, which found nothing for a real address.
+      near: location || undefined,
       returnLocation: returnLocation || undefined,
       startTime: start ? start.toISOString() : undefined,
       endTime: end ? end.toISOString() : undefined,

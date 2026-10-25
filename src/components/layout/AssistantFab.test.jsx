@@ -1,12 +1,16 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AssistantFab from './AssistantFab';
 import { useAuthStore } from '../../store/authStore';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../mocks/server';
+
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 afterEach(() => {
   useAuthStore.setState({ token: null, user: null });
@@ -103,5 +107,15 @@ describe('AssistantFab', () => {
 
     await user.click(screen.getByRole('button', { name: /close chat/i }));
     expect(screen.queryByText(/chat with us/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('AssistantFab — switched off by an administrator', () => {
+  it('is hidden for a signed-in person once the platform settings say the assistant is off', async () => {
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1, botAssistantEnabled: false })));
+    signIn();
+    renderAt('/vehicles');
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument());
   });
 });

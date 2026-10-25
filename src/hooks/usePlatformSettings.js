@@ -2,25 +2,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { apiGet, apiPut } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
+import { useAuthStore } from '../store/authStore';
 
 /**
  * Platform-wide settings — `platform-settings-controller` (docs/backend-requests.md item 26). Confirmed
- * against the live spec 2026-10-09, `PlatformSettingsResponse` is `{ id, commissionRatePct,
- * pesapalTransactionFeeRatePct, deliveryFlatFee }` and `PlatformSettingsRequest` takes the same three
- * (`commissionRatePct` required, all ≥ 0). `GET /platform-settings/commission` needs auth but is readable by
- * any signed-in role; `PUT` refuses a non-admin token (403), so only the admin settings page changes them.
+ * against the live spec 2026-10-25: `GET`/`PUT /platform-settings` (it was `/platform-settings/commission`
+ * until then), `PlatformSettingsResponse` is `{ id, commissionRatePct, pesapalTransactionFeeRatePct,
+ * deliveryFlatFee, driverFlatCharge, botAssistantEnabled }` and `PlatformSettingsRequest` takes the same five
+ * (`commissionRatePct` required, the two rates 0–100, the two fees ≥ 0). `PUT /platform-settings/bot`
+ * (`BotAssistantToggleRequest { enabled }`, required) switches only the assistant. `GET` needs auth and was
+ * readable by any signed-in role when last probed; `PUT` refuses a non-admin token (403).
  *
- * The `PUT` replaces the settings as a whole, so a save always sends all three — sending only the one that
+ * The `PUT` replaces the settings as a whole, so a save always sends every field — sending only the one that
  * changed could clear the others.
  */
 
-const KEY = ['platform-settings', 'commission'];
+const KEY = ['platform-settings'];
 
 /** The current platform settings (`PlatformSettingsResponse`). */
-export function usePlatformSettings() {
+export function usePlatformSettings({ enabled = true } = {}) {
   return useQuery({
     queryKey: KEY,
-    queryFn: () => apiGet('/platform-settings/commission'),
+    queryFn: () => apiGet('/platform-settings'),
+    enabled,
   });
 }
 
@@ -28,16 +32,17 @@ export function usePlatformSettings() {
 export const usePlatformCommission = usePlatformSettings;
 
 /**
- * Saves the platform settings (admin only). Pass all three:
- * `{ commissionRatePct, pesapalTransactionFeeRatePct, deliveryFlatFee }`.
+ * Saves the platform settings (admin only). Pass all of them:
+ * `{ commissionRatePct, pesapalTransactionFeeRatePct, deliveryFlatFee, driverFlatCharge, botAssistantEnabled }`.
  */
 export function useSavePlatformSettings() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload) => apiPut('/platform-settings/commission', payload),
+    mutationFn: (payload) => apiPut('/platform-settings', payload),
     onSuccess: (updated) => {
       if (updated) queryClient.setQueryData(KEY, updated);
-      // Quotes include the commission, the transaction fee and the delivery fee: re-price anything open.
+      // Quotes include the commission, the transaction fee, the delivery fee and the driver charge: re-price
+      // anything open.
       queryClient.invalidateQueries({ queryKey: ['booking-quote'] });
       toast.success('Platform settings saved.');
     },
@@ -47,3 +52,27 @@ export function useSavePlatformSettings() {
 
 /** Kept for existing callers. */
 export const useSetPlatformCommission = useSavePlatformSettings;
+
+/** Turns the in-app assistant on or off for everyone (admin only) — `PUT /platform-settings/bot`. */
+export function useToggleBotAssistant() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (enabled) => apiPut('/platform-settings/bot', { enabled }),
+    onSuccess: (updated, enabled) => {
+      if (updated) queryClient.setQueryData(KEY, updated);
+      toast.success(enabled ? 'The assistant is on.' : 'The assistant is off.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't change the assistant setting.")),
+  });
+}
+
+/**
+ * Whether to offer the in-app assistant. Only a signed-in person can read the settings, so a visitor always
+ * sees the chat button (it asks them to log in). Signed in, it's hidden only once the settings say
+ * `botAssistantEnabled: false` — while loading, on an error, or when the field is missing it stays on.
+ */
+export function useBotAssistantEnabled() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const { data } = usePlatformSettings({ enabled: isAuthenticated });
+  return !isAuthenticated || data?.botAssistantEnabled !== false;
+}

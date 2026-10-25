@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
@@ -30,6 +30,24 @@ afterEach(() => {
 });
 
 describe('AuthImage', () => {
+  it('shimmers while the photo is on its way, then fades it in once it has loaded', () => {
+    renderImage({ src: 'blob:already-here', className: 'h-full w-full' });
+    const img = screen.getByRole('img', { name: 'Prado' });
+    expect(img).toHaveClass('photo-shimmer', 'h-full');
+    fireEvent.load(img);
+    expect(img).not.toHaveClass('photo-shimmer');
+    expect(img).toHaveClass('photo-fade-in');
+  });
+
+  it('shimmers in place of the photo while a signed-in download is still running', () => {
+    server.use(http.get(`${HOST}/uploads/vehicles/slow.png`, () => new Promise(() => {})));
+    act(() => useAuthStore.setState({ token: 't' }));
+    renderImage({ src: '/uploads/vehicles/slow.png' });
+    const placeholder = screen.getByRole('img', { name: 'Loading Prado' });
+    expect(placeholder).toHaveAttribute('aria-busy', 'true');
+    expect(placeholder).toHaveClass('photo-shimmer');
+  });
+
   it('downloads the photo with the login token and shows it from a blob when signed in', async () => {
     let sentAuth;
     server.use(

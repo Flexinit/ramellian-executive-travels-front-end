@@ -6,6 +6,7 @@ import AssistantThread from '../chat/AssistantThread';
 import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useBotAssistantEnabled } from '../../hooks/usePlatformSettings';
 
 /**
  * A floating WhatsApp-style button, bottom-right, global on every page — signed in or not, the same way a
@@ -22,10 +23,12 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
  * comment). `POST /bot/inapp` needs a signed-in account (confirmed against the live OpenAPI spec), so a
  * signed-out visitor who opens the panel gets a prompt to log in or create an account instead of the chat
  * box — the button itself is never hidden for them. Hidden on the Assistant page itself (signed-in only, so
- * a visitor never reaches it anyway), since a second copy of the same chat there would be redundant.
+ * a visitor never reaches it anyway), since a second copy of the same chat there would be redundant — and for a
+ * signed-in person when an administrator has switched the assistant off (`useBotAssistantEnabled`).
  */
 export default function AssistantFab() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const assistantOn = useBotAssistantEnabled();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -48,7 +51,7 @@ export default function AssistantFab() {
   }, [phone]);
   const tucked = phone && scrollingDown && !open;
 
-  if (pathname === '/assistant') return null;
+  if (pathname === '/assistant' || !assistantOn) return null;
 
   return (
     <>

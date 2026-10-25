@@ -267,13 +267,17 @@ export const bookingHandlers = [
     })
   ),
 
-  // platform-settings-controller — confirmed against the live OpenAPI spec 2026-10-03 (docs/backend-requests.md
-  // item 26). GET needs auth but is readable by any signed-in role; PUT 403s for a non-admin token in reality,
+  // platform-settings-controller — confirmed against the live OpenAPI spec 2026-10-25 (docs/backend-requests.md
+  // item 26; it was `/platform-settings/commission` before). GET needs auth but is readable by any signed-in role; PUT 403s for a non-admin token in reality,
   // left unenforced here since nothing in these tests exercises it as a non-admin.
-  http.get(`${BASE}/platform-settings/commission`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })),
-  http.put(`${BASE}/platform-settings/commission`, async ({ request }) => {
+  http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1, botAssistantEnabled: true })),
+  http.put(`${BASE}/platform-settings`, async ({ request }) => {
     const body = await request.json();
-    return HttpResponse.json({ id: 's1', commissionRatePct: body.commissionRatePct });
+    return HttpResponse.json({ id: 's1', ...body });
+  }),
+  http.put(`${BASE}/platform-settings/bot`, async ({ request }) => {
+    const { enabled } = await request.json();
+    return HttpResponse.json({ id: 's1', commissionRatePct: 1, botAssistantEnabled: enabled });
   }),
 
   // Added 2026-09-27 (docs/backend-requests.md items 1 & 3), response shape updated 2026-10-03 — confirmed

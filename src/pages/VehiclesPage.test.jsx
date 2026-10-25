@@ -358,3 +358,29 @@ describe('VehiclesPage — price slider', () => {
   });
 });
 
+
+describe('VehiclesPage — searched from the home page with a pick-up place', () => {
+  it('shows the cars based near the place, without sending it to the backend as a strict filter', async () => {
+    let query;
+    server.use(
+      http.get(`${BASE}/vehicles`, ({ request }) => {
+        query = new URL(request.url).search;
+        return HttpResponse.json(CARS);
+      })
+    );
+    renderWithUrl({ pathname: '/vehicles', search: '?near=Mombasa%20Road%2C%20Kenya', state: { fromSearch: true } });
+    expect(await screen.findByRole('heading', { name: 'Subaru Forester' })).toBeInTheDocument();
+    expect(query).not.toContain('near');
+    expect(query).not.toContain('location');
+    expect(screen.queryByRole('heading', { name: 'Toyota Prado' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/cars based near mombasa road, kenya/i);
+  });
+
+  it('shows every car, with a note, when none is based near the place — never an empty page', async () => {
+    server.use(http.get(`${BASE}/vehicles`, () => HttpResponse.json(CARS)));
+    renderWithUrl({ pathname: '/vehicles', search: '?near=JKIA%20Terminal%201', state: { fromSearch: true } });
+    expect(await screen.findByRole('heading', { name: 'Subaru Forester' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(CARS.length);
+    expect(screen.getByRole('status')).toHaveTextContent(/no cars are based near jkia terminal 1 yet/i);
+  });
+});

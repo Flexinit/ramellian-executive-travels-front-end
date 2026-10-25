@@ -3,8 +3,18 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-25 (platform settings: driver charge, assistant switch)
+
+- **Added (administrators):** **Platform Settings** has a **Driver charge** — a flat amount added to chauffeured
+  bookings (0 = none).
+- **Added (administrators):** an **Assistant** card on **Platform Settings** to turn the chat assistant on or off.
+  While it's off, signed-in people don't see the chat button, the top-bar icon or the Assistant menu item.
+
 ## 2026-10-25 (quotations, change vehicle, dark mode, tables)
 
+- **Fixed:** searching from the home page with a pick-up place (an address such as "JKIA Terminal 1", or "use my
+  location") found no vehicles. It now shows the cars based near that place, or every car if none is, with a note.
+- **Changed:** car photos shimmer while they load, then fade in.
 - **Changed:** at checkout a visitor chooses **Sign up to continue** or **I have an account** — the sign-up form no
   longer opens by itself when they arrive.
 - **Changed (super admins):** **Invoices** in the Admin Panel is now **Quotations** — the same tool, producing a

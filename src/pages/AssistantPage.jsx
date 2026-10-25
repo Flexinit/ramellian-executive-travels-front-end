@@ -3,10 +3,14 @@ import { Bot } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import AssistantThread from '../components/chat/AssistantThread';
+import EmptyState from '../components/ui/EmptyState';
+import { useBotAssistantEnabled } from '../hooks/usePlatformSettings';
 
 /** The in-app assistant (`/assistant`) — a chat with Ramellian's own bot, separate from Messages (which is
- * between people). See `AssistantThread`/`hooks/useBot.js` for why it has no saved history across visits. */
+ * between people). See `AssistantThread`/`hooks/useBot.js` for why it has no saved history across visits.
+ * When an administrator has switched the assistant off (Platform Settings), the page says so instead. */
 export default function AssistantPage() {
+  const assistantOn = useBotAssistantEnabled();
   return (
     <>
       <PageWrapper className="max-w-3xl">
@@ -23,7 +27,15 @@ export default function AssistantPage() {
             </p>
           </div>
 
-          <AssistantThread />
+          {assistantOn ? (
+            <AssistantThread />
+          ) : (
+            <EmptyState
+              icon={Bot}
+              title="The assistant is switched off"
+              description="It isn't available right now. Please check back later."
+            />
+          )}
         </div>
       </PageWrapper>
     </>

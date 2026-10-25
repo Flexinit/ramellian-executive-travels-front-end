@@ -1289,3 +1289,21 @@ terms for owners" before listing a car (on top of the sign-up box). It's enforce
 still has nowhere to record it. **Ask:** record `termsAcceptedAt` (and which terms — e.g. the rental-term ids/version)
 on the user at sign-up, on each booking (`BookingRequest.termsAccepted`), and on each vehicle (`VehicleRequest.ownerTermsAccepted`).
 The Terms / Privacy pages are no longer marked as drafts (product owner's decision).
+
+## 26 (update, 2026-10-25). Platform settings moved to `/platform-settings`; driver charge and assistant switch consumed
+
+**Spec change (diffed against the copy pulled 2026-10-25 01:12).** `GET`/`PUT /platform-settings/commission` are
+gone; the same `PlatformSettingsRequest`/`Response` now live at `GET`/`PUT /platform-settings`. Both gained
+`botAssistantEnabled` (boolean), and a new `PUT /platform-settings/bot` takes `BotAssistantToggleRequest { enabled }`
+(required) and returns the settings. `driverFlatCharge` (≥ 0) was already in the schema but no screen set it.
+
+**Built.** `hooks/usePlatformSettings.js` calls the new paths; the admin Platform Settings page adds the driver
+flat charge and an Assistant on/off card, and its save sends `botAssistantEnabled` back unchanged since the `PUT`
+replaces everything. For a signed-in person, `botAssistantEnabled: false` hides the chat button, the top-bar icon
+and the menu item, and `/assistant` shows a notice.
+
+**Ask.** Not yet confirmed live (no valid token on hand): (1) whether `GET /platform-settings` is still readable by
+every signed-in role, as `/commission` was. If renters now get 403, the assistant just stays visible for them.
+(2) Whether `POST /bot/inapp` itself refuses requests while the switch is off. (3) A visitor who isn't signed in
+can't read the settings, so they still see the chat button (it asks them to log in). A public read of
+`botAssistantEnabled` would let it hide for them too.

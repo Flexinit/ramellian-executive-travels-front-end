@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isSameLocation, locationFacets, priceBounds, UNKNOWN_LOCATION } from './vehicleLocations';
+import { vehiclesNear, isSameLocation, locationFacets, priceBounds, UNKNOWN_LOCATION } from './vehicleLocations';
 
 const cars = [
   { id: 1, location: 'Nairobi CBD', pricePerDay: 22000 },
@@ -44,5 +44,26 @@ describe('priceBounds', () => {
 
   it('reads the dailyPrice alias too', () => {
     expect(priceBounds([{ dailyPrice: 31000 }]).max).toBe(35000);
+  });
+});
+
+describe('vehiclesNear', () => {
+  const fleet = [
+    { id: 'a', location: 'Roysambu division' },
+    { id: 'b', location: 'Nairobi' },
+    { id: 'c', location: 'Eastleigh' },
+  ];
+  const ids = (r) => r.vehicles.map((v) => v.id);
+
+  it('finds the cars whose base shares a word with the place typed', () => {
+    expect(ids(vehiclesNear(fleet, 'Eastleigh, Nairobi'))).toEqual(['b', 'c']);
+    expect(ids(vehiclesNear(fleet, 'roysambu'))).toEqual(['a']);
+    expect(vehiclesNear(fleet, 'Nairobi CBD, Kenya').matched).toBe(true);
+  });
+
+  it('returns every car, not none, when nothing is based near the place', () => {
+    const r = vehiclesNear(fleet, 'JKIA Terminal 1');
+    expect(r.matched).toBe(false);
+    expect(ids(r)).toEqual(['a', 'b', 'c']);
   });
 });

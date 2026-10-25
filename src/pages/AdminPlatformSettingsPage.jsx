@@ -1,28 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { Save } from 'lucide-react';
+import { Bot, Save } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
+import Badge from '../components/ui/Badge';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import BookingPolicyForm from '../components/booking/BookingPolicyForm';
 import { usePlatformPolicy, useSavePlatformPolicy } from '../hooks/useBookingPolicies';
-import { usePlatformSettings, useSavePlatformSettings } from '../hooks/usePlatformSettings';
+import { usePlatformSettings, useSavePlatformSettings, useToggleBotAssistant } from '../hooks/usePlatformSettings';
 
-const FIELDS = ['commissionRatePct', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee'];
+const FIELDS = ['commissionRatePct', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge'];
 
 /**
- * Platform-wide settings — `GET`/`PUT /platform-settings/commission` (docs/backend-requests.md item 26):
- * the commission rate, the Pesapal transaction fee rate and the flat fee for delivering a vehicle to a renter
- * (live spec 2026-10-09). `POST /bookings/quote` applies all three, so a change here reprices every future
- * quote and booking. They're saved together, since the `PUT` replaces the settings as a whole.
+ * Platform-wide settings — `GET`/`PUT /platform-settings` (docs/backend-requests.md item 26): the commission
+ * rate, the Pesapal transaction fee rate, the flat fee for delivering a vehicle to a renter and the flat charge
+ * for a driver on a chauffeured booking (live spec 2026-10-25). `POST /bookings/quote` applies them, so a
+ * change here reprices every future quote and booking. They're saved together, since the `PUT` replaces the
+ * settings as a whole — which is why the save also sends the assistant switch back unchanged. The assistant
+ * itself is switched on its own card (`PUT /platform-settings/bot`).
  */
 export default function AdminPlatformSettingsPage() {
   const { data, isLoading, isError, refetch } = usePlatformSettings();
   const save = useSavePlatformSettings();
-  const [values, setValues] = useState({ commissionRatePct: '', pesapalTransactionFeeRatePct: '', deliveryFlatFee: '' });
+  const [values, setValues] = useState({ commissionRatePct: '', pesapalTransactionFeeRatePct: '', deliveryFlatFee: '', driverFlatCharge: '' });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -51,9 +54,14 @@ export default function AdminPlatformSettingsPage() {
     };
     pct('commissionRatePct', true);
     pct('pesapalTransactionFeeRatePct', false);
-    const fee = values.deliveryFlatFee === '' ? 0 : Number(values.deliveryFlatFee);
-    if (Number.isNaN(fee) || fee < 0) problems.deliveryFlatFee = 'Enter an amount of 0 or more (0 = free delivery).';
-    else next.deliveryFlatFee = fee;
+    const amount = (field, message) => {
+      const n = values[field] === '' ? 0 : Number(values[field]);
+      if (Number.isNaN(n) || n < 0) problems[field] = message;
+      else next[field] = n;
+    };
+    amount('deliveryFlatFee', 'Enter an amount of 0 or more (0 = free delivery).');
+    amount('driverFlatCharge', 'Enter an amount of 0 or more (0 = no driver charge).');
+    if (typeof data?.botAssistantEnabled === 'boolean') next.botAssistantEnabled = data.botAssistantEnabled;
 
     setErrors(problems);
     if (Object.keys(problems).length === 0) save.mutate(next);
@@ -127,6 +135,25 @@ export default function AdminPlatformSettingsPage() {
                 error={errors.deliveryFlatFee}
               />
 
+              <div className="border-t border-ink/10 pt-5">
+                <h2 className="font-heading text-ink text-base font-semibold">Driver charge</h2>
+                <p className="text-muted text-sm mt-1">
+                  A flat amount added to a chauffeured booking for the driver. Self-drive bookings pay nothing extra.
+                  Set 0 for no driver charge.
+                </p>
+              </div>
+              <Input
+                label="Driver flat charge (KES)"
+                name="driverFlatCharge"
+                type="number"
+                min="0"
+                step="50"
+                inputMode="numeric"
+                value={values.driverFlatCharge}
+                onChange={set('driverFlatCharge')}
+                error={errors.driverFlatCharge}
+              />
+
               <Button type="submit" className="self-start" loading={save.isPending}>
                 {!save.isPending && <Save size={15} aria-hidden="true" />}
                 Save settings
@@ -135,9 +162,44 @@ export default function AdminPlatformSettingsPage() {
           )}
         </Card>
 
+        {data && <AssistantCard enabled={data.botAssistantEnabled !== false} />}
+
         <PlatformPolicyCard />
       </div>
     </PageWrapper>
+  );
+}
+
+/**
+ * Switches the in-app assistant (the chat button, the Assistant page and its menu items) on or off for every
+ * signed-in person — `PUT /platform-settings/bot`. Missing from the settings counts as on.
+ */
+function AssistantCard({ enabled }) {
+  const toggle = useToggleBotAssistant();
+  return (
+    <Card className="p-5 flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="font-heading text-ink text-base font-semibold inline-flex items-center gap-2">
+            <Bot size={16} className="text-accent" aria-hidden="true" />
+            Assistant
+          </h2>
+          <p className="text-muted text-sm mt-1">
+            The in-app chat assistant. When it's off, signed-in people no longer see the chat button or the Assistant
+            page.
+          </p>
+        </div>
+        <Badge label={enabled ? 'On' : 'Off'} variant={enabled ? 'success' : 'neutral'} />
+      </div>
+      <Button
+        variant={enabled ? 'outline' : 'default'}
+        className="self-start"
+        loading={toggle.isPending}
+        onClick={() => toggle.mutate(!enabled)}
+      >
+        {enabled ? 'Turn the assistant off' : 'Turn the assistant on'}
+      </Button>
+    </Card>
   );
 }
 
