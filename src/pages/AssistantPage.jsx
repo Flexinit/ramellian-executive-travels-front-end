@@ -4,13 +4,14 @@ import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import AssistantThread from '../components/chat/AssistantThread';
 import EmptyState from '../components/ui/EmptyState';
-import { useBotAssistantEnabled } from '../hooks/usePlatformSettings';
+import Spinner from '../components/ui/Spinner';
+import { useBotAssistantStatus } from '../hooks/usePlatformSettings';
 
 /** The in-app assistant (`/assistant`) — a chat with Ramellian's own bot, separate from Messages (which is
  * between people). See `AssistantThread`/`hooks/useBot.js` for why it has no saved history across visits.
  * When an administrator has switched the assistant off (Platform Settings), the page says so instead. */
 export default function AssistantPage() {
-  const assistantOn = useBotAssistantEnabled();
+  const { enabled: assistantOn, loading } = useBotAssistantStatus();
   return (
     <>
       <PageWrapper className="max-w-3xl">
@@ -27,7 +28,9 @@ export default function AssistantPage() {
             </p>
           </div>
 
-          {assistantOn ? (
+          {loading ? (
+            <div className="flex justify-center py-10"><Spinner label="Loading the assistant" /></div>
+          ) : assistantOn ? (
             <AssistantThread />
           ) : (
             <EmptyState

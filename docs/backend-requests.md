@@ -1371,3 +1371,20 @@ pickup was never recorded — or add `POST /admin/disbursements/bookings/{bookin
 (3) What moves a payout to `PROCESSING` — does `trigger` now send the money through the provider (then `reference`
 shouldn't be required from the admin), or is it still "mark as paid by hand"? The portal still asks for the payment
 reference when marking paid.
+
+## 48 (update, 2026-10-26). Bot status is public now; settings readable without a login — consumed
+
+**Seen live on the office backend (192.168.8.31):** `GET /bot/status` → `{ "enabled": true }` without a login, and
+`GET /platform-settings` now also answers 200 without one. `PlatformSettings` gained `pickupReminderEnabled`,
+`pickupReminderRenterEnabled`, `pickupReminderOwnerEnabled`, `pickupReminderLeadMinutes` (60 by default) and the
+contact fields `supportEmail`, `supportPhone`, `address`, `website`, `facebook`, `instagram`, `whatsapp`,
+`xTwitter`, `tiktok` (all null so far).
+
+**Built.** The chat button follows `/bot/status` for everyone (a signed-in person falls back to the settings if it
+fails). Platform Settings has Pickup reminders and Contact & social tabs; every save merges onto the current settings,
+since the `PUT` replaces them all. The Contact page, footer and the business's structured data use the contact fields.
+
+**Ask.** Deploy this to production: `https://ramellianexecutivetravels.co.ke/api/v1/bot/status` still answers 401 there.
+Until then, visitors on the live site always see the chat button, and the build can't read the contact details for
+search engines. Keep `GET /platform-settings` public (or add a small public contact endpoint) so the Contact page works
+for visitors.

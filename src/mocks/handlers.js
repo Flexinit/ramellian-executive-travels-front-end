@@ -270,7 +270,14 @@ export const bookingHandlers = [
   // platform-settings-controller — confirmed against the live OpenAPI spec 2026-10-25 (docs/backend-requests.md
   // item 26; it was `/platform-settings/commission` before). GET needs auth but is readable by any signed-in role; PUT 403s for a non-admin token in reality,
   // left unenforced here since nothing in these tests exercises it as a non-admin.
-  http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1, botAssistantEnabled: true })),
+  http.get(`${BASE}/platform-settings`, () =>
+    HttpResponse.json({
+      id: 's1', commissionRatePct: 1, botAssistantEnabled: true,
+      supportPhone: '+254 712 345 678', whatsapp: '+254 712 345 678', supportEmail: 'bookings@ramellianexecutivetravels.co.ke',
+      address: 'Westlands, Nairobi', instagram: '@ramellian',
+    })),
+  // Public (live spec 2026-10-26): whether the in-app assistant is on.
+  http.get(`${BASE}/bot/status`, () => HttpResponse.json({ enabled: true })),
   http.put(`${BASE}/platform-settings`, async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json({ id: 's1', ...body });

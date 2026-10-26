@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Bot, CalendarClock, Percent, Save } from 'lucide-react';
+import { AtSign, BellRing, Bot, CalendarClock, Percent, Save } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -8,6 +8,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
+import Checkbox from '../components/ui/Checkbox';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import BookingPolicyForm from '../components/booking/BookingPolicyForm';
@@ -18,6 +19,8 @@ import { usePlatformSettings, useSavePlatformSettings, useToggleBotAssistant } f
 const TABS = [
   { value: 'fees', label: 'Fees & commission', icon: Percent },
   { value: 'policy', label: 'Booking policy', icon: CalendarClock },
+  { value: 'reminders', label: 'Pickup reminders', icon: BellRing },
+  { value: 'contact', label: 'Contact & social', icon: AtSign },
   { value: 'assistant', label: 'Assistant', icon: Bot },
 ];
 
@@ -79,6 +82,10 @@ export default function AdminPlatformSettingsPage() {
       if (multiDays === '') problems.multiDayThresholdDays = 'Enter from how many days it applies, or clear the rate.';
       else if (!Number.isInteger(d) || d < 1) problems.multiDayThresholdDays = 'Enter a whole number of days, 1 or more.';
       else next.multiDayThresholdDays = d;
+    } else {
+      // Both cleared: one rate for every booking. Sent as empty — a save keeps whatever it leaves out.
+      next.multiDayCommissionRatePct = null;
+      next.multiDayThresholdDays = null;
     }
     pct('pesapalTransactionFeeRatePct', false);
     const amount = (field, message) => {
@@ -88,7 +95,6 @@ export default function AdminPlatformSettingsPage() {
     };
     amount('deliveryFlatFee', 'Enter an amount of 0 or more (0 = free delivery).');
     amount('driverFlatCharge', 'Enter an amount of 0 or more (0 = no driver charge).');
-    if (typeof data?.botAssistantEnabled === 'boolean') next.botAssistantEnabled = data.botAssistantEnabled;
 
     setErrors(problems);
     if (Object.keys(problems).length === 0) save.mutate(next);
@@ -164,6 +170,15 @@ export default function AdminPlatformSettingsPage() {
 
           {tab === 'policy' && <PlatformPolicyCard />}
 
+          {(tab === 'reminders' || tab === 'contact') &&
+            (data ? (
+              tab === 'reminders' ? <RemindersCard settings={data} /> : <ContactCard settings={data} />
+            ) : isError ? (
+              <ErrorBanner message="Could not load the platform settings." onRetry={refetch} />
+            ) : (
+              <div className="flex justify-center py-6"><Spinner label="Loading the platform settings" /></div>
+            ))}
+
           {tab === 'assistant' &&
             (data ? (
               <AssistantCard enabled={data.botAssistantEnabled !== false} />
@@ -175,6 +190,141 @@ export default function AdminPlatformSettingsPage() {
         </div>
       </div>
     </PageWrapper>
+  );
+}
+
+/**
+ * The reminders the backend sends before a pickup (live spec 2026-10-26): on or off overall, to the renter and to the
+ * owner, and how long before the pickup. (The portal's own pickup banner for renters is separate and always shown.)
+ */
+function RemindersCard({ settings }) {
+  const save = useSavePlatformSettings();
+  const [on, setOn] = useState(settings.pickupReminderEnabled !== false);
+  const [renter, setRenter] = useState(settings.pickupReminderRenterEnabled !== false);
+  const [owner, setOwner] = useState(settings.pickupReminderOwnerEnabled !== false);
+  const [lead, setLead] = useState(settings.pickupReminderLeadMinutes != null ? String(settings.pickupReminderLeadMinutes) : '60');
+  const [error, setError] = useState(null);
+
+  function submit(e) {
+    e.preventDefault();
+    const minutes = Number(lead);
+    if (!Number.isInteger(minutes) || minutes < 1) {
+      setError('Enter a whole number of minutes, 1 or more.');
+      return;
+    }
+    setError(null);
+    save.mutate({ pickupReminderEnabled: on, pickupReminderRenterEnabled: renter, pickupReminderOwnerEnabled: owner, pickupReminderLeadMinutes: minutes });
+  }
+
+  const asHours = Number(lead) >= 60 && Number.isInteger(Number(lead) / 60) ? ` (${Number(lead) / 60} h)` : '';
+  return (
+    <Card className="p-5">
+      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+        <div>
+          <h2 className="font-heading text-ink text-base font-semibold">Pickup reminders</h2>
+          <p className="text-muted text-sm mt-1">
+            A reminder sent before each pickup, so the renter goes to collect the car and the owner is ready to hand it over.
+          </p>
+        </div>
+        <Checkbox label="Send pickup reminders" checked={on} onChange={(e) => setOn(e.target.checked)} />
+        <div className={`flex flex-col gap-3 pl-6 ${on ? '' : 'opacity-50'}`}>
+          <Checkbox label="To the renter" checked={renter} disabled={!on} onChange={(e) => setRenter(e.target.checked)} />
+          <Checkbox label="To the owner" checked={owner} disabled={!on} onChange={(e) => setOwner(e.target.checked)} />
+          <div className="sm:max-w-xs">
+            <Input
+              label="How long before pickup (minutes)"
+              name="pickupReminderLeadMinutes"
+              type="number"
+              min="1"
+              step="15"
+              inputMode="numeric"
+              hint={`e.g. 60 = an hour before${asHours}`}
+              value={lead}
+              disabled={!on}
+              onChange={(e) => {
+                setLead(e.target.value);
+                setError(null);
+              }}
+              error={error}
+            />
+          </div>
+        </div>
+        <Button type="submit" className="self-start" loading={save.isPending}>
+          {!save.isPending && <Save size={15} aria-hidden="true" />}
+          Save reminders
+        </Button>
+      </form>
+    </Card>
+  );
+}
+
+const CONTACT_FIELDS = [
+  { key: 'supportPhone', label: 'Phone', hint: 'e.g. +254 712 345 678', type: 'tel', inputMode: 'tel' },
+  { key: 'whatsapp', label: 'WhatsApp', hint: 'The number, e.g. +254 712 345 678', type: 'tel', inputMode: 'tel' },
+  { key: 'supportEmail', label: 'Email', hint: 'e.g. bookings@ramellianexecutivetravels.co.ke', type: 'email', inputMode: 'email' },
+  { key: 'website', label: 'Website', hint: 'e.g. https://ramellianexecutivetravels.co.ke', type: 'url', inputMode: 'url' },
+  { key: 'address', label: 'Address', hint: 'e.g. Westlands, Nairobi' },
+  { key: 'facebook', label: 'Facebook', hint: 'Page link or name' },
+  { key: 'instagram', label: 'Instagram', hint: 'Profile link or @handle' },
+  { key: 'xTwitter', label: 'X (Twitter)', hint: 'Profile link or @handle' },
+  { key: 'tiktok', label: 'TikTok', hint: 'Profile link or @handle' },
+];
+
+/**
+ * The business's public contact details and social profiles (live spec 2026-10-26) — shown on the Contact page and in
+ * the footer, and given to search engines. Anything left empty is simply not shown anywhere.
+ */
+function ContactCard({ settings }) {
+  const save = useSavePlatformSettings();
+  const [values, setValues] = useState(Object.fromEntries(CONTACT_FIELDS.map((f) => [f.key, settings[f.key] || ''])));
+  const [errors, setErrors] = useState({});
+
+  function submit(e) {
+    e.preventDefault();
+    const next = Object.fromEntries(CONTACT_FIELDS.map((f) => [f.key, values[f.key].trim() || null]));
+    const problems = {};
+    if (next.supportEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(next.supportEmail)) problems.supportEmail = 'Enter a valid email address.';
+    if (next.website && !/^https?:\/\//i.test(next.website)) next.website = `https://${next.website}`;
+    for (const k of ['supportPhone', 'whatsapp']) {
+      if (next[k] && next[k].replace(/\D/g, '').length < 9) problems[k] = 'Enter the full number, with its country code.';
+    }
+    setErrors(problems);
+    if (Object.keys(problems).length === 0) save.mutate(next);
+  }
+
+  return (
+    <Card className="p-5">
+      <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+        <div>
+          <h2 className="font-heading text-ink text-base font-semibold">Contact &amp; social</h2>
+          <p className="text-muted text-sm mt-1">
+            Shown on the Contact page and in the footer, and given to search engines. Leave a field empty to hide it.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {CONTACT_FIELDS.map((f) => (
+            <Input
+              key={f.key}
+              label={f.label}
+              name={f.key}
+              type={f.type || 'text'}
+              inputMode={f.inputMode}
+              hint={f.hint}
+              value={values[f.key]}
+              onChange={(e) => {
+                setValues((v) => ({ ...v, [f.key]: e.target.value }));
+                setErrors((er) => ({ ...er, [f.key]: undefined }));
+              }}
+              error={errors[f.key]}
+            />
+          ))}
+        </div>
+        <Button type="submit" className="self-start" loading={save.isPending}>
+          {!save.isPending && <Save size={15} aria-hidden="true" />}
+          Save contact details
+        </Button>
+      </form>
+    </Card>
   );
 }
 

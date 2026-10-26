@@ -3,8 +3,32 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (contact details, pickup reminder settings)
+
+- **Added (administrators):** **Platform Settings → Contact & social** — the business's phone, WhatsApp, email,
+  website, address and social profiles. The Contact page and footer show what's set (the placeholder numbers are gone),
+  and search engines get them too.
+- **Added (administrators):** **Platform Settings → Pickup reminders** — whether reminders go out before a pickup, to
+  the renter and/or the owner, and how long before.
+- **Changed:** with the assistant switched off, the green chat button is hidden for visitors too.
+- **Fixed:** saving one part of Platform Settings could clear settings saved elsewhere; every save now keeps the rest.
+
+## 2026-10-26 (search engines and AI answers)
+
+- **Added:** every public page and every vehicle now has its own title and description in search results, a proper
+  preview image when the link is shared (WhatsApp, Facebook, X), and its text readable by search engines and AI answer
+  engines. Signed-in pages stay out of search results. See [seo.md](./seo.md).
+- **Changed:** the FAQ has more questions (renting step by step, delivery, insurance, JKIA transfers, listing your car)
+  and two corrected answers: you can book before your documents are approved (they're needed before pickup), and
+  cancelling follows the policy shown when you book.
+
 ## 2026-10-26 (longer-booking commission, payout status)
 
+- **Added (renters):** a reminder pinned at the top of every page when a pickup is due — the day before, then **Time to
+  pick up …** with **Record pickup** — until the pickup is recorded.
+- **Changed:** with the assistant switched off, the green chat button no longer shows (it now waits for the setting
+  before appearing); visitors follow what their browser last saw.
+- **Fixed (phones):** the "finish setting up" prompts put their link under the message instead of squeezing it.
 - **Changed (administrators):** **Platform Settings** is split into tabs — **Fees & commission**, **Booking policy**,
   **Assistant** — and the fees sit side by side, so nothing needs scrolling.
 - **Added (administrators):** an **Owner payout** section on each booking's page: pay it (**Mark paid** / **Failed**)

@@ -4,24 +4,11 @@ import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { ABOUT_STORY, VALUES as VALUE_TEXT } from '../content/siteContent';
 
-const VALUES = [
-  {
-    icon: ShieldCheck,
-    title: 'Reliability',
-    description: 'On-time pickups, well-maintained vehicles, and chauffeurs who show up prepared — every time.',
-  },
-  {
-    icon: Handshake,
-    title: 'Trust',
-    description: 'Vetted drivers, transparent pricing, and secure payments. No surprises, no hidden fees.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Excellence',
-    description: 'From the vehicle to the drive itself, every detail is held to an executive standard.',
-  },
-];
+// The words live in src/content/siteContent.js (the build writes them into this page's HTML); the icons are added here.
+const ICONS = { Reliability: ShieldCheck, Trust: Handshake, Excellence: Sparkles };
+const VALUES = VALUE_TEXT.map((v) => ({ ...v, icon: ICONS[v.title] }));
 
 /** Company story and values (docs/requirements.md PUB-04). */
 export default function AboutPage() {
@@ -36,22 +23,9 @@ export default function AboutPage() {
           </div>
 
           <Card className="max-w-3xl mx-auto w-full p-6 sm:p-8 flex flex-col gap-4 text-ink/80 text-sm sm:text-base leading-relaxed">
-            <p>
-              Ramellian Executive Travels was founded to close a gap we kept running into ourselves: Nairobi had
-              plenty of taxis and plenty of car rentals, but very few options that treated business travel,
-              weddings, and family journeys with the same level of care an executive would expect anywhere else
-              in the world.
-            </p>
-            <p>
-              We started with a small fleet of carefully maintained vehicles and a simple promise — every pickup
-              on time, every chauffeur vetted, every trip tracked from start to finish. That promise hasn&apos;t
-              changed as we&apos;ve grown to serve corporate accounts, wedding parties, conference delegations, and
-              travellers who’d simply rather self-drive on their own schedule.
-            </p>
-            <p>
-              Today, Ramellian offers both chauffeured hire and self-drive rentals across Nairobi and beyond,
-              backed by secure online payments and a support team that answers the phone.
-            </p>
+            {ABOUT_STORY.map((paragraph) => (
+              <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+            ))}
           </Card>
 
           <div>

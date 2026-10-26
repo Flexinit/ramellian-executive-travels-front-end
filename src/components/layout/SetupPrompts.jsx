@@ -4,14 +4,16 @@ import { UserCircle, IdCard, Car, ArrowRight, X } from 'lucide-react';
 import { useSetupPrompts } from '../../hooks/useProfile';
 import { isBookingFlowPath } from '../../lib/utils';
 
+/** On a phone the link drops under the message (full width, indented past the icon) instead of squeezing the message
+ * into a narrow column beside it — seen on a phone set to large text. */
 function PromptRow({ icon: Icon, message, to, cta, onDismiss }) {
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-6 py-2.5">
-      <Icon size={16} className="text-accent shrink-0" aria-hidden="true" />
+    <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-x-3 gap-y-1 px-4 sm:px-6 py-2.5">
+      <Icon size={16} className="text-accent shrink-0 mt-0.5 sm:mt-0" aria-hidden="true" />
       <p className="flex-1 min-w-0 text-sm text-ink">{message}</p>
       <Link
         to={to}
-        className="inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md py-1.5 -my-1.5"
+        className="max-sm:order-last max-sm:basis-full max-sm:pl-7 inline-flex items-center gap-1.5 shrink-0 text-sm font-semibold text-accent hover:text-accent-hover transition-colors focus-ring rounded-md py-1.5 -my-1.5"
       >
         {cta}
         <ArrowRight size={14} aria-hidden="true" />

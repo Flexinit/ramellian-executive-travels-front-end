@@ -5,38 +5,8 @@ import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
-const FAQS = [
-  {
-    question: 'What documents do I need to rent a vehicle?',
-    answer:
-      'You need a valid national ID or passport and a driving licence for self-drive rentals. Upload them from your dashboard — they must be approved before you can book.',
-  },
-  {
-    question: 'What is the difference between self-drive and chauffeured hire?',
-    answer:
-      'Self-drive means you drive the vehicle yourself for the dates you book. Chauffeured hire comes with a vetted Ramellian driver for the full trip, ideal for airport transfers, events, and long-distance travel.',
-  },
-  {
-    question: 'How do I pay for a booking?',
-    answer:
-      'Payments are handled securely online once you accept your contract. We don’t take cash or manual bank transfers for bookings.',
-  },
-  {
-    question: 'Can I cancel or change my booking?',
-    answer:
-      'Reach out through the Contact page or your dashboard as soon as possible. Cancellation terms are set out in your booking contract, which you review and sign before payment.',
-  },
-  {
-    question: 'Do you offer long-distance or upcountry trips?',
-    answer:
-      'Yes — chauffeured long-distance routes, including safaris and coastal trips, are one of our core services. See the Services page for details.',
-  },
-  {
-    question: 'How quickly will you respond to a custom quote request?',
-    answer:
-      'Our team typically responds to inquiries submitted through the Contact page within one business day.',
-  },
-];
+// The questions live in src/content/siteContent.js — the build writes them into this page's HTML and its FAQ data.
+import { FAQS } from '../content/siteContent';
 
 function FaqItem({ question, answer, isOpen, onToggle }) {
   const panelId = useId();

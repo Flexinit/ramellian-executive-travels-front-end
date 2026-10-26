@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { googleFontsUrl } from './src/theme/fonts.js';
+import seo from './vite-plugins/seo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,7 +36,8 @@ function appFonts() {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), appFonts()],
+    // seo(): per-page HTML, sitemap.xml, robots.txt, llms.txt after each build (vite-plugins/seo.js).
+    plugins: [react(), appFonts(), seo({ apiBase: env.SEO_API_URL || env.VITE_API_BASE_URL })],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

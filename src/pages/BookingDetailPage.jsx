@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, CreditCard, Repeat } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
@@ -49,6 +49,15 @@ export default function BookingDetailPage() {
   // needs a refetch of the booking to see its status flip to COMPLETED) — the trip just ended, so this is
   // the moment to actually ask.
   const [justReturned, setJustReturned] = useState(false);
+  // Arriving from the pinned pickup reminder (`?record=pickup`): open the pickup form straight away, once the
+  // booking shows it can be recorded — then drop the flag, so a reload doesn't reopen it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const recordPickup = searchParams.get('record') === 'pickup';
+  useEffect(() => {
+    if (!recordPickup || !booking) return;
+    if (booking.status === BOOKING_STATUSES.CONFIRMED && canRecordPickup(booking)) setHandover('pickup');
+    setSearchParams({}, { replace: true });
+  }, [recordPickup, booking, setSearchParams]);
   // `BookingResponse` has no `contractId` field (see useContract.js's useContractDraft) — this is only
   // ever found for a contract drafted earlier in this same browser session (sessionStorage doesn't
   // survive a closed tab), so an older booking's contract has no download links here. There's no backend

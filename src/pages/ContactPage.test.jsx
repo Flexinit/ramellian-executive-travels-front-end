@@ -6,6 +6,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { axe } from 'jest-axe';
 import toast from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { http, HttpResponse } from 'msw';
+import { server } from '../mocks/server';
 import ContactPage from './ContactPage';
 
 vi.mock('react-hot-toast', () => ({
@@ -15,26 +18,43 @@ vi.mock('react-hot-toast', () => ({
 function renderPage(route = '/contact') {
   return render(
     <HelmetProvider>
-      <MemoryRouter initialEntries={[route]}>
-        <ContactPage />
-      </MemoryRouter>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter initialEntries={[route]}>
+          <ContactPage />
+        </MemoryRouter>
+      </QueryClientProvider>
     </HelmetProvider>
   );
 }
 
+// A stand-in location the page's mailto can be caught on. Spreading the real one copies none of its fields (they live
+// on its prototype), and the API client needs them to build request addresses — so they're copied by name.
+const realLocation = window.location;
 beforeEach(() => {
+  const { origin, protocol, host, hostname, port, pathname, search, hash } = realLocation;
   Object.defineProperty(window, 'location', {
     writable: true,
-    value: { ...window.location, href: '' },
+    value: { origin, protocol, host, hostname, port, pathname, search, hash, href: `${origin}${pathname}` },
   });
 });
 
 describe('ContactPage', () => {
-  it('renders a WhatsApp link and phone numbers', () => {
+  it('shows the contact details set in Platform Settings — WhatsApp, phone, email, address, social', async () => {
     renderPage();
-    const whatsappLink = screen.getByRole('link', { name: /chat with us on whatsapp/i });
-    expect(whatsappLink).toHaveAttribute('href', expect.stringContaining('wa.me'));
-    expect(screen.getByRole('link', { name: '+254 700 000 000' })).toHaveAttribute('href', 'tel:+254700000000');
+    expect(await screen.findByRole('link', { name: /chat with us on whatsapp/i })).toHaveAttribute('href', 'https://wa.me/254712345678');
+    expect(screen.getByRole('link', { name: '+254 712 345 678' })).toHaveAttribute('href', 'tel:+254712345678');
+    expect(screen.getByRole('link', { name: 'bookings@ramellianexecutivetravels.co.ke' })).toBeInTheDocument();
+    expect(screen.getByText('Westlands, Nairobi')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Instagram' })).toHaveAttribute('href', 'https://instagram.com/ramellian');
+  });
+
+  it('shows no placeholder details when none are set — and says the form needs an email first', async () => {
+    server.use(http.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })));
+    renderPage();
+    expect(await screen.findByText(/contact email isn.t available just now/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /whatsapp/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/\+254 700 000 000/)).not.toBeInTheDocument();
+    expect(screen.getByText('Nairobi, Kenya')).toBeInTheDocument();
   });
 
   it('pre-selects "Custom Quote Request" when arriving with ?type=quote', () => {
@@ -54,6 +74,7 @@ describe('ContactPage', () => {
   it('submits a valid inquiry via a mailto link', async () => {
     const user = userEvent.setup();
     renderPage();
+    await screen.findByRole('link', { name: 'bookings@ramellianexecutivetravels.co.ke' });
 
     await user.type(screen.getByLabelText(/full name/i), 'Jane Doe');
     await user.type(screen.getByLabelText(/^email$/i), 'jane@example.com');
@@ -63,7 +84,7 @@ describe('ContactPage', () => {
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => expect(window.location.href).toContain('mailto:'));
-    expect(window.location.href).toContain('mailto:bookings@ramellianexecutivetravels.com');
+    expect(window.location.href).toContain('mailto:bookings@ramellianexecutivetravels.co.ke');
     expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/email client should open/i));
   });
 

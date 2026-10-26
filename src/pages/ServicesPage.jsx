@@ -4,62 +4,16 @@ import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import { SERVICES as SERVICE_TEXT } from '../content/siteContent';
 
 /**
  * Anchor ids must match the Navbar/Footer Services dropdown links
  * (docs/menu-structure.md §3.2, §7): #corporate, #airport, #weddings,
  * #long-distance, #conferences, #secure.
  */
-const SERVICES = [
-  {
-    id: 'corporate',
-    icon: Building2,
-    title: 'Corporate Transport',
-    summary: 'Reliable daily transport for executives and teams, billed on your terms.',
-    details:
-      'From single-executive pickups to coordinated multi-vehicle staff transport, we run on your schedule with monthly billing available for corporate accounts. Every driver is vetted and briefed on your visitors’ itinerary in advance.',
-  },
-  {
-    id: 'airport',
-    icon: Plane,
-    title: 'Airport Transfers',
-    summary: 'Flight-tracked pickups at JKIA arrivals — never wait, never miss a flight.',
-    details:
-      'We track your flight in real time, so your chauffeur adjusts for early or delayed arrivals automatically. Meet-and-greet at arrivals with a name board is included on every airport transfer.',
-  },
-  {
-    id: 'weddings',
-    icon: PartyPopper,
-    title: 'Events & Weddings',
-    summary: 'Arrive in style for weddings, galas, and milestone celebrations.',
-    details:
-      'Decorated executive vehicles, coordinated bridal party convoys, and precise timing around your event schedule — including cake and gift transportation on request.',
-  },
-  {
-    id: 'long-distance',
-    icon: Route,
-    title: 'Long-Distance Routes',
-    summary: 'Comfortable, chauffeured journeys beyond the city — safaris and upcountry trips.',
-    details:
-      'Experienced long-haul chauffeurs, well-maintained vehicles, and flexible multi-day itineraries for safaris, coastal getaways, and upcountry travel.',
-  },
-  {
-    id: 'conferences',
-    icon: Users,
-    title: 'Conferences & Business Meetings',
-    summary: 'Coordinated fleets for delegations, conferences, and multi-stop itineraries.',
-    details:
-      'We manage fleets of vehicles for delegations and conference logistics, with a single point of contact coordinating pickups, waiting times, and multi-stop schedules.',
-  },
-  {
-    id: 'secure',
-    icon: ShieldCheck,
-    title: 'Secure Journey Management',
-    summary: 'Vetted chauffeurs, tracked routes, and 24/7 oversight for sensitive travel.',
-    details:
-      'For clients who need an added layer of assurance: background-checked chauffeurs, live route tracking, and round-the-clock coordination with our operations desk.',
-  },
-];
+// The words live in src/content/siteContent.js (the build writes them into this page's HTML); the icons are added here.
+const ICONS = { corporate: Building2, airport: Plane, weddings: PartyPopper, 'long-distance': Route, conferences: Users, secure: ShieldCheck };
+const SERVICES = SERVICE_TEXT.map((s) => ({ ...s, icon: ICONS[s.id] }));
 
 /** Detailed service descriptions, anchored for the Navbar/Footer dropdown links (docs/requirements.md PUB-02). */
 export default function ServicesPage() {

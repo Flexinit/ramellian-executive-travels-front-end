@@ -3,22 +3,27 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { axe } from 'jest-axe';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Footer from './Footer';
 
 function renderFooter() {
   return render(
+    <QueryClientProvider client={new QueryClient()}>
     <MemoryRouter>
       <Footer />
     </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
 describe('Footer — compact (Browse Vehicles)', () => {
   it('keeps only the copyright and the legal links, no company columns', () => {
     render(
-      <MemoryRouter>
-        <Footer compact />
-      </MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <Footer compact />
+        </MemoryRouter>
+      </QueryClientProvider>
     );
     expect(screen.getByText(/all rights reserved/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy');

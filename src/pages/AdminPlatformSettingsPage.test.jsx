@@ -56,7 +56,9 @@ describe('AdminPlatformSettingsPage', () => {
     await user.click(screen.getByRole('button', { name: /save/i }));
 
     // All three are sent together — the PUT replaces the settings as a whole.
-    await waitFor(() => expect(body).toEqual({ commissionRatePct: 2.5, pesapalTransactionFeeRatePct: 0, deliveryFlatFee: 0, driverFlatCharge: 0 }));
+    await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2.5, pesapalTransactionFeeRatePct: 0, deliveryFlatFee: 0, driverFlatCharge: 0 }));
+    // The PUT replaces everything: the id isn't sent back.
+    expect(body).not.toHaveProperty('id');
   });
 
   it("rejects a rate outside 0-100 without calling the backend", async () => {
@@ -112,7 +114,7 @@ describe('AdminPlatformSettingsPage', () => {
     await user.type(fee, "1500");
     await user.click(screen.getByRole("button", { name: /save settings/i }));
 
-    await waitFor(() => expect(body).toEqual({
+    await waitFor(() => expect(body).toMatchObject({
       commissionRatePct: 2,
       pesapalTransactionFeeRatePct: 3.5,
       deliveryFlatFee: 1500,
@@ -197,5 +199,53 @@ describe('AdminPlatformSettingsPage', () => {
     await user.click(screen.getByRole('tab', { name: 'Booking policy' }));
     expect(await screen.findByText('Standard booking policy')).toBeInTheDocument();
     expect(screen.queryByLabelText('Commission (%)')).not.toBeInTheDocument();
+  });
+
+  it("saving the contact details keeps every other setting (the PUT replaces them all)", async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () =>
+      HttpResponse.json({ id: 's1', commissionRatePct: 2, deliveryFlatFee: 1000, pickupReminderLeadMinutes: 60, supportPhone: null })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    await user.click(await screen.findByRole('tab', { name: 'Contact & social' }));
+    await user.type(await screen.findByLabelText('Phone'), '+254 712 345 678');
+    await user.type(screen.getByLabelText('Website'), 'ramellianexecutivetravels.co.ke');
+    await user.click(screen.getByRole('button', { name: /save contact details/i }));
+
+    await waitFor(() => expect(body).toMatchObject({
+      supportPhone: '+254 712 345 678',
+      website: 'https://ramellianexecutivetravels.co.ke',
+      commissionRatePct: 2,
+      deliveryFlatFee: 1000,
+      pickupReminderLeadMinutes: 60,
+    }));
+  });
+
+  it('turns the renter reminder off and sets how long before pickup reminders go out', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () =>
+      HttpResponse.json({ id: 's1', commissionRatePct: 2, pickupReminderEnabled: true, pickupReminderRenterEnabled: true, pickupReminderOwnerEnabled: true, pickupReminderLeadMinutes: 60 })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    await user.click(await screen.findByRole('tab', { name: 'Pickup reminders' }));
+    await user.click(await screen.findByLabelText('To the renter'));
+    const lead = screen.getByLabelText('How long before pickup (minutes)');
+    await user.clear(lead);
+    await user.type(lead, '120');
+    await user.click(screen.getByRole('button', { name: /save reminders/i }));
+
+    await waitFor(() => expect(body).toMatchObject({
+      pickupReminderEnabled: true, pickupReminderRenterEnabled: false, pickupReminderOwnerEnabled: true, pickupReminderLeadMinutes: 120, commissionRatePct: 2,
+    }));
   });
 });

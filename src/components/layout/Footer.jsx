@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
+import { useContactDetails } from '../../hooks/usePlatformSettings';
 import Logo from '../ui/Logo';
 
 const COLUMNS = [
@@ -50,6 +51,9 @@ const COLUMNS = [
  * @param {boolean} [compact]
  */
 export default function Footer({ compact = false }) {
+  // The business's phone, email, address and social links, as set under Platform Settings → Contact & social —
+  // shown only once set (never placeholders).
+  const contact = useContactDetails();
   const year = new Date().getFullYear();
 
   if (compact) {
@@ -77,14 +81,35 @@ export default function Footer({ compact = false }) {
           <div className="flex flex-col gap-2 text-sm text-muted">
             <span className="inline-flex items-center gap-2">
               <MapPin size={14} aria-hidden="true" />
-              Nairobi, Kenya
+              {contact.address || 'Nairobi, Kenya'}
             </span>
+            {contact.phone && (
+              <a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`} className="inline-flex items-center gap-2 hover:text-accent transition-colors focus-ring rounded-md w-fit">
+                <Phone size={14} aria-hidden="true" />
+                {contact.phone}
+              </a>
+            )}
+            {contact.email && (
+              <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-2 hover:text-accent transition-colors focus-ring rounded-md w-fit [overflow-wrap:anywhere]">
+                <Mail size={14} aria-hidden="true" />
+                {contact.email}
+              </a>
+            )}
             <Link
               to="/contact"
               className="hover:text-accent transition-colors focus-ring rounded-md w-fit"
             >
               Contact Us
             </Link>
+            {contact.socials.length > 0 && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1">
+                {contact.socials.map((social) => (
+                  <a key={social.key} href={social.href} target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors focus-ring rounded-md">
+                    {social.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

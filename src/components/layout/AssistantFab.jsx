@@ -6,7 +6,7 @@ import AssistantThread from '../chat/AssistantThread';
 import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useBotAssistantEnabled } from '../../hooks/usePlatformSettings';
+import { useBotAssistantStatus } from '../../hooks/usePlatformSettings';
 import { useUiStore } from '../../store/uiStore';
 
 /**
@@ -29,7 +29,9 @@ import { useUiStore } from '../../store/uiStore';
  */
 export default function AssistantFab() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
-  const assistantOn = useBotAssistantEnabled();
+  // Shown only once the backend has said the assistant is on — never flashing up while the setting loads.
+  const { enabled: assistantEnabled, loading: assistantLoading } = useBotAssistantStatus();
+  const assistantOn = assistantEnabled && !assistantLoading;
   // A page's floating action bar ("Book now"…) along the bottom: sit above it instead of on it.
   const raised = useUiStore((s) => s.actionBarVisible);
   const { pathname } = useLocation();

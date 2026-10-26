@@ -465,6 +465,10 @@ verifying your email (which signs you in), and picks up where you left off.
    until your trip's own start date actually arrives — you can't record it days ahead of when you're really
    collecting the vehicle — and shows the date it opens up until then. Past handovers show as a read-only
    **Vehicle Handover** record (visible to the owner too, on their side of the same booking).
+   **You won't miss it:** the day before your pickup, a navy reminder appears at the top of every page ("You pick up
+   … tomorrow"); from the day itself it says **Time to pick up …**, with **Record pickup** opening the form straight
+   away. It stays pinned there until the pickup is recorded. Recording it matters: it starts your trip, and it's what
+   lets the owner be paid.
    **Moving your dates:** a Pending or Confirmed booking has **Move dates** next to **Cancel booking**. It checks the
    owner's policy first (whether moving is allowed, and how close to pick-up), then you pick the new pick-up and return.
    **Changing the vehicle:** until the trip starts, a Pending or Confirmed booking has **Change vehicle** beside
@@ -846,8 +850,12 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Add a renter** (Users page) — creates a renter account for someone booking through staff (name, email, optional
   phone) and shows a temporary password once to hand over. **Upload a document for this user** (a user's page) adds a
   document handed in to staff; it's reviewed like any other.
-- **Platform Settings** (`/admin/settings`) — three tabs: **Fees & commission**, **Booking policy** and
-  **Assistant** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
+- **The assistant switch** hides the green chat button for everyone, visitors included, as soon as it's off (the
+  button only appears once the setting has loaded, so it never flashes up).
+- **Platform Settings** (`/admin/settings`) — five tabs: **Fees & commission**, **Booking policy**, **Pickup
+  reminders** (the reminders the system sends before a pickup: on/off, to the renter, to the owner, and how many minutes
+  before), **Contact & social** (phone, WhatsApp, email, website, address, Facebook, Instagram, X, TikTok — shown on the
+  Contact page and in the footer and given to search engines; an empty field is simply not shown) and **Assistant** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
   charged on a booking that already exists. Next to it: the **Pesapal transaction fee** (%), the **Delivery fee** (a

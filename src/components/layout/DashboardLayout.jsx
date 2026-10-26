@@ -10,6 +10,7 @@ import { useProfilePhoto } from '../../hooks/useProfilePhoto';
 import { primaryRoleLabel } from '../../lib/utils';
 import { useUiStore } from '../../store/uiStore';
 import { SITE_LINKS } from '../../lib/siteLinks';
+import PickupReminder from '../booking/PickupReminder';
 
 /** Runs of neighbouring items that share a `group` become one section; ungrouped items stay on their own. */
 function groupItems(items) {
@@ -207,6 +208,8 @@ export default function DashboardLayout({ items = [], heading }) {
 
       {/* Each page centres itself in the space beside the menu (its own PageWrapper width + mx-auto). */}
       <div className="flex-1 min-w-0">
+        {/* A renter's pickup that's due, pinned above every page until it's recorded. */}
+        <PickupReminder />
         <Outlet />
       </div>
     </div>

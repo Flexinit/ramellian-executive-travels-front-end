@@ -20,11 +20,11 @@ function renderPage() {
 describe('FaqPage', () => {
   it('renders every question, with the first one expanded by default', () => {
     renderPage();
-    expect(screen.getByRole('button', { name: /what documents do i need to rent a vehicle/i })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /how do i rent a car with ramellian/i })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
-    expect(screen.getByText(/national id or passport/i)).toBeInTheDocument();
+    expect(screen.getByText(/press book now/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /do you offer long-distance or upcountry trips/i })
     ).toHaveAttribute('aria-expanded', 'false');
@@ -38,7 +38,7 @@ describe('FaqPage', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText(/payments are handled securely online/i)).toBeInTheDocument();
+    expect(screen.getByText(/securely online through pesapal/i)).toBeInTheDocument();
 
     await user.click(trigger);
     expect(trigger).toHaveAttribute('aria-expanded', 'false');

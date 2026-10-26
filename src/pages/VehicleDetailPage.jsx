@@ -4,6 +4,7 @@ import ImageGallery from '../components/vehicles/ImageGallery';
 import VehicleInfoPanel from '../components/vehicles/VehicleInfoPanel';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
+import { breadcrumbJsonLd, vehicleDescription, vehicleJsonLd, vehiclePhotos } from '../seo/seoConfig';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import BackLink from '../components/ui/BackLink';
@@ -50,7 +51,16 @@ export default function VehicleDetailPage() {
   return (
     <>
       <PageWrapper className="!pt-6 lg:!pt-8">
-      <PageTitle title="Vehicle Details" />
+      {/* Search results and link previews: the car's own name, description, photo and daily-rate offer. */}
+      <PageTitle
+        title={`${vehicle.model} for Hire${vehicle.location ? ` in ${vehicle.location}` : ''}`}
+        description={vehicleDescription(vehicle)}
+        image={vehiclePhotos(vehicle)[0]}
+        jsonLd={[
+          vehicleJsonLd(vehicle),
+          breadcrumbJsonLd([{ name: 'Home', path: '/' }, { name: 'Vehicles', path: '/vehicles' }, { name: vehicle.model, path: `/vehicles/${vehicle.id}` }]),
+        ]}
+      />
       <BackLink to="/vehicles" label="Back to vehicles" className="mb-3" />
       {/* Photos and the read-only details share the wide column, since they're read top to bottom like an
           article; the booking form is a sticky sidebar next to them, the way a listing page's "book this"

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, act, within } from '@testing-library/react';
+import { render, screen, act, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -153,10 +153,10 @@ describe('App routing', () => {
       signInAs(USER_ROLES.OWNER);
       renderWithProviders(<App />, { route });
       const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
-      expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
+      await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
         'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Add Vehicle', 'Reports', 'Contract Templates',
         'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
-      ]);
+      ]));
       expect(screen.getAllByRole('navigation', { name: 'Dashboard' })).toHaveLength(1);
     });
 
@@ -166,9 +166,9 @@ describe('App routing', () => {
         signInAs(USER_ROLES.RENTER);
         renderWithProviders(<App />, { route });
         const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
-        expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
+        await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
           'Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles',
-        ]);
+        ]));
         expect(screen.queryByRole('link', { name: /list your car|rent a car/i })).not.toBeInTheDocument();
       }
     );
@@ -343,9 +343,9 @@ describe('App routing', () => {
           asRenterOwner();
           renderWithProviders(<App />, { route });
           const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
-          expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
+          await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
             'Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Switch to Car Owner', 'Browse Vehicles',
-          ]);
+          ]));
         }
       );
 

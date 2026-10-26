@@ -32,12 +32,12 @@ function signIn() {
 }
 
 describe('AssistantFab — on a phone', () => {
-  it('slides away while scrolling down, so it never sits on a Book button, and comes back on scrolling up', () => {
+  it('slides away while scrolling down, so it never sits on a Book button, and comes back on scrolling up', async () => {
     const original = window.matchMedia;
     window.matchMedia = (q) => ({ matches: q.includes('max-width'), addEventListener() {}, removeEventListener() {} });
     try {
       renderAt('/vehicles');
-      const button = screen.getByRole('button', { name: /chat with the assistant/i });
+      const button = await screen.findByRole('button', { name: /chat with the assistant/i });
       const scrollTo = (y) => act(() => {
         window.scrollY = y;
         window.dispatchEvent(new Event('scroll'));
@@ -55,15 +55,15 @@ describe('AssistantFab — on a phone', () => {
 });
 
 describe('AssistantFab', () => {
-  it('is global — shown on a public page for a signed-out visitor too', () => {
+  it('is global — shown on a public page for a signed-out visitor too', async () => {
     renderAt('/');
-    expect(screen.getByRole('button', { name: /chat with the assistant/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /chat with the assistant/i })).toBeInTheDocument();
   });
 
-  it('shown for a signed-in person too', () => {
+  it('shown for a signed-in person too, once the settings say the assistant is on', async () => {
     signIn();
     renderAt('/dashboard');
-    expect(screen.getByRole('button', { name: /chat with the assistant/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /chat with the assistant/i })).toBeInTheDocument();
   });
 
   it('hides itself on the Assistant page, where opening it would do nothing', () => {
@@ -76,7 +76,7 @@ describe('AssistantFab', () => {
     const user = userEvent.setup();
     renderAt('/');
 
-    await user.click(screen.getByRole('button', { name: /chat with the assistant/i }));
+    await user.click(await screen.findByRole('button', { name: /chat with the assistant/i }));
 
     expect(screen.getByText(/log in or create an account/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /^log in$/i })).toHaveAttribute('href', '/auth/login');
@@ -90,7 +90,7 @@ describe('AssistantFab', () => {
     renderAt('/dashboard');
 
     expect(screen.queryByText(/chat with us/i)).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /chat with the assistant/i }));
+    await user.click(await screen.findByRole('button', { name: /chat with the assistant/i }));
 
     expect(screen.getByText(/chat with us/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/message the assistant/i)).toBeInTheDocument();
@@ -102,7 +102,7 @@ describe('AssistantFab', () => {
     signIn();
     renderAt('/dashboard');
 
-    await user.click(screen.getByRole('button', { name: /chat with the assistant/i }));
+    await user.click(await screen.findByRole('button', { name: /chat with the assistant/i }));
     expect(screen.getByText(/chat with us/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /close chat/i }));
@@ -125,5 +125,30 @@ describe('AssistantFab — in a conversation', () => {
     signIn();
     renderAt('/messages/user/u2');
     expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('AssistantFab — following the backend setting', () => {
+  it("doesn't flash up for a signed-in person while the setting is still loading", () => {
+    server.use(http.get(`${BASE}/platform-settings`, () => new Promise(() => {})));
+    signIn();
+    renderAt('/vehicles');
+    expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument();
+  });
+
+  it('hidden for a visitor too when the backend says the assistant is off (GET /bot/status)', async () => {
+    server.use(http.get(`${BASE}/bot/status`, () => HttpResponse.json({ enabled: false })));
+    renderAt('/vehicles');
+    await waitFor(() => expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument());
+  });
+
+  it('a backend without /bot/status (401): signed in, it follows the settings instead', async () => {
+    server.use(
+      http.get(`${BASE}/bot/status`, () => HttpResponse.json({ message: 'Unauthorized' }, { status: 401 })),
+      http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1, botAssistantEnabled: false }))
+    );
+    signIn();
+    renderAt('/vehicles');
+    await waitFor(() => expect(screen.queryByRole('button', { name: /chat with the assistant/i })).not.toBeInTheDocument());
   });
 });
