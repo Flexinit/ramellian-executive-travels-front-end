@@ -71,7 +71,7 @@ export default function VehicleGrid({ vehicles, isLoading, isError, error, onRet
         {loadingMore && Array.from({ length: 4 }).map((_, i) => <VehicleCardSkeleton key={`more-${i}`} />)}
       </div>
       {hasMore && onLoadMore && <LoadMore onLoadMore={onLoadMore} loading={loadingMore} />}
-      {pageSize && <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} noun="vehicles" />}
+      {pageSize && <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} pageSize={pages.pageSize} onPageSize={pages.setPageSize} defaultPageSize={pages.defaultPageSize} noun="vehicles" />}
     </div>
   );
 }

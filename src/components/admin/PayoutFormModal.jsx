@@ -16,8 +16,9 @@ import { apiErrorMessage } from '../../lib/apiError';
  * @param {function} onSubmit — gets `{ amount, ownerPhone, notes }` (strings, trimmed)
  * @param {object} mutation — the create/update mutation (for its pending/error state)
  * @param {React.ReactNode} [intro]
+ * @param {React.ReactNode} [children] — extra fields shown before the amount (e.g. which booking)
  */
-export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, initial = {}, onSubmit, mutation, intro }) {
+export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, initial = {}, onSubmit, mutation, intro, children }) {
   const [amount, setAmount] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -51,6 +52,7 @@ export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, i
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         {intro && <div className="text-sm text-muted">{intro}</div>}
+        {children}
         <Input
           label="Amount (KES)"
           type="number"

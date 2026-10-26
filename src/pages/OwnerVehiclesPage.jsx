@@ -72,7 +72,7 @@ export default function OwnerVehiclesPage() {
               </li>
             ))}
           </ul>
-          <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} noun="vehicles" />
+          <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} pageSize={pages.pageSize} onPageSize={pages.setPageSize} defaultPageSize={pages.defaultPageSize} noun="vehicles" />
           </>
         ) : (
           !isError && (

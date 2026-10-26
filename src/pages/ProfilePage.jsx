@@ -1,9 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { PenLine, ShieldCheck, UserCircle } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Spinner from '../components/ui/Spinner';
 import Card from '../components/ui/Card';
+import SegmentedControl from '../components/ui/SegmentedControl';
 import ProfilePhotoPicker from '../components/profile/ProfilePhotoPicker';
 import SetupSteps from '../components/profile/SetupSteps';
 import SecuritySection from '../components/profile/SecuritySection';
@@ -12,12 +14,22 @@ import { useAuthStore } from '../store/authStore';
 import { useCurrentUser } from '../hooks/useProfile';
 import { USER_ROLES } from '../lib/constants';
 
+const TABS = [
+  { value: 'details', label: 'Details', icon: UserCircle },
+  { value: 'signature', label: 'Signature', icon: PenLine },
+  { value: 'security', label: 'Security', icon: ShieldCheck },
+];
+
 /**
- * Profile, as simple steps rather than one long page: Personal details →
- * Account details (car owners) → Documents → Vehicle (car owners). See
- * SetupSteps.
+ * Profile, under tabs below the photo header (product owner, 2026-10-26): **Details** — simple steps rather than one
+ * long page: Personal details → Account details (car owners) → Documents → Vehicle (car owners), see SetupSteps —
+ * **Signature** (the saved signature) and **Security**. The open tab lives in the address (?tab=security), so it
+ * survives a reload and can be linked to.
  */
 export default function ProfilePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = TABS.some((t) => t.value === searchParams.get('tab')) ? searchParams.get('tab') : 'details';
+  const setTab = (value) => setSearchParams(value === 'details' ? {} : { tab: value }, { replace: true });
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const { data: currentUser, isLoading } = useCurrentUser();
@@ -47,17 +59,19 @@ export default function ProfilePage() {
             </Card>
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center py-10">
-              <Spinner size="lg" label="Loading profile" />
-            </div>
-          ) : (
-            <SetupSteps onFinish={() => navigate(isOwner ? '/owner' : '/dashboard')} />
-          )}
+          <SegmentedControl kind="tab" label="Profile section" options={TABS} value={tab} onChange={setTab} />
 
-          <SavedSignatureSection />
-
-          <SecuritySection />
+          <div role="tabpanel" aria-label={TABS.find((t) => t.value === tab).label}>
+            {tab === 'details' && (isLoading ? (
+              <div className="flex justify-center py-10">
+                <Spinner size="lg" label="Loading profile" />
+              </div>
+            ) : (
+              <SetupSteps onFinish={() => navigate(isOwner ? '/owner' : '/dashboard')} />
+            ))}
+            {tab === 'signature' && <SavedSignatureSection />}
+            {tab === 'security' && <SecuritySection />}
+          </div>
         </div>
       </PageWrapper>
     </>

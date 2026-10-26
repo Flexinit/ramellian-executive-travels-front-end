@@ -3,6 +3,23 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (profile tabs)
+
+- **Changed:** **Profile** is split into tabs below your photo — **Details** (the setup steps), **Signature** (your
+  saved signature) and **Security** (password, two-factor sign-in, recent activity) — instead of one long page.
+
+## 2026-10-26 (items per page)
+
+- **Added:** every list that's split into pages (bookings, vehicles, accounts, documents, messages, notifications,
+  templates, roles, the audit log…) has a **Per page** choice next to its page controls: its usual number, 10, 25, 50
+  or 100. Changing it goes back to the first page.
+
+## 2026-10-26 (create payout on Owner Payouts)
+
+- **Added (administrators):** **Owner Payouts** has a **Create payout** button at the top. Choose the booking (paid
+  bookings without a payout yet), optionally the amount, the owner's M-Pesa phone and notes. The new payout appears
+  under **To pay**, where you can send it or record it as paid by hand.
+
 ## 2026-10-26 (manual payouts, owner payouts, contact form)
 
 - **Added (administrators):** payouts can be handled by hand when the automatic flow has trouble. **Send payout now**

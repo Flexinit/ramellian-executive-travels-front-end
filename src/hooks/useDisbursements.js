@@ -22,8 +22,8 @@ export const PAYOUT_VARIANT = { PENDING: 'warning', PROCESSING: 'info', COMPLETE
 const KEY = ['admin', 'disbursements'];
 
 /** Payouts in one status. */
-export function useDisbursements(status) {
-  return useQuery({ queryKey: [...KEY, status], queryFn: () => apiGet('/admin/disbursements', { status }) });
+export function useDisbursements(status, { enabled = true } = {}) {
+  return useQuery({ queryKey: [...KEY, status], queryFn: () => apiGet('/admin/disbursements', { status }), enabled });
 }
 
 /** One booking's payout — `null` while there isn't one yet (pickup not recorded). */

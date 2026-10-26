@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -126,5 +126,47 @@ describe('AdminPayoutsPage', () => {
     await user.click(await screen.findByRole('radio', { name: 'Failed' }));
     expect(await screen.findByRole('button', { name: /try again/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /already paid by hand/i })).toBeInTheDocument();
+  });
+
+  it('creates a payout from this page for a paid booking that has none', async () => {
+    const user = userEvent.setup();
+    let posted;
+    const booking = (id, status, vehicleModel) => ({
+      id, status, vehicleModel, startTime: '2026-10-01T09:00:00+03:00', endTime: '2026-10-04T09:00:00+03:00', renterEmail: 'rita@example.com',
+    });
+    server.use(
+      // b1 already has a payout; b3 was cancelled, so neither can be picked.
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'COMPLETED' ? [PAYOUT({ status: 'COMPLETED' })] : [])),
+      http.get(`${BASE}/bookings/reports/admin`, () => HttpResponse.json({
+        completed: [booking('b1', 'COMPLETED', 'Toyota Prado'), booking('b2', 'COMPLETED', 'Mazda CX-5')],
+        cancelled: [booking('b3', 'CANCELLED', 'Subaru Forester')],
+      })),
+      http.post(`${BASE}/admin/disbursements/bookings/:bookingId`, async ({ request, params }) => {
+        posted = { bookingId: params.bookingId, body: await request.json() };
+        return HttpResponse.json(PAYOUT({ id: 'd2', bookingId: params.bookingId }), { status: 201 });
+      })
+    );
+    renderUi();
+
+    await user.click((await screen.findAllByRole('button', { name: /create payout/i }))[0]);
+    const picker = screen.getByLabelText('Booking');
+    await waitFor(() => expect(picker).toBeEnabled());
+    const choices = Array.from(picker.options).map((o) => o.textContent);
+    expect(choices.some((c) => c.includes('Mazda CX-5'))).toBe(true);
+    expect(choices.some((c) => c.includes('Toyota Prado') || c.includes('Subaru Forester'))).toBe(false);
+
+    // A booking must be chosen first.
+    const dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: /^create payout$/i }));
+    expect(await screen.findByText('Choose the booking this payout is for.')).toBeInTheDocument();
+    expect(posted).toBeUndefined();
+
+    await user.selectOptions(picker, 'b2');
+    await user.type(screen.getByLabelText(/owner's phone/i), '+254712345678');
+    await user.click(within(dialog).getByRole('button', { name: /^create payout$/i }));
+
+    await waitFor(() => expect(posted).toEqual({ bookingId: 'b2', body: { ownerPhone: '+254712345678' } }));
+    expect(await screen.findByText(/payout created/i)).toBeInTheDocument();
   });
 });

@@ -107,7 +107,7 @@ export default function MessagesPage() {
               );
             })}
           </ul>
-          <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} noun="conversations" />
+          <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} pageSize={pages.pageSize} onPageSize={pages.setPageSize} defaultPageSize={pages.defaultPageSize} noun="conversations" />
           </>
         )}
       </div>

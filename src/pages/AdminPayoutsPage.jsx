@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -8,7 +9,9 @@ import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import EmptyState from '../components/ui/EmptyState';
 import SegmentedControl from '../components/ui/SegmentedControl';
+import Button from '../components/ui/Button';
 import PayoutActions from '../components/admin/PayoutActions';
+import CreatePayoutModal from '../components/admin/CreatePayoutModal';
 import { PAYOUT_LABEL, PAYOUT_VARIANT, useDisbursements } from '../hooks/useDisbursements';
 import { apiErrorMessage } from '../lib/apiError';
 import { formatCurrency, formatDateTime } from '../lib/utils';
@@ -18,12 +21,14 @@ import { formatCurrency, formatDateTime } from '../lib/utils';
  * by the backend when the vehicle's pickup is recorded — not when the booking is paid — so a paid booking whose
  * pickup hasn't been recorded has nothing here yet; the empty state says so, and each booking's own page shows its
  * payout (or why there isn't one). Since 2026-10-26 a payout can also be **PROCESSING** (sent, not yet confirmed by
- * the payment provider), with **Check status** to ask for the latest.
+ * the payment provider), with **Check status** to ask for the latest. **Create payout** (header) makes one by hand for a
+ * paid booking that has none, picking the booking here (`CreatePayoutModal`).
  */
 const STATUSES = ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'];
 
 export default function AdminPayoutsPage() {
   const [status, setStatus] = useState('PENDING');
+  const [creating, setCreating] = useState(false);
   const { data, isLoading, isError, error, refetch } = useDisbursements(status);
   const list = Array.isArray(data) ? data : [];
 
@@ -31,14 +36,20 @@ export default function AdminPayoutsPage() {
     <PageWrapper className="max-w-6xl">
       <PageTitle title="Owner Payouts" />
       <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Owner Payouts</h1>
-          <p className="text-muted text-sm mt-1.5">
-            What each owner is owed for a booking. Mark it paid once the money is sent, with its reference. A payout
-            that's <strong className="text-ink font-medium">Processing</strong> has been sent and is waiting for the payment
-            provider — <strong className="text-ink font-medium">Check status</strong> asks for the latest.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Owner Payouts</h1>
+            <p className="text-muted text-sm mt-1.5">
+              What each owner is owed for a booking. Mark it paid once the money is sent, with its reference. A payout
+              that's <strong className="text-ink font-medium">Processing</strong> has been sent and is waiting for the payment
+              provider — <strong className="text-ink font-medium">Check status</strong> asks for the latest.
+            </p>
+          </div>
+          <Button size="sm" className="self-start shrink-0" onClick={() => setCreating(true)}>
+            <Plus size={14} aria-hidden="true" /> Create payout
+          </Button>
         </div>
+        <CreatePayoutModal isOpen={creating} onClose={() => setCreating(false)} />
 
         <SegmentedControl
           label="Payout status"
@@ -57,10 +68,10 @@ export default function AdminPayoutsPage() {
             title={`No payouts ${PAYOUT_LABEL[status].toLowerCase()}`}
             description={
               status === 'PENDING'
-                ? "A booking's payout appears here once the vehicle's pickup has been recorded on the booking (Handover) — not as soon as it's paid. Open a booking under All Bookings to see where its payout stands — or to create one there if the automatic one never happened."
+                ? "A booking's payout appears here once the vehicle's pickup has been recorded on the booking (Handover) — not as soon as it's paid. If the automatic one never happened, use Create payout above."
                 : 'Payouts appear here once they reach this stage.'
             }
-            action={status === 'PENDING' ? { label: 'All Bookings', to: '/admin/bookings' } : undefined}
+            action={status === 'PENDING' ? { label: 'Create payout', onClick: () => setCreating(true) } : undefined}
           />
         ) : (
           <div className="flex flex-col gap-3">

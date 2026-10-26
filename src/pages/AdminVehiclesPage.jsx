@@ -169,7 +169,7 @@ export default function AdminVehiclesPage() {
           </Card>
         )}
 
-        <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} noun="vehicles" />
+        <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} pageSize={pages.pageSize} onPageSize={pages.setPageSize} defaultPageSize={pages.defaultPageSize} noun="vehicles" />
       </div>
 
       <Modal isOpen={!!gallery} onClose={() => setGallery(null)} title={gallery ? `Photos — ${gallery.model} (${gallery.registrationNumber})` : ''} size="xl">

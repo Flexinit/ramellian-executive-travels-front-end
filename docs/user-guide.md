@@ -232,7 +232,8 @@ profile**, **Upload documents** (it lists what's missing), and, for car owners,
 **Add a vehicle**. Each prompt disappears on the page it links to, clears itself
 once done, and can be dismissed with the **×** for the rest of your session.
 
-You can do all of this any time from **Profile** (`/dashboard/profile`), which has
+You can do all of this any time from **Profile** (`/dashboard/profile`). Below your photo it has three tabs —
+**Details**, **Signature** and **Security** (the open tab stays in the address, e.g. `?tab=security`). **Details** has
 the account type, business and personal details, and the document uploads as the same
 steps — it also opens on the first step you haven't done, and lets you edit any step; **Documents** (`/dashboard/documents`) shows just the uploads. Both are also
 in the Owner Panel sidebar.
@@ -240,7 +241,7 @@ in the Owner Panel sidebar.
 > **Role names:** the backend calls a car owner `CAR_OWNER`; the portal treats that
 > the same as Owner everywhere (Owner Panel access, badges, prompts).
 
-**Security (bottom of the Profile page).** Everyone can: **change their password** (current password, then a new
+**Security (Profile → Security tab).** Everyone can: **change their password** (current password, then a new
 one of 8–72 characters, typed twice); turn **two-factor sign-in** on or off (a code is sent by email each time
 you log in — WhatsApp is offered only when WhatsApp is switched on); and see their **recent activity** (the last
 few sign-ins and changes on the account — click one for its details). If the backend refuses a new password,
@@ -434,7 +435,7 @@ verifying your email (which signs you in), and picks up where you left off.
      **Couldn't check your payment** instead of spinning, with **Check again** and **Try Again**.
    One click starts one payment, even if you double-click. The same Receipt is also reachable later from the
    booking itself — its own row in My Bookings, or the booking's own page.
-   **Your saved signature:** under Profile → **My signature**, draw or upload your signature once (agreeing it can be
+   **Your saved signature:** under Profile → **Signature** tab, draw or upload your signature once (agreeing it can be
    used to sign your contracts). When you sign a contract you can then choose **Sign with my saved signature**, or
    **Draw a new one**; when drawing, you can tick **Save this signature for my next contracts**. The owner signs the
    same contract from their side, and the Signatures section shows each signature's date.
@@ -768,7 +769,7 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Vehicle Approvals** (`/admin/vehicles/approvals`, needs `VEHICLE_MANAGE`) — where new vehicles are approved
   before renters can see them. It opens with a count for each group (**Needs review**, **Approved**, **Rejected**, all),
   tabs to switch between them, a search box (model, registration, owner, place or VIN) and **five vehicles to a page**
-  with page controls ("Showing 6–10 of 23", Previous / Next, numbered pages). Each vehicle is a card: its photo, price
+  with page controls ("Showing 6–10 of 23", **Per page**, Previous / Next, numbered pages). Each vehicle is a card: its photo, price
   per day, key facts as pills (place, seats, fuel, transmission, A/C, booking modes, colour), VIN, owner, whether it is
   insured, and **Check sticker**, which opens the insurance photo with the automatic QR check. The **Approved** and
   **Rejected** tiles link to the two pages below.
@@ -833,7 +834,7 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Contract Templates** (`/admin/contracts/templates`) — every template with its version and status: read it,
   **approve or reject** it, add a new one, or save changes as a **new version** (the backend has no edit or
   delete for a template).
-- **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time
+- **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time (**Per page** sets how many)
   (20 entries). Filter by **action** (`LOGIN` finds `AUTH_LOGIN`), the **person's email** and the **kind of
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
 - **Owner Payouts** (`/admin/payouts`) — each booking's payout to its owner, under **To pay**, **Processing**, **Paid**
@@ -844,8 +845,10 @@ your permissions" above): an item is only shown if your account holds the permis
     nothing is sent from the portal.
   - **Try again** on a failed payout; **Edit** first to correct the owner's M-Pesa phone, the amount or notes.
   - **Failed** marks it failed with what went wrong.
-  A payout is normally created when the vehicle's pickup is recorded. If that never happened, open the booking (All
-  Bookings) — its **Owner payout** section has **Create payout**, with the owner's share filled in.
+  A payout is normally created when the vehicle's pickup is recorded. If that never happened, use **Create payout** at
+  the top of Owner Payouts and choose the booking (only paid bookings without a payout are listed); leave the amount
+  empty for the owner's share. A booking's own page (All Bookings) has the same **Create payout** in its **Owner
+  payout** section, with the owner's share filled in.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside
