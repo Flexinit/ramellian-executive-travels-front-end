@@ -15,6 +15,10 @@ import Button from '../components/ui/Button';
 import DraftNotice from '../components/ui/DraftNotice';
 import { useFormDraft } from '../hooks/useFormDraft';
 import { useContactDetails } from '../hooks/usePlatformSettings';
+import { useMutation } from '@tanstack/react-query';
+import { Send } from 'lucide-react';
+import { apiPost } from '../lib/api';
+import { apiErrorMessage } from '../lib/apiError';
 
 
 const SUBJECT_OPTIONS = [
@@ -25,20 +29,21 @@ const SUBJECT_OPTIONS = [
   { value: 'other', label: 'Other' },
 ];
 
+/** `ContactRequest` (live spec 2026-10-26): name, email, subject and message required; phone optional; these lengths. */
 const schema = z.object({
-  name: z.string().min(2, 'Enter your full name'),
-  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-  phone: z.string().min(7, 'Enter a valid phone number, e.g. +254 700 000000'),
+  name: z.string().trim().min(1, 'Enter your name').max(100, 'Keep it under 100 characters'),
+  email: z.string().trim().min(1, 'Email is required').max(200, 'Keep it under 200 characters').email('Enter a valid email address'),
+  phone: z.string().trim().optional(),
   subject: z.string().min(1, 'Select a subject'),
-  message: z.string().min(10, 'Tell us a bit more — at least 10 characters'),
+  message: z.string().trim().min(1, 'Write your message').max(5000, 'Keep it under 5,000 characters'),
 });
 
 /**
  * Public contact page — WhatsApp quick-link, phone, email, address and social links, and an inquiry form
  * (docs/requirements.md PUB-05). The details are the ones an administrator sets under Platform Settings → Contact &
  * social (`useContactDetails`); anything not set isn't shown — the page used to show placeholder numbers. There's no
- * backend inquiry endpoint, so submitting opens the visitor's email client with a pre-filled `mailto:` to the support
- * email; until one is set, the form says how else to reach us instead.
+ * form sends the message to the team through the backend — `POST /contact` `ContactRequest` (live spec 2026-10-26;
+ * it used to open the visitor's email app instead).
  */
 export default function ContactPage() {
   const [searchParams] = useSearchParams();
@@ -68,17 +73,25 @@ export default function ContactPage() {
     resetToBase: () => reset({ name: '', email: '', phone: '', message: '', subject: defaultSubject }),
   });
 
-  function onSubmit(values) {
-    const subjectLabel = SUBJECT_OPTIONS.find((o) => o.value === values.subject)?.label || 'Inquiry';
-    const body = `Name: ${values.name}\nEmail: ${values.email}\nPhone: ${values.phone}\n\n${values.message}`;
-    if (!contact.email) return;
-    const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(
-      `Ramellian Website — ${subjectLabel}`
-    )}&body=${encodeURIComponent(body)}`;
+  const send = useMutation({
+    mutationFn: (payload) => apiPost('/contact', payload),
+    onSuccess: () => {
+      toast.success("Message sent — we'll get back to you within one business day.");
+      reset({ name: '', email: '', phone: '', subject: '', message: '' });
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't send your message. Please try again.")),
+  });
 
-    window.location.href = mailto;
-    toast.success('Your email client should open with your message ready to send.');
-    reset({ name: '', email: '', phone: '', subject: '', message: '' });
+  function onSubmit(values) {
+    // The subject goes as its words ("Custom Quote Request"), not the form's internal value.
+    const subject = SUBJECT_OPTIONS.find((o) => o.value === values.subject)?.label || 'Inquiry';
+    send.mutate({
+      name: values.name,
+      email: values.email,
+      ...(values.phone ? { phone: values.phone } : {}),
+      subject,
+      message: values.message,
+    });
   }
 
   return (
@@ -148,12 +161,6 @@ export default function ContactPage() {
 
           <Card className="p-6 sm:p-8">
             {restored && <DraftNotice onDiscard={discard} />}
-            {!contact.isLoading && !contact.email && (
-              <p role="status" className="text-sm text-muted bg-subtle rounded-tile px-4 py-3">
-                Our contact email isn't available just now —{' '}
-                {contact.whatsapp || contact.phone ? 'please reach us on the details beside this form.' : 'please try again shortly.'}
-              </p>
-            )}
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 mt-4" noValidate>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label="Full Name" autoComplete="name" error={errors.name?.message} register={register('name')} />
@@ -167,7 +174,7 @@ export default function ContactPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="Phone"
+                  label="Phone (optional)"
                   type="tel"
                   autoComplete="tel"
                   error={errors.phone?.message}
@@ -182,12 +189,12 @@ export default function ContactPage() {
               </div>
               <Textarea
                 label="Message"
-                maxLength={1000}
+                maxLength={5000}
                 error={errors.message?.message}
                 register={register('message')}
               />
-              <Button type="submit" size="lg" className="self-start mt-2">
-                Send Message
+              <Button type="submit" size="lg" className="self-start mt-2" loading={send.isPending}>
+                {!send.isPending && <Send size={16} aria-hidden="true" />} Send Message
               </Button>
             </form>
           </Card>

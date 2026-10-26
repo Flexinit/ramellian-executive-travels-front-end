@@ -57,7 +57,7 @@ export default function AdminPayoutsPage() {
             title={`No payouts ${PAYOUT_LABEL[status].toLowerCase()}`}
             description={
               status === 'PENDING'
-                ? "A booking's payout appears here once the vehicle's pickup has been recorded on the booking (Handover) — not as soon as it's paid. Open a booking under All Bookings to see where its payout stands."
+                ? "A booking's payout appears here once the vehicle's pickup has been recorded on the booking (Handover) — not as soon as it's paid. Open a booking under All Bookings to see where its payout stands — or to create one there if the automatic one never happened."
                 : 'Payouts appear here once they reach this stage.'
             }
             action={status === 'PENDING' ? { label: 'All Bookings', to: '/admin/bookings' } : undefined}

@@ -5,6 +5,8 @@ import RotatingWord from '../ui/RotatingWord';
 
 /** The headline's gold word, in turn — all about the same length, so the headline doesn't shift as they change. */
 const HERO_WORDS = ['Reimagined', 'Redefined', 'Elevated', 'Effortless', 'Unrivalled', 'Perfected'];
+/** How long each word stays — slow enough to be a gentle touch, not a distraction (product owner, 2026-10-26). */
+const HERO_WORD_SECONDS = 5;
 
 /**
  * otto.rentals-style search-first hero: bold editorial headline, short
@@ -31,7 +33,7 @@ export default function HeroSection() {
 
         <h1 className="font-heading text-white text-3xl sm:text-4xl lg:text-5xl font-bold [text-shadow:0_2px_12px_rgba(0,0,0,0.35)] leading-[1.15] max-w-2xl text-balance">
           {/* The gold word playfully swaps for related ones (RotatingWord); screen readers hear "Reimagined". */}
-          Executive Travel, <RotatingWord words={HERO_WORDS} className="text-brand-gold" />
+          Executive Travel, <RotatingWord words={HERO_WORDS} interval={HERO_WORD_SECONDS * 1000} className="text-brand-gold" />
         </h1>
 
         <p className="text-white/90 text-base max-w-xl leading-relaxed [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]">

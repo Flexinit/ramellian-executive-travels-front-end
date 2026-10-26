@@ -15,6 +15,7 @@ import { apiGet } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { useMyVehicles } from '../hooks/useVehicles';
+import OwnerPayoutsCard from '../components/owner/OwnerPayoutsCard';
 
 /** `GET /owner/statements?vehicleId&from&to` → `OwnerStatementResponse` (live spec 2026-10-16). */
 function useOwnerStatement({ vehicleId, from, to }) {
@@ -97,6 +98,9 @@ export default function OwnerStatementsPage() {
           <Input label="From" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           <Input label="To" type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} />
         </Card>
+
+        {/* Where each payout stands (its own request — a problem there doesn't hide the statement). */}
+        <OwnerPayoutsCard />
 
         {statement.isLoading ? (
           <div className="flex justify-center py-12"><Spinner size="lg" label="Loading your statement" /></div>

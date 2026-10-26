@@ -48,11 +48,11 @@ describe('ContactPage', () => {
     expect(screen.getByRole('link', { name: 'Instagram' })).toHaveAttribute('href', 'https://instagram.com/ramellian');
   });
 
-  it('shows no placeholder details when none are set — and says the form needs an email first', async () => {
+  it('shows no placeholder details when none are set — the form still works', async () => {
     server.use(http.get(`${import.meta.env.VITE_API_BASE_URL}/api/v1/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })));
     renderPage();
-    expect(await screen.findByText(/contact email isn.t available just now/i)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /whatsapp/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('link', { name: /whatsapp/i })).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /send message/i })).toBeEnabled();
     expect(screen.queryByText(/\+254 700 000 000/)).not.toBeInTheDocument();
     expect(screen.getByText('Nairobi, Kenya')).toBeInTheDocument();
   });
@@ -67,25 +67,32 @@ describe('ContactPage', () => {
     renderPage();
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
-    expect(await screen.findByText(/enter your full name/i)).toBeInTheDocument();
+    expect(await screen.findByText(/enter your name/i)).toBeInTheDocument();
     expect(screen.getByText(/email is required/i)).toBeInTheDocument();
   });
 
-  it('submits a valid inquiry via a mailto link', async () => {
+  it('sends the message through the backend (POST /contact) — phone optional, subject as words', async () => {
     const user = userEvent.setup();
+    let body;
+    server.use(http.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/contact`, async ({ request }) => {
+      body = await request.json();
+      return new HttpResponse(null, { status: 200 });
+    }));
     renderPage();
-    await screen.findByRole('link', { name: 'bookings@ramellianexecutivetravels.co.ke' });
 
     await user.type(screen.getByLabelText(/full name/i), 'Jane Doe');
     await user.type(screen.getByLabelText(/^email$/i), 'jane@example.com');
-    await user.type(screen.getByLabelText(/phone/i), '+254700000001');
     await user.selectOptions(screen.getByLabelText(/subject/i), 'booking');
     await user.type(screen.getByLabelText(/message/i), 'I have a question about my upcoming booking.');
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
-    await waitFor(() => expect(window.location.href).toContain('mailto:'));
-    expect(window.location.href).toContain('mailto:bookings@ramellianexecutivetravels.co.ke');
-    expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/email client should open/i));
+    await waitFor(() => expect(body).toEqual({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      subject: 'Booking Question',
+      message: 'I have a question about my upcoming booking.',
+    }));
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/message sent/i)));
   });
 
   it('has no accessibility violations', async () => {

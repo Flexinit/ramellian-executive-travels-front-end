@@ -51,8 +51,8 @@ describe('AdminPayoutsPage', () => {
     expect(asked).toContain('PROCESSING');
     // Sent, not paid, while the provider hasn't confirmed it.
     expect(screen.getByText(/· sent /)).toBeInTheDocument();
-    // A processing payout can't be marked paid or failed by hand — only checked.
-    expect(screen.queryByRole('button', { name: /mark paid/i })).not.toBeInTheDocument();
+    // A processing payout can't be sent or marked by hand — only checked.
+    expect(screen.queryByRole('button', { name: /send payout now|already paid by hand/i })).not.toBeInTheDocument();
   });
 
   it("checks a processing payout's status with POST /admin/disbursements/{id}/sync", async () => {
@@ -76,7 +76,7 @@ describe('AdminPayoutsPage', () => {
     await waitFor(() => expect(screen.queryByText('Toyota Prado')).not.toBeInTheDocument());
   });
 
-  it('still marks a pending payout paid with its reference', async () => {
+  it('records a payout already paid by hand — the reference is required', async () => {
     const user = userEvent.setup();
     let body;
     server.use(
@@ -88,10 +88,43 @@ describe('AdminPayoutsPage', () => {
     );
     renderUi();
 
-    await user.click(await screen.findByRole('button', { name: /mark paid/i }));
+    await user.click(await screen.findByRole('button', { name: /already paid by hand/i }));
+    const record = screen.getByRole('button', { name: /record payment/i });
+    expect(record).toBeDisabled();
     await user.type(screen.getByLabelText('Payment reference'), 'QWE123');
-    await user.click(screen.getAllByRole('button', { name: /mark paid/i }).at(-1));
+    await user.click(record);
 
     await waitFor(() => expect(body).toEqual({ reference: 'QWE123' }));
+  });
+
+  it('sends a payout through the provider after confirming — no reference', async () => {
+    const user = userEvent.setup();
+    let body;
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, () => HttpResponse.json([PAYOUT()])),
+      http.post(`${BASE}/admin/disbursements/d1/trigger`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json(PAYOUT({ status: 'PROCESSING' }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByRole('button', { name: /send payout now/i }));
+    expect(screen.getByText(/through the payment provider now/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^send kes/i }));
+
+    await waitFor(() => expect(body).toEqual({}));
+    expect(await screen.findByText(/payout sent — it shows as processing/i)).toBeInTheDocument();
+  });
+
+  it('offers Try again on a failed payout', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+      HttpResponse.json(new URL(request.url).searchParams.get('status') === 'FAILED' ? [PAYOUT({ status: 'FAILED', notes: 'Provider timeout' })] : [])));
+    renderUi();
+
+    await user.click(await screen.findByRole('radio', { name: 'Failed' }));
+    expect(await screen.findByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /already paid by hand/i })).toBeInTheDocument();
   });
 });

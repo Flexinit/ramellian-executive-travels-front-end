@@ -836,13 +836,16 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time
   (20 entries). Filter by **action** (`LOGIN` finds `AUTH_LOGIN`), the **person's email** and the **kind of
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
-- **Owner Payouts** (`/admin/payouts`) — each paid booking's payout to its owner, under **To pay**, **Processing**,
-  **Paid** and **Failed**. **Mark paid** records the payment reference (e.g. the M-Pesa code); **Failed** records what
-  went wrong. A **Processing** payout has been sent and is waiting for the payment provider to confirm it — **Check
-  status** asks for the latest, and it moves to Paid or Failed once the provider answers. **A payout only exists once
-  the vehicle's pickup has been recorded** on the booking (Handover), not as soon as the renter pays. Each booking's own
-  page (All Bookings → open one) has an **Owner payout** section: it says if there's no payout yet, and otherwise
-  shows it with the same **Mark paid** / **Failed** / **Check status** buttons.
+- **Owner Payouts** (`/admin/payouts`) — each booking's payout to its owner, under **To pay**, **Processing**, **Paid**
+  and **Failed**. For when the automatic flow needs a hand:
+  - **Send payout now** pays the owner through the payment provider (you confirm first). It shows **Processing** until
+    the provider confirms; **Check status** asks for the latest.
+  - **Already paid by hand** records money you sent yourself (M-Pesa, bank) — the payment reference is required, and
+    nothing is sent from the portal.
+  - **Try again** on a failed payout; **Edit** first to correct the owner's M-Pesa phone, the amount or notes.
+  - **Failed** marks it failed with what went wrong.
+  A payout is normally created when the vehicle's pickup is recorded. If that never happened, open the booking (All
+  Bookings) — its **Owner payout** section has **Create payout**, with the owner's share filled in.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside

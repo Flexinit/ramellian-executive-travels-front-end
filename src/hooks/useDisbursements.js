@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { apiGet, apiPost } from '../lib/api';
+import { apiGet, apiPatch, apiPost } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 
 /**
@@ -43,17 +43,71 @@ export function useBookingDisbursement(bookingId, { enabled = true } = {}) {
   });
 }
 
-/** Marks a payout paid (`action: 'trigger'`, with the payment's reference) or failed (`'fail'`, with what went wrong). */
+/**
+ * Acts on a payout: `action: 'trigger'` sends it (no reference — the system pays through the provider, `kind: 'send'`)
+ * or records one paid by hand (with the payment's reference, `kind: 'manual'`); `'fail'` marks it failed with what went
+ * wrong. The toast says what the backend reports back.
+ */
 export function useResolveDisbursement() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, action, reference, notes }) =>
       apiPost(`/admin/disbursements/${id}/${action}`, { ...(reference ? { reference } : {}), ...(notes ? { notes } : {}) }),
-    onSuccess: (_d, { action }) => {
+    onSuccess: (updated, { action, kind }) => {
       queryClient.invalidateQueries({ queryKey: KEY });
-      toast.success(action === 'trigger' ? 'Payout marked as paid.' : 'Payout marked as failed.');
+      if (action === 'fail') return toast.success('Payout marked as failed.');
+      if (kind === 'send') {
+        const status = updated?.status;
+        return toast.success(
+          status === 'PROCESSING' ? 'Payout sent — it shows as Processing until the provider confirms it.'
+            : status ? `Payout sent — now ${(PAYOUT_LABEL[status] || status).toLowerCase()}.` : 'Payout sent.'
+        );
+      }
+      return toast.success('Payment recorded — payout marked as paid.');
     },
   });
+}
+
+const cleanBody = ({ amount, ownerPhone, notes }) => ({
+  ...(amount !== '' && amount != null ? { amount: Number(amount) } : {}),
+  ...(ownerPhone ? { ownerPhone } : {}),
+  ...(notes ? { notes } : {}),
+});
+
+/**
+ * Creates a payout by hand for a booking that has none — when the automatic one never happened (no pickup recorded,
+ * a booking from before payouts existed): `POST /admin/disbursements/bookings/{bookingId}` `ManualDisbursementRequest
+ * { amount?, ownerPhone?, notes? }` → 201 `DisbursementResponse` (live spec 2026-10-26). It starts To pay.
+ */
+export function useCreateDisbursement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, ...fields }) => apiPost(`/admin/disbursements/bookings/${bookingId}`, cleanBody(fields)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: KEY });
+      toast.success('Payout created — it is ready to send.');
+    },
+  });
+}
+
+/**
+ * Corrects a payout before it's sent or retried — the owner's phone (where an M-Pesa payout goes), the amount, notes:
+ * `PATCH /admin/disbursements/{id}` `UpdateDisbursementRequest` (live spec 2026-10-26).
+ */
+export function useUpdateDisbursement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...fields }) => apiPatch(`/admin/disbursements/${id}`, cleanBody(fields)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: KEY });
+      toast.success('Payout updated.');
+    },
+  });
+}
+
+/** The signed-in owner's own payouts — `GET /owner/disbursements` → `DisbursementResponse[]` (live spec 2026-10-26). */
+export function useMyDisbursements() {
+  return useQuery({ queryKey: ['owner', 'disbursements'], queryFn: () => apiGet('/owner/disbursements'), retry: false });
 }
 
 /** Asks the payment provider for a processing payout's latest status. */

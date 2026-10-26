@@ -1401,3 +1401,16 @@ account" instead.
 
 **Ask.** Allow car owners (CAR_OWNER, and fleet managers) on `GET /owner/statements`. A role that isn't allowed should get
 403, not 401: 401 means "not signed in", and clients treat it that way.
+
+## 47 (update, 2026-10-26). Manual payouts and owner payouts — consumed
+
+**New in the spec, built:** `POST /admin/disbursements/bookings/{bookingId}` (`ManualDisbursementRequest { amount?,
+ownerPhone?, notes? }` → 201) — **Create payout** on the admin booking page, amount pre-filled from
+`BookingResponse.ownerPayout`; `PATCH /admin/disbursements/{id}` (`UpdateDisbursementRequest`) — **Edit**;
+`GET /owner/disbursements` — **Your payouts** on the owner's Statements; `POST /contact` (`ContactRequest`) — the
+Contact form.
+
+**Still to confirm:** the portal's **Send payout now** calls `POST /admin/disbursements/{id}/trigger` with no reference,
+expecting the backend to pay the owner through the provider (→ PROCESSING); **Already paid by hand** calls the same
+endpoint with a reference, expecting it only to record the payment (→ COMPLETED). Please confirm the backend tells
+these apart this way, and that `trigger` is allowed on a FAILED payout (the portal's **Try again**).

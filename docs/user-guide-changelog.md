@@ -3,9 +3,19 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (manual payouts, owner payouts, contact form)
+
+- **Added (administrators):** payouts can be handled by hand when the automatic flow has trouble. **Send payout now**
+  pays the owner through the payment provider (after you confirm); **Already paid by hand** records a payment you made
+  yourself, with its reference; **Try again** on a failed payout; **Edit** to correct the owner's phone, amount or
+  notes first. A booking with no payout (e.g. the pickup was never recorded) has **Create payout** on its page.
+- **Added (car owners):** **Statements** shows **Your payouts** — what's been paid, what's on its way.
+- **Changed:** the Contact form sends your message straight to the team (it used to open your email app). Phone is
+  optional.
+
 ## 2026-10-26 (home page headline)
 
-- **Changed:** the home page headline's gold word now changes every few seconds — **Reimagined**, Redefined, Elevated,
+- **Changed:** the home page headline's gold word now changes every five seconds — **Reimagined**, Redefined, Elevated,
   Effortless, Unrivalled, Perfected — with a little flip. It stays still for anyone whose device is set to reduce motion.
 
 ## 2026-10-26 (laptops and big monitors)
