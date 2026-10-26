@@ -3,6 +3,11 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (home page headline)
+
+- **Changed:** the home page headline's gold word now changes every few seconds — **Reimagined**, Redefined, Elevated,
+  Effortless, Unrivalled, Perfected — with a little flip. It stays still for anyone whose device is set to reduce motion.
+
 ## 2026-10-26 (laptops and big monitors)
 
 - **Changed:** the site fits the screen it's on. Laptops keep the usual layout; on big monitors (from about 1536px wide)
