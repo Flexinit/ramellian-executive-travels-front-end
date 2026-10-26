@@ -43,7 +43,7 @@ export default function VehicleGrid({ vehicles, isLoading, isError, error, onRet
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 min-[1800px]:grid-cols-5 gap-3 sm:gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <VehicleCardSkeleton key={i} />
         ))}
@@ -64,7 +64,7 @@ export default function VehicleGrid({ vehicles, isLoading, isError, error, onRet
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 min-[1800px]:grid-cols-5 gap-3 sm:gap-4">
         {pages.pageItems.map((vehicle) => (
           <VehicleCard key={vehicle.id} vehicle={vehicle} />
         ))}

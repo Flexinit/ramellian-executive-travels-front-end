@@ -1388,3 +1388,16 @@ since the `PUT` replaces them all. The Contact page, footer and the business's s
 Until then, visitors on the live site always see the chat button, and the build can't read the contact details for
 search engines. Keep `GET /platform-settings` public (or add a small public contact endpoint) so the Contact page works
 for visitors.
+
+## 49. `GET /owner/statements` answers 401 for a signed-in car owner — 2026-10-26
+
+**Seen.** An owner opening Owner Panel → Statements was logged out: the portal treated the endpoint's 401 as an expired
+session. The rest of the portal kept working with the same login, so the session was valid; the endpoint refused it.
+(Not re-checked live: the office backend was down at the time, and the live site doesn't have that owner's login.)
+
+**Fixed in the portal.** A 401 from any endpoint other than `GET /users/me` no longer signs anyone out by itself: the
+portal checks `/users/me` first and only signs out if that's refused too. Statements shows "not available for your
+account" instead.
+
+**Ask.** Allow car owners (CAR_OWNER, and fleet managers) on `GET /owner/statements`. A role that isn't allowed should get
+403, not 401: 401 means "not signed in", and clients treat it that way.

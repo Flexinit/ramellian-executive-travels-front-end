@@ -39,7 +39,7 @@ function signInAs(role) {
 }
 
 afterEach(() => {
-  act(() => useAuthStore.setState({ token: null, user: null, mode: null }));
+  act(() => useAuthStore.setState({ token: null, user: null, mode: null, sessionExpired: false, deniedPaths: [] }));
 });
 
 // Every page is a React.lazy() chunk (implementation-plan.md 12.7), so the
@@ -100,6 +100,74 @@ describe('App routing', () => {
 
     expect(await screen.findByRole('heading', { name: /executive travel, reimagined/i })).toBeInTheDocument();
     expect(useAuthStore.getState().token).toBeNull();
+  });
+
+  it("stays signed in when one endpoint answers 401 but the session itself is still good (an owner's Statements)", async () => {
+    signInAs(USER_ROLES.RENTER);
+    renderWithProviders(<App />, { route: '/dashboard' });
+    await screen.findByRole('heading', { name: /welcome, test/i });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent('auth:expired', { detail: { url: '/owner/statements', isSessionCheck: false } }));
+    });
+
+    // GET /users/me still answers (the default mock), so nothing changes.
+    await new Promise((r) => setTimeout(r, 100));
+    expect(useAuthStore.getState().token).not.toBeNull();
+    expect(screen.getByRole('heading', { name: /welcome, test/i })).toBeInTheDocument();
+  });
+
+  it('when the session itself has ended, asks to log in again over the same page — and keeps them there', async () => {
+    const user = userEvent.setup();
+    signInAs(USER_ROLES.RENTER);
+    renderWithProviders(<App />, { route: '/dashboard' });
+    await screen.findByRole('heading', { name: /welcome, test/i });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent('auth:expired', { detail: { url: '/users/me', isSessionCheck: true } }));
+    });
+
+    const dialog = await screen.findByRole('dialog', { name: /please log in again/i });
+    // Not thrown out: still on their page, still "signed in" underneath, no way to just close it.
+    expect(screen.getByRole('heading', { name: /welcome, test/i })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+
+    await user.type(within(dialog).getByLabelText('Password'), 'secret123');
+    await user.click(within(dialog).getByRole('button', { name: /log in/i }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /please log in again/i })).not.toBeInTheDocument());
+    expect(useAuthStore.getState().sessionExpired).toBe(false);
+    expect(screen.getByRole('heading', { name: /welcome, test/i })).toBeInTheDocument();
+  });
+
+  it('"Sign out instead" on the log-in-again box signs out and goes to the main page', async () => {
+    const user = userEvent.setup();
+    signInAs(USER_ROLES.RENTER);
+    renderWithProviders(<App />, { route: '/dashboard' });
+    await screen.findByRole('heading', { name: /welcome, test/i });
+    act(() => {
+      window.dispatchEvent(new CustomEvent('auth:expired', { detail: { url: '/users/me', isSessionCheck: true } }));
+    });
+
+    await user.click(await screen.findByRole('button', { name: /sign out instead/i }));
+    expect(await screen.findByRole('heading', { name: /executive travel, reimagined/i })).toBeInTheDocument();
+    expect(useAuthStore.getState().token).toBeNull();
+  });
+
+  it("a page the backend refuses (session fine) says it isn't available and leaves the menu", async () => {
+    signInAs(USER_ROLES.RENTER);
+    renderWithProviders(<App />, { route: '/dashboard/documents' });
+    const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
+    expect(within(menu).getByRole('link', { name: 'Documents' })).toBeInTheDocument();
+
+    act(() => {
+      window.history.pushState({}, '', '/dashboard/documents');
+      window.dispatchEvent(new CustomEvent('auth:expired', { detail: { url: '/documents/me', isSessionCheck: false } }));
+    });
+
+    expect(await screen.findByText(/this page isn.t available to your account/i)).toBeInTheDocument();
+    expect(within(menu).queryByRole('link', { name: 'Documents' })).not.toBeInTheDocument();
+    expect(useAuthStore.getState().token).not.toBeNull();
   });
 
   it('ignores a 401 while nobody is signed in (e.g. a wrong password on the login form)', async () => {

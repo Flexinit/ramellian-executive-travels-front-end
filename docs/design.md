@@ -241,6 +241,11 @@ App
 
 ---
 
+**Screen sizes (2026-10-26).** Content width is the `.site-width` class (index.css): 80rem (1280px) on laptops, 88rem from
+1536px, 96rem from 1800px. The root font grows on big monitors (106.25% from 1800px, 112.5% from 2200px, 125% from
+2800px), so everything in rem scales with it. A page that is narrow on purpose passes its own `max-w-*` to PageWrapper.
+Vehicle grids add a fifth column from 1800px. `.stack-table` tables are cards below 1280px (beside the 256px menu).
+
 ## 5. Reusable Widget Catalogue (`src/components/ui/`)
 
 | Component | Props | Notes |

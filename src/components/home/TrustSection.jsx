@@ -12,7 +12,7 @@ const TRUST_ITEMS = [
 export default function TrustSection() {
   return (
     <section aria-label="Why book with Ramellian" className="bg-surface border-y border-ink/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
+      <div className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {TRUST_ITEMS.map((item) => (
             <TrustBadge key={item.title} {...item} />

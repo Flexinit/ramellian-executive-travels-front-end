@@ -114,6 +114,24 @@ const useAuthStore = create((set, get) => ({
   isAuthenticated: () => !!get().token,
 
   /**
+   * The session has ended (the backend refused even `GET /users/me`), but the person stays where they are: the app
+   * asks them to log in again over the current page (components/auth/ReauthModal.jsx) instead of throwing them out.
+   * Cleared by logging in again (`setToken`) or signing out (`clearAuth`).
+   * @type {boolean}
+   */
+  sessionExpired: false,
+  expireSession: () => set({ sessionExpired: true }),
+
+  /**
+   * Pages the backend refused this person although their session is fine (it answered 401/403 for that page's
+   * data while `/users/me` still worked) — shown as "not available to your account" and left out of the menu.
+   * Learned as they go; forgotten on sign-out or reload.
+   * @type {string[]}
+   */
+  deniedPaths: [],
+  denyPath: (path) => set((state) => (state.deniedPaths.includes(path) ? state : { deniedPaths: [...state.deniedPaths, path] })),
+
+  /**
    * Store the token, wire it into the Axios interceptor, and seed `user`
    * from the token's own claims.
    * @param {string} token
@@ -129,7 +147,7 @@ const useAuthStore = create((set, get) => ({
       // storage blocked: the session copy still works
     }
     const claimsUser = userFromToken(token);
-    set((state) => ({ token, user: claimsUser ? { ...state.user, ...claimsUser } : state.user }));
+    set((state) => ({ token, sessionExpired: false, user: claimsUser ? { ...state.user, ...claimsUser } : state.user }));
   },
 
   /**
@@ -164,7 +182,7 @@ const useAuthStore = create((set, get) => ({
       // nothing to remove
     }
     rememberMe = false;
-    set({ token: null, user: null, mode: null });
+    set({ token: null, user: null, mode: null, sessionExpired: false, deniedPaths: [] });
   },
 }));
 

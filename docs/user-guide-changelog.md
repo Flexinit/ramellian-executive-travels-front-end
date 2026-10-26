@@ -3,6 +3,20 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-26 (laptops and big monitors)
+
+- **Changed:** the site fits the screen it's on. Laptops keep the usual layout; on big monitors (from about 1536px wide)
+  pages use more of the width, vehicle lists show five cars per row, and from 1800px text and spacing grow slightly so
+  nothing looks small. On smaller laptops (below 1280px) admin tables show as cards instead of a squeezed table.
+
+## 2026-10-26 (staying signed in)
+
+- **Fixed:** opening a page the system refuses (e.g. an owner's **Statements**) no longer logs you out. The page says
+  **This page isn't available to your account**, and it drops out of your menu.
+- **Changed:** when your session really has ended, you're no longer sent to the main page. A **Please log in again** box
+  opens over the page you're on (password or Google); once you're back in you carry on exactly where you were, with
+  nothing lost. **Sign out instead** is there if you'd rather leave.
+
 ## 2026-10-26 (contact details, pickup reminder settings)
 
 - **Added (administrators):** **Platform Settings → Contact & social** — the business's phone, WhatsApp, email,

@@ -70,7 +70,7 @@ describe('Navbar', () => {
     renderNavbar();
     const logoLink = screen.getByText('RAMELLIAN').closest('a');
     expect(logoLink).not.toHaveClass('md:w-64');
-    expect(logoLink.parentElement).toHaveClass('max-w-7xl');
+    expect(logoLink.parentElement).toHaveClass('site-width');
   });
 
   it('always shows the logo, even on a page with the left menu', () => {

@@ -15,6 +15,7 @@ import SetupPrompts from './components/layout/SetupPrompts';
 import SetupGuideModal from './components/layout/SetupGuideModal';
 import AssistantFab from './components/layout/AssistantFab';
 import MobileTabBar from './components/layout/MobileTabBar';
+import ReauthModal from './components/auth/ReauthModal';
 import { useSyncCurrentUser } from './hooks/useProfile';
 import { useSessionExpiry, useReturnToCheckoutAfterAuth } from './hooks/useAuth';
 import { useBotAssistantEnabled } from './hooks/usePlatformSettings';
@@ -132,6 +133,8 @@ function RootLayout() {
       <AssistantFab />
       <Outlet />
       <MobileTabBar />
+      {/* The session ended: log in again over the current page instead of being thrown out. */}
+      <ReauthModal />
     </div>
   );
 }

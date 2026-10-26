@@ -147,6 +147,11 @@ it, so it starts fresh every time you open it, and reloading the page loses what
 An administrator can switch the assistant off (**Platform Settings → Assistant**); while it's off, signed-in people
 don't see the button, the top-bar icon or the menu item, and `/assistant` says it's switched off.
 
+**If your session ends** (you've been away a long time), a **Please log in again** box opens over the page you're on.
+Log in with your password or Google and you carry on exactly where you were; nothing you were doing is lost. **Sign out
+instead** leaves. **A page your account can't use** says **This page isn't available to your account** and isn't
+offered in your menu; you stay signed in.
+
 **No phone numbers, anywhere.** Phone numbers can't be shared through the portal. Anything that
 looks like one — a number starting `07` or `01` (including `011`), or with a country code such as
 `+254`, `00254` or `254`, however it's spaced or dashed, or spelled out in words — is removed from

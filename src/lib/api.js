@@ -48,9 +48,9 @@ api.interceptors.response.use(
     const isSessionCheck = (error.config?.url ?? '').includes('/users/me') && (error.config?.method ?? 'get').toLowerCase() === 'get';
 
     if (status === 401 || (status === 403 && isSessionCheck)) {
-      // Signal to the app that auth has expired.
-      // The actual redirect is handled in the useAuth hook / PrivateRoute.
-      window.dispatchEvent(new CustomEvent('auth:expired'));
+      // Signal to the app that auth may have expired — which request it was, so useSessionExpiry can tell a real
+      // expiry (the session check itself refused) from one endpoint wrongly answering 401 for a valid session.
+      window.dispatchEvent(new CustomEvent('auth:expired', { detail: { url: error.config?.url, isSessionCheck } }));
     }
 
     return Promise.reject(error);

@@ -70,7 +70,39 @@
   ::-webkit-scrollbar-thumb:hover { @apply bg-muted; }
 }
 
+/* Big monitors: everything sized in rem (text, spacing, widths) grows a little, so a 1920–2560px screen doesn't show a
+   small page lost in the middle. Laptops (up to ~1800px) keep the design's own sizes. */
+@media (min-width: 1800px) {
+  html { font-size: 106.25%; }
+}
+@media (min-width: 2200px) {
+  html { font-size: 112.5%; }
+}
+@media (min-width: 2800px) {
+  html { font-size: 125%; }
+}
+
+/* The hero's rotating word (components/ui/RotatingWord.jsx): each new word flips down into place with a little bounce. */
+@keyframes word-flip-in {
+  0% { opacity: 0; transform: translateY(-0.45em) rotateX(85deg); filter: blur(2px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: none; }
+}
+
 @layer components {
+  /* The site's content width — 80rem (1280px) on laptops, wider on big screens so the page uses them: 88rem from 1536px,
+     96rem from 1800px (and, being rem, it grows with the scaling above). Header, footer, home sections and pages all
+     share it, so their edges line up. A page that's narrow on purpose (a form, an article) sets its own max-w. */
+  .site-width {
+    max-width: 80rem;
+  }
+  @media (min-width: 1536px) {
+    .site-width { max-width: 88rem; }
+  }
+  @media (min-width: 1800px) {
+    .site-width { max-width: 96rem; }
+  }
+
   /* Reusable focus ring — the charcoal accent on the light page */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
@@ -95,13 +127,13 @@
   }
 }
 
-/* A table that turns into a stack of cards on a phone or tablet (below `lg`), instead of being squeezed or scrolled
-   sideways — these tables sit beside the 256px left menu, so at tablet width only ~460px is left for them, too
-   narrow for their columns. The markup stays a real table, so nothing changes from `lg` up. Each cell labels itself from its
+/* A table that turns into a stack of cards on a phone, tablet or small laptop (below `xl`), instead of being squeezed
+   or scrolled sideways — these tables sit beside the 256px left menu, so a 1024px laptop leaves them only ~700px, too
+   narrow for their columns. The markup stays a real table, so nothing changes from `xl` up. Each cell labels itself from its
    `data-label` (the column heading the hidden header row would have given it); `stack-full` makes a cell take
    the card's whole width and `stack-end` lines it up on the right. A cell spanning every column (an expanded
    details panel) always takes the whole width. */
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
   .stack-table,
   .stack-table > tbody {
     display: block;

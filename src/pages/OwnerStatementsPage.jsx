@@ -101,7 +101,15 @@ export default function OwnerStatementsPage() {
         {statement.isLoading ? (
           <div className="flex justify-center py-12"><Spinner size="lg" label="Loading your statement" /></div>
         ) : statement.isError ? (
-          <ErrorBanner message={apiErrorMessage(statement.error, 'Could not load your statement.')} onRetry={statement.refetch} />
+          <ErrorBanner
+            message={
+              // A refusal here isn't an expired session (the app checks that separately): the backend didn't allow it.
+              [401, 403].includes(statement.error?.response?.status)
+                ? "Statements aren't available for your account right now. Please contact support."
+                : apiErrorMessage(statement.error, 'Could not load your statement.')
+            }
+            onRetry={statement.refetch}
+          />
         ) : (
           <>
             <p className="text-xs text-muted">

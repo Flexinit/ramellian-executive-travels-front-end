@@ -116,7 +116,7 @@ export default function AdminVehiclesPage() {
                         </span>
                       </div>
                     </td>
-                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-muted break-all lg:break-normal">{v.ownerEmail || '—'}</td>
+                    <td data-label="Owner" className="stack-full px-4 py-3 text-sm text-muted break-all xl:break-normal">{v.ownerEmail || '—'}</td>
                     <td data-label="Place" className="px-4 py-3 text-sm text-muted">{v.location}</td>
                     <td data-label="Per day" className="px-4 py-3 text-sm text-ink">{formatCurrency(v.pricePerDay)}</td>
                     <td data-label="Insurance" className="px-4 py-3">

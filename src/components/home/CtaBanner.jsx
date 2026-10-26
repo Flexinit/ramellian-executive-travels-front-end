@@ -9,7 +9,7 @@ import Button from '../ui/Button';
 export default function CtaBanner() {
   return (
     <section className="bg-canvas">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="relative overflow-hidden rounded-3xl bg-brand-navy px-6 sm:px-12 py-12 sm:py-16 flex flex-col items-center text-center gap-5">
           <div
             aria-hidden="true"

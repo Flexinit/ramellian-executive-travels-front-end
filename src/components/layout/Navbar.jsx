@@ -29,7 +29,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-30 bg-canvas/95 backdrop-blur-md border-b border-ink/10">
       <div
         className={`h-20 flex items-center gap-3 sm:gap-6 ${
-          isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+          isAuthenticated ? 'w-full pl-4 sm:pl-6 md:pl-0 pr-4 sm:pr-6 lg:pr-8' : 'site-width mx-auto px-4 sm:px-6 lg:px-8'
         }`}
       >
         {/* The menu button opens a drawer from the left, so on a phone it sits at the left end, before the logo; from

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { apiPatch, apiPost } from '../lib/api';
+import { apiGet, apiPatch, apiPost } from '../lib/api';
 import { useAuthStore, getRememberMe } from '../store/authStore';
 import { markCodeSent } from '../lib/codeTimer';
 import { getLastSide, homeFor, sideAtLogin, takeOwnerIntent } from '../lib/landing';
@@ -43,7 +43,11 @@ function completeLogin(accessToken, setToken, setMode, navigate) {
  * (FRONTEND_INTEGRATION.md §1: "complete verify-2fa before treating login
  * as complete") — assumed here as a `twoFactorRequired` flag.
  */
-export function useLogin() {
+/**
+ * @param {{ stayOnPage?: boolean }} [options] — `stayOnPage`: logging in again after the session ended
+ *   (ReauthModal) — keep the person exactly where they were instead of landing them on their home page.
+ */
+export function useLogin({ stayOnPage = false } = {}) {
   const navigate = useNavigate();
   const setToken = useAuthStore((s) => s.setToken);
   const setMode = useAuthStore((s) => s.setMode);
@@ -55,6 +59,11 @@ export function useLogin() {
     onSuccess: (data) => {
       if (data?.twoFactorRequired) {
         navigate('/auth/verify-2fa', { state: { email: data.email } });
+        return;
+      }
+      if (stayOnPage) {
+        setToken(data.accessToken);
+        toast.success("You're signed in again.");
         return;
       }
       completeLogin(data.accessToken, setToken, setMode, navigate);
@@ -82,7 +91,7 @@ export function useLogin() {
  *   sending `intent` is forward-compatible today rather than something the backend currently acts on: until
  *   it does, "Sign up with Google" for an existing email still just logs that person in, same as before.
  */
-export function useGoogleLogin(intent = 'login') {
+export function useGoogleLogin(intent = 'login', { stayOnPage = false } = {}) {
   const navigate = useNavigate();
   const setToken = useAuthStore((s) => s.setToken);
   const setMode = useAuthStore((s) => s.setMode);
@@ -92,6 +101,12 @@ export function useGoogleLogin(intent = 'login') {
     onSuccess: (data) => {
       if (data?.twoFactorRequired) {
         navigate('/auth/verify-2fa', { state: { email: data.email } });
+        return;
+      }
+      // Logging in again after the session ended (ReauthModal): stay exactly where they were.
+      if (stayOnPage) {
+        setToken(data.accessToken);
+        toast.success("You're signed in again.");
         return;
       }
       completeLogin(data.accessToken, setToken, setMode, navigate);
@@ -285,19 +300,54 @@ export function useReturnToCheckoutAfterAuth() {
  * `auth:expired` on any 401). Only acts while someone is actually signed in —
  * a 401 from a wrong password on the login form must not trigger it. Mount
  * once near the app root (App.jsx's RootLayout).
+ *
+ * A 401 from one endpoint doesn't prove the session is gone: an endpoint can wrongly answer 401 for a role it doesn't
+ * allow (an owner opening Statements was logged out by `GET /owner/statements`, 2026-10-26). So unless the refusal
+ * came from the session check itself, the session is checked first (`GET /users/me`) and the person is only signed
+ * out if that's refused too — otherwise they stay signed in and the page shows its own error.
  */
 export function useSessionExpiry() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const checking = useRef(false);
 
   useEffect(() => {
-    function handleExpired() {
+    function signOut() {
       const { isAuthenticated, clearAuth } = useAuthStore.getState();
       if (!isAuthenticated()) return;
       clearAuth();
       queryClient.clear();
       toast('Your session has expired — please log in again.', { icon: 'ℹ️' });
       navigate('/');
+    }
+
+    function handleExpired(event) {
+      const state = useAuthStore.getState();
+      if (!state.isAuthenticated() || state.sessionExpired) return;
+      const detail = event?.detail;
+      // The session check itself was refused: it really has ended. The person stays on the page and is asked to log
+      // in again over it (ReauthModal) — their page and anything half-done are kept. (No detail: an older caller
+      // that means "sign out now".)
+      if (!detail) {
+        signOut();
+        return;
+      }
+      if (detail.isSessionCheck) {
+        state.expireSession();
+        return;
+      }
+      if (checking.current) return;
+      checking.current = true;
+      // The page that made the request — remembered as not allowed if the session turns out to be fine.
+      const page = window.location.pathname;
+      apiGet('/users/me')
+        // Still signed in: it was this page's data that was refused, not the session. Say so on the page and drop it
+        // from the menu. (If /users/me is refused too, the interceptor reports a session check: the branch above.)
+        .then(() => useAuthStore.getState().denyPath(page))
+        .catch(() => {})
+        .finally(() => {
+          checking.current = false;
+        });
     }
     window.addEventListener('auth:expired', handleExpired);
     return () => window.removeEventListener('auth:expired', handleExpired);

@@ -59,7 +59,7 @@ export default function Footer({ compact = false }) {
   if (compact) {
     return (
       <footer className="bg-surface border-t border-ink/10 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-muted text-xs">
+        <div className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-muted text-xs">
           <p>© {year} Ramellian Executive Travels. All rights reserved.</p>
           <nav aria-label="Legal" className="flex items-center gap-4">
             <Link to="/privacy" className="hover:text-ink transition-colors focus-ring rounded-md">Privacy Policy</Link>
@@ -72,7 +72,7 @@ export default function Footer({ compact = false }) {
 
   return (
     <footer className="bg-surface border-t border-ink/10 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 grid gap-10 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+      <div className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 grid gap-10 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <Logo size="md" />
           <p className="text-muted text-sm max-w-xs leading-relaxed">
@@ -135,7 +135,7 @@ export default function Footer({ compact = false }) {
       </div>
 
       <div className="border-t border-ink/10">
-        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-muted text-xs text-center sm:text-left">
+        <p className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-6 text-muted text-xs text-center sm:text-left">
           © {year} Ramellian Executive Travels. All rights reserved.
         </p>
       </div>

@@ -1,6 +1,10 @@
 import React from 'react';
 import BookingBar from './BookingBar';
 import HeroBackgroundSlideshow from './HeroBackgroundSlideshow';
+import RotatingWord from '../ui/RotatingWord';
+
+/** The headline's gold word, in turn — all about the same length, so the headline doesn't shift as they change. */
+const HERO_WORDS = ['Reimagined', 'Redefined', 'Elevated', 'Effortless', 'Unrivalled', 'Perfected'];
 
 /**
  * otto.rentals-style search-first hero: bold editorial headline, short
@@ -18,7 +22,7 @@ export default function HeroSection() {
       */}
       <HeroBackgroundSlideshow />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-14 sm:pb-16 flex flex-col items-center text-center gap-6">
+      <div className="relative site-width mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24 pb-14 sm:pb-16 flex flex-col items-center text-center gap-6">
         <span className="inline-flex items-center gap-2 text-brand-gold text-xs font-semibold tracking-widest uppercase">
           <span className="w-6 h-px bg-brand-gold" aria-hidden="true" />
           Chauffeur &amp; Self-Drive
@@ -26,7 +30,8 @@ export default function HeroSection() {
         </span>
 
         <h1 className="font-heading text-white text-3xl sm:text-4xl lg:text-5xl font-bold [text-shadow:0_2px_12px_rgba(0,0,0,0.35)] leading-[1.15] max-w-2xl text-balance">
-          Executive Travel, <span className="text-brand-gold">Reimagined</span>
+          {/* The gold word playfully swaps for related ones (RotatingWord); screen readers hear "Reimagined". */}
+          Executive Travel, <RotatingWord words={HERO_WORDS} className="text-brand-gold" />
         </h1>
 
         <p className="text-white/90 text-base max-w-xl leading-relaxed [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]">

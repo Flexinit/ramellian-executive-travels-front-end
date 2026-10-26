@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, ShieldOff, X } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import { useUnreadNotificationCount } from '../../hooks/useNotifications';
 import { useUnreadMessageCount } from '../../hooks/useChat';
@@ -11,6 +11,8 @@ import { primaryRoleLabel } from '../../lib/utils';
 import { useUiStore } from '../../store/uiStore';
 import { SITE_LINKS } from '../../lib/siteLinks';
 import PickupReminder from '../booking/PickupReminder';
+import EmptyState from '../ui/EmptyState';
+import PageWrapper from './PageWrapper';
 
 /** Runs of neighbouring items that share a `group` become one section; ungrouped items stay on their own. */
 function groupItems(items) {
@@ -100,8 +102,13 @@ function MenuGroup({ label, icon: GroupIcon, containsActive, children }) {
  *   along in the navigation state and is applied by AccountLayout)
  * @param {string} heading
  */
-export default function DashboardLayout({ items = [], heading }) {
+export default function DashboardLayout({ items: allItems = [], heading }) {
   const { pathname } = useLocation();
+  // Pages the backend has refused this person (their session is fine — useSessionExpiry): not offered in the menu,
+  // and the page itself says it isn't available instead of failing.
+  const deniedPaths = useAuthStore((s) => s.deniedPaths);
+  const items = allItems.filter((item) => !deniedPaths.includes(item.to));
+  const denied = deniedPaths.includes(pathname);
   const { data: unreadNotifications = 0 } = useUnreadNotificationCount();
   const unreadMessages = useUnreadMessageCount();
   const badgeCounts = { messages: unreadMessages, notifications: unreadNotifications };
@@ -210,7 +217,18 @@ export default function DashboardLayout({ items = [], heading }) {
       <div className="flex-1 min-w-0">
         {/* A renter's pickup that's due, pinned above every page until it's recorded. */}
         <PickupReminder />
-        <Outlet />
+        {denied ? (
+          <PageWrapper>
+            <EmptyState
+              icon={ShieldOff}
+              title="This page isn't available to your account"
+              description="Your account doesn't have access to it. If you think it should, please contact support."
+              action={{ label: 'Go to your overview', to: items[0]?.to || '/' }}
+            />
+          </PageWrapper>
+        ) : (
+          <Outlet />
+        )}
       </div>
     </div>
   );

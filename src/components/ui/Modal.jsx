@@ -13,8 +13,10 @@ import { X } from 'lucide-react';
  * @param {string} title
  * @param {React.ReactNode} children
  * @param {string} size — 'sm' | 'md' | 'lg' | 'xl'
+ * @param {boolean} [dismissible=true] — false: no Close button, and Escape / clicking outside do nothing — for a
+ *   choice that has to be made (logging in again after the session ended: ReauthModal)
  */
-export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+export default function Modal({ isOpen, onClose, title, children, size = 'md', dismissible = true }) {
   const panelRef = useRef(null);
   const closeBtnRef = useRef(null);
 
@@ -34,11 +36,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   useEffect(() => {
     if (!isOpen) return;
     function handleKey(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && dismissible) onClose();
     }
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, dismissible]);
 
   if (!isOpen) return null;
 
@@ -50,7 +52,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   };
 
   function handleBackdropClick(e) {
-    if (e.target === e.currentTarget) onClose();
+    if (e.target === e.currentTarget && dismissible) onClose();
   }
 
   return createPortal(
@@ -72,14 +74,16 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
           <h2 id="modal-title" className="font-heading text-lg font-semibold text-ink">
             {title}
           </h2>
-          <button
-            ref={closeBtnRef}
-            onClick={onClose}
-            aria-label="Close"
-            className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-ink/10 transition focus-ring"
-          >
-            <X size={18} />
-          </button>
+          {dismissible && (
+            <button
+              ref={closeBtnRef}
+              onClick={onClose}
+              aria-label="Close"
+              className="p-1.5 rounded-lg text-muted hover:text-ink hover:bg-ink/10 transition focus-ring"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         {/* Body — scrolls on its own when the content is taller than the screen, so the header and Close button stay put */}

@@ -10,7 +10,7 @@ const STEPS = [
 export default function HowItWorksSection() {
   return (
     <section id="how-it-works" aria-labelledby="how-it-works-heading" className="bg-canvas">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div className="site-width mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div className="flex flex-col items-center text-center gap-1.5 mb-8 sm:mb-10">
           <span className="text-brand-gold-deep text-xs font-semibold tracking-widest uppercase">How It Works</span>
           <h2 id="how-it-works-heading" className="font-heading text-ink text-2xl sm:text-3xl font-bold">
