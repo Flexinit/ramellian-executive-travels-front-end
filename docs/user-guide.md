@@ -845,6 +845,10 @@ your permissions" above): an item is only shown if your account holds the permis
     nothing is sent from the portal.
   - **Try again** on a failed payout; **Edit** first to correct the owner's M-Pesa phone, the amount or notes.
   - **Failed** marks it failed with what went wrong.
+  - **Batch:** on **To pay** and **Failed**, tick several payouts (or **Select all**). The bar shows how many and the
+    total. Then use **Send** to pay them all through the provider, or **Mark … paid by hand** to record them all with one
+    payment reference (e.g. a bulk bank transfer). You confirm first. Afterwards it lists any that didn't go through,
+    with the reason; those are left as they were, so you can fix and retry them.
   A payout is normally created when the vehicle's pickup is recorded. If that never happened, use **Create payout** at
   the top of Owner Payouts and choose the booking (only paid bookings without a payout are listed); leave the amount
   empty for the owner's share. A booking's own page (All Bookings) has the same **Create payout** in its **Owner

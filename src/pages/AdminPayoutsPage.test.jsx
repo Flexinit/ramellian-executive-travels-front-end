@@ -169,4 +169,71 @@ describe('AdminPayoutsPage', () => {
     await waitFor(() => expect(posted).toEqual({ bookingId: 'b2', body: { ownerPhone: '+254712345678' } }));
     expect(await screen.findByText(/payout created/i)).toBeInTheDocument();
   });
+
+  it('sends several payouts at once — one trigger each, and says which one failed', async () => {
+    const user = userEvent.setup();
+    const triggered = [];
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'PENDING'
+          ? [PAYOUT(), PAYOUT({ id: 'd2', ownerName: 'Ben Owner', amount: 5000 }), PAYOUT({ id: 'd3', ownerName: 'Cy Owner', amount: 1000 })]
+          : [])),
+      http.post(`${BASE}/admin/disbursements/:id/trigger`, async ({ params, request }) => {
+        triggered.push({ id: params.id, body: await request.json() });
+        if (params.id === 'd2') return HttpResponse.json({ message: 'Owner phone number is missing' }, { status: 400 });
+        return HttpResponse.json(PAYOUT({ id: params.id, status: 'PROCESSING' }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByLabelText('Select the payout to Ann Owner'));
+    await user.click(screen.getByLabelText('Select the payout to Ben Owner'));
+    expect(screen.getByText(/selected/)).toHaveTextContent('2 selected · KES 14,000');
+
+    await user.click(screen.getByRole('button', { name: /^send 2$/i }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(/through the payment provider now/i)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: /^send kes/i }));
+
+    expect(await within(dialog).findByText(/1 sent/)).toBeInTheDocument();
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Ben Owner');
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Owner phone number is missing');
+    expect(triggered).toEqual([{ id: 'd1', body: {} }, { id: 'd2', body: {} }]);
+  });
+
+  it('records several payouts as paid by hand with one shared reference', async () => {
+    const user = userEvent.setup();
+    const triggered = [];
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'PENDING'
+          ? [PAYOUT(), PAYOUT({ id: 'd2', ownerName: 'Ben Owner' })]
+          : [])),
+      http.post(`${BASE}/admin/disbursements/:id/trigger`, async ({ params, request }) => {
+        triggered.push({ id: params.id, body: await request.json() });
+        return HttpResponse.json(PAYOUT({ id: params.id, status: 'COMPLETED' }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByLabelText(/select all/i));
+    await user.click(screen.getByRole('button', { name: /mark 2 paid by hand/i }));
+    const dialog = screen.getByRole('dialog');
+    const record = within(dialog).getByRole('button', { name: /record 2 paid/i });
+    expect(record).toBeDisabled();
+    await user.type(within(dialog).getByLabelText('Payment reference'), 'BULK-77');
+    await user.click(record);
+
+    expect(await within(dialog).findByText('2 recorded as paid.')).toBeInTheDocument();
+    expect(triggered).toEqual([{ id: 'd1', body: { reference: 'BULK-77' } }, { id: 'd2', body: { reference: 'BULK-77' } }]);
+  });
+
+  it('has no batch selection on Paid', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/admin/disbursements`, () => HttpResponse.json([PAYOUT({ status: 'COMPLETED' })])));
+    renderUi();
+    await user.click(await screen.findByRole('radio', { name: 'Paid' }));
+    await screen.findByText('Toyota Prado');
+    expect(screen.queryByLabelText(/select all/i)).not.toBeInTheDocument();
+  });
 });

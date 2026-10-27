@@ -1414,3 +1414,16 @@ Contact form.
 expecting the backend to pay the owner through the provider (→ PROCESSING); **Already paid by hand** calls the same
 endpoint with a reference, expecting it only to record the payment (→ COMPLETED). Please confirm the backend tells
 these apart this way, and that `trigger` is allowed on a FAILED payout (the portal's **Try again**).
+## 50. Batch payouts — 2026-10-27
+
+**Wanted.** Admins can tick several owner payouts on Owner Payouts and **Send** them together, or record them together
+as **paid by hand** with one shared reference (a bulk bank transfer).
+
+**Done in the portal for now.** There's no batch endpoint (checked against the live spec, 2026-10-27), so the portal
+calls `POST /admin/disbursements/{id}/trigger` once per payout, one after the other, and then lists the ones that went
+through and the ones that didn't (with each error's message). This works, but a large batch takes one round trip per
+payout, and the batch isn't recorded as one action.
+
+**Ask.** `POST /admin/disbursements/batch` with `{ ids: [...], reference?, notes? }` (no reference → send through the
+provider; with a reference → record as paid by hand, the same as `trigger`). It should answer with a result per id
+(`{ id, ok, status?, message? }`), so one failure doesn't fail the whole batch. Once it exists the portal switches to it.

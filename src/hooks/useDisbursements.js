@@ -123,3 +123,31 @@ export function useSyncDisbursement() {
     onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check the payout's status.")),
   });
 }
+
+/**
+ * Batch payouts: sends several payouts through the provider (`kind: 'send'`), or records them all as paid by hand with
+ * one shared reference (`kind: 'manual'`, e.g. a bulk bank transfer). There's no batch endpoint (docs/backend-requests.md
+ * item 50), so it's the same `POST /admin/disbursements/{id}/trigger` once per payout, one after the other — one that
+ * fails doesn't stop the rest. Resolves to `{ done: [{ payout, updated }], failed: [{ payout, message }] }`;
+ * `onProgress(n)` after each.
+ */
+export function useBatchResolveDisbursements() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ payouts, kind, reference, notes, onProgress }) => {
+      const done = [];
+      const failed = [];
+      for (const payout of payouts) {
+        try {
+          const body = { ...(kind === 'manual' && reference ? { reference } : {}), ...(notes ? { notes } : {}) };
+          done.push({ payout, updated: await apiPost(`/admin/disbursements/${payout.id}/trigger`, body) });
+        } catch (error) {
+          failed.push({ payout, message: apiErrorMessage(error, "Couldn't update this payout.") });
+        }
+        onProgress?.(done.length + failed.length);
+      }
+      return { done, failed };
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: KEY }),
+  });
+}

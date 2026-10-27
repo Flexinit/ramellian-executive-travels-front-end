@@ -3,6 +3,12 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-27 (batch payouts)
+
+- **Added (administrators):** on **Owner Payouts**, under **To pay** and **Failed**, you can tick several payouts (or
+  **Select all**) and **Send** them together, or **Mark them paid by hand** with one reference. Any that don't go through
+  are listed with the reason and left unchanged.
+
 ## 2026-10-26 (profile tabs)
 
 - **Changed:** **Profile** is split into tabs below your photo — **Details** (the setup steps), **Signature** (your
