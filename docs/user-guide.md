@@ -147,7 +147,12 @@ it, so it starts fresh every time you open it, and reloading the page loses what
 An administrator can switch the assistant off (**Platform Settings → Assistant**); while it's off, signed-in people
 don't see the button, the top-bar icon or the menu item, and `/assistant` says it's switched off.
 
-**If your session ends** (you've been away a long time), a **Please log in again** box opens over the page you're on.
+**Staying signed in.** While you're using the portal you stay signed in: your sign-in is renewed in the background just
+before it would run out. **If you leave it idle for 30 minutes** (no clicks, typing or scrolling in any of its tabs), an
+**Are you still there?** box counts down 60 seconds. **Stay signed in** carries on; **Sign out now**, or letting the
+countdown end, signs you out and takes you to the log-in page. **Log Out** also ends the session on the server.
+
+**If your session ends anyway** (for example the server no longer accepts it), a **Please log in again** box opens over the page you're on.
 Log in with your password or Google and you carry on exactly where you were; nothing you were doing is lost. **Sign out
 instead** leaves. **A page your account can't use** says **This page isn't available to your account** and isn't
 offered in your menu; you stay signed in.
@@ -241,7 +246,7 @@ in the Owner Panel sidebar.
 > **Role names:** the backend calls a car owner `CAR_OWNER`; the portal treats that
 > the same as Owner everywhere (Owner Panel access, badges, prompts).
 
-**Security (Profile → Security tab).** Everyone can: **change their password** (current password, then a new
+**Security (Profile → Security tab).** It has its own tabs — **Password**, **Two-factor** and **Recent activity** (the open one stays in the address, e.g. `?tab=security&section=activity`). Everyone can: **change their password** (current password, then a new
 one of 8–72 characters, typed twice); turn **two-factor sign-in** on or off (a code is sent by email each time
 you log in — WhatsApp is offered only when WhatsApp is switched on); and see their **recent activity** (the last
 few sign-ins and changes on the account — click one for its details). If the backend refuses a new password,

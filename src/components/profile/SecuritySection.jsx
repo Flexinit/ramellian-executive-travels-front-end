@@ -1,10 +1,13 @@
 import React, { useId, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { KeyRound, ScrollText, ShieldCheck } from 'lucide-react';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
+import Spinner from '../ui/Spinner';
+import SegmentedControl from '../ui/SegmentedControl';
 import AuditLogDetailModal from '../admin/AuditLogDetailModal';
 import { useCurrentUser } from '../../hooks/useProfile';
 import { useChangePassword, useSetTwoFactor } from '../../hooks/useSecurity';
@@ -112,12 +115,14 @@ function TwoFactor() {
   );
 }
 
-/** The person's own recent activity (`GET /audit-logs`); a row opens the entry (`GET /audit-logs/{id}`). Hidden if it can't be read. */
+/**
+ * The person's own recent activity (`GET /audit-logs`); a row opens the entry (`GET /audit-logs/{id}`). It has a tab of
+ * its own, so when there's nothing to show (or it can't be read) it says so rather than leaving the tab blank.
+ */
 function RecentActivity() {
-  const { data, isError } = useAuditLogs('mine', { size: 5 });
+  const { data, isLoading, isError } = useAuditLogs('mine', { size: 5 });
   const [openId, setOpenId] = useState(null);
   const entries = Array.isArray(data?.content) ? data.content : [];
-  if (isError || entries.length === 0) return null;
 
   return (
     <Card className="p-5 flex flex-col gap-4">
@@ -125,29 +130,54 @@ function RecentActivity() {
         <ScrollText size={17} className="text-accent" aria-hidden="true" />
         Recent activity
       </h3>
-      <ul className="flex flex-col divide-y divide-ink/5" aria-label="Recent account activity">
-        {entries.map((entry) => (
-          <li key={entry.id}>
-            <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-ink/5 px-2 focus-ring">
-              <span className="flex flex-col min-w-0">
-                <span className="text-sm text-ink">{actionLabel(entry.action)}</span>
-                <span className="text-xs text-muted">{formatDateTime(entry.createdAt)}</span>
-              </span>
-              <Badge label={entry.status || '—'} variant={auditStatusVariant(entry.status)} />
-            </button>
-          </li>
-        ))}
-      </ul>
+      {isLoading ? (
+        <Spinner label="Loading your activity" />
+      ) : isError ? (
+        <p className="text-sm text-muted">Your activity isn&apos;t available right now.</p>
+      ) : entries.length === 0 ? (
+        <p className="text-sm text-muted">No activity yet.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-ink/5" aria-label="Recent account activity">
+          {entries.map((entry) => (
+            <li key={entry.id}>
+              <button type="button" onClick={() => setOpenId(entry.id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left rounded-lg hover:bg-ink/5 px-2 focus-ring">
+                <span className="flex flex-col min-w-0">
+                  <span className="text-sm text-ink">{actionLabel(entry.action)}</span>
+                  <span className="text-xs text-muted">{formatDateTime(entry.createdAt)}</span>
+                </span>
+                <Badge label={entry.status || '—'} variant={auditStatusVariant(entry.status)} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       <AuditLogDetailModal scope="mine" id={openId} onClose={() => setOpenId(null)} />
     </Card>
   );
 }
 
+const SECTIONS = [
+  { value: 'password', label: 'Password', icon: KeyRound },
+  { value: '2fa', label: 'Two-factor', icon: ShieldCheck },
+  { value: 'activity', label: 'Recent activity', icon: ScrollText },
+];
+
 /**
- * Account security on the Profile page: change your password (`PUT /users/me/password`), turn two-factor sign-in
- * on or off (`PUT /users/me/2fa`), and see your recent activity.
+ * Account security on the Profile page, in tabs (product owner, 2026-10-27): change your password
+ * (`PUT /users/me/password`), turn two-factor sign-in on or off (`PUT /users/me/2fa`), and see your recent activity.
+ * The open one lives in the address (`?tab=security&section=activity`), next to the Profile tab.
  */
 export default function SecuritySection() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const section = SECTIONS.some((t) => t.value === searchParams.get('section')) ? searchParams.get('section') : 'password';
+  const setSection = (value) =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value === 'password') next.delete('section');
+      else next.set('section', value);
+      return next;
+    }, { replace: true });
+
   return (
     <section aria-labelledby="security-heading" className="flex flex-col gap-4">
       <div>
@@ -157,21 +187,28 @@ export default function SecuritySection() {
         </h2>
         <p className="text-muted text-sm mt-1">Keep your account safe.</p>
       </div>
-      <Card className="p-5 flex flex-col gap-4">
-        <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
-          <KeyRound size={17} className="text-accent" aria-hidden="true" />
-          Password
-        </h3>
-        <ChangePassword />
-      </Card>
-      <Card className="p-5 flex flex-col gap-4">
-        <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
-          <ShieldCheck size={17} className="text-accent" aria-hidden="true" />
-          Two-factor sign-in
-        </h3>
-        <TwoFactor />
-      </Card>
-      <RecentActivity />
+      <SegmentedControl kind="tab" size="sm" label="Security section" options={SECTIONS} value={section} onChange={setSection} />
+      <div role="tabpanel" aria-label={SECTIONS.find((t) => t.value === section).label}>
+        {section === 'password' && (
+          <Card className="p-5 flex flex-col gap-4">
+            <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+              <KeyRound size={17} className="text-accent" aria-hidden="true" />
+              Password
+            </h3>
+            <ChangePassword />
+          </Card>
+        )}
+        {section === '2fa' && (
+          <Card className="p-5 flex flex-col gap-4">
+            <h3 className="flex items-center gap-2 font-heading text-ink text-base font-semibold">
+              <ShieldCheck size={17} className="text-accent" aria-hidden="true" />
+              Two-factor sign-in
+            </h3>
+            <TwoFactor />
+          </Card>
+        )}
+        {section === 'activity' && <RecentActivity />}
+      </div>
     </section>
   );
 }

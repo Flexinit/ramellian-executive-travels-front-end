@@ -31,6 +31,12 @@ export const authHandlers = [
   http.post(`${BASE}/auth/verify-whatsapp`, () => HttpResponse.json({ message: 'WhatsApp verified successfully.' })),
   http.post(`${BASE}/auth/send-whatsapp-code`, () => new HttpResponse(null, { status: 200 })),
 
+  // Signing out revokes the refresh token (authStore's clearAuth); renewing answers a new pair (refreshSession).
+  http.post(`${BASE}/auth/logout`, () => new HttpResponse(null, { status: 200 })),
+  http.post(`${BASE}/auth/refresh`, () =>
+    HttpResponse.json({ tokenType: 'Bearer', accessToken: mockJwt({ userId: '1', email: 'test@example.com', roles: ['RENTER'], enabled: true, permissions: [] }), refreshToken: 'mock-refresh-token', expiresIn: 3600000 })
+  ),
+
   http.post(`${BASE}/auth/login`, () =>
     HttpResponse.json({
       tokenType: 'Bearer',
@@ -42,6 +48,7 @@ export const authHandlers = [
         permissions: [],
       }),
       expiresIn: 3600000,
+      refreshToken: 'mock-refresh-token',
     })
   ),
 

@@ -12,7 +12,7 @@ import { useCartStore } from '../store/cartStore';
  * Authentication mutations — talk directly to the real backend per
  * FRONTEND_INTEGRATION.md §1 and confirmed against the live OpenAPI spec
  * (`/v3/api-docs`). `POST /auth/login`'s `AuthResponse` is just
- * `{ tokenType, accessToken, expiresIn }` — no `user` object — so `user` is
+ * `{ tokenType, accessToken, expiresIn, refreshToken }` — no `user` object — so `user` is
  * populated from the access token's own claims (see authStore.js's
  * `setToken`) plus `GET /users/me` shortly after (synced in App.jsx's
  * RootLayout via `useCurrentUser`), not from this response.
@@ -27,8 +27,8 @@ export { homeFor };
  * checkout to carry on with it — whatever other roles the account also holds, since an admin/owner testing
  * or completing their own booking wants the same thing anyone else does.
  */
-function completeLogin(accessToken, setToken, setMode, navigate) {
-  setToken(accessToken);
+function completeLogin({ accessToken, refreshToken }, setToken, setMode, navigate) {
+  setToken(accessToken, refreshToken);
   const { id, roles = [] } = useAuthStore.getState().user || {};
   const side = sideAtLogin(roles, getLastSide(id), takeOwnerIntent());
   setMode(side);
@@ -62,11 +62,11 @@ export function useLogin({ stayOnPage = false } = {}) {
         return;
       }
       if (stayOnPage) {
-        setToken(data.accessToken);
+        setToken(data.accessToken, data.refreshToken);
         toast.success("You're signed in again.");
         return;
       }
-      completeLogin(data.accessToken, setToken, setMode, navigate);
+      completeLogin(data, setToken, setMode, navigate);
     },
     onError: (error) => {
       const status = error?.response?.status;
@@ -105,11 +105,11 @@ export function useGoogleLogin(intent = 'login', { stayOnPage = false } = {}) {
       }
       // Logging in again after the session ended (ReauthModal): stay exactly where they were.
       if (stayOnPage) {
-        setToken(data.accessToken);
+        setToken(data.accessToken, data.refreshToken);
         toast.success("You're signed in again.");
         return;
       }
-      completeLogin(data.accessToken, setToken, setMode, navigate);
+      completeLogin(data, setToken, setMode, navigate);
     },
     onError: (error) => {
       const status = error?.response?.status;
@@ -149,12 +149,12 @@ async function finishVerification(email, label, setToken, setMode, navigate) {
       const data = await apiPost('/auth/login', { email: pending.email, password: pending.password, rememberMe: getRememberMe() });
       if (data?.accessToken && !data.twoFactorRequired) {
         if (pending.phoneNumber) {
-          setToken(data.accessToken);
+          setToken(data.accessToken, data.refreshToken);
           // Best effort: if it doesn't save, checkout's own "Add your phone number" box still asks.
           await apiPatch('/users/me', { phoneNumber: pending.phoneNumber }).catch(() => {});
         }
         toast.success(`${label} verified — you're signed in.`);
-        completeLogin(data.accessToken, setToken, setMode, navigate);
+        completeLogin(data, setToken, setMode, navigate);
         return;
       }
     } catch {
@@ -265,7 +265,7 @@ export function useVerify2fa() {
 
   return useMutation({
     mutationFn: (payload) => apiPost('/auth/verify-2fa', payload),
-    onSuccess: (data) => completeLogin(data.accessToken, setToken, setMode, navigate),
+    onSuccess: (data) => completeLogin(data, setToken, setMode, navigate),
   });
 }
 

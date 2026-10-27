@@ -16,6 +16,8 @@ import SetupGuideModal from './components/layout/SetupGuideModal';
 import AssistantFab from './components/layout/AssistantFab';
 import MobileTabBar from './components/layout/MobileTabBar';
 import ReauthModal from './components/auth/ReauthModal';
+import IdleSignOutModal from './components/auth/IdleSignOutModal';
+import { useTokenRefresh } from './hooks/useSession';
 import { useSyncCurrentUser } from './hooks/useProfile';
 import { useSessionExpiry, useReturnToCheckoutAfterAuth } from './hooks/useAuth';
 import { useBotAssistantEnabled } from './hooks/usePlatformSettings';
@@ -122,6 +124,7 @@ function RootLayout() {
   useEffect(() => applyTheme(isAuthenticated), [isAuthenticated]);
   useSyncCurrentUser();
   useSessionExpiry();
+  useTokenRefresh();
   useReturnToCheckoutAfterAuth();
 
   return (
@@ -135,6 +138,8 @@ function RootLayout() {
       <MobileTabBar />
       {/* The session ended: log in again over the current page instead of being thrown out. */}
       <ReauthModal />
+      {/* Left idle for a long time: a 60-second countdown, then signed out. */}
+      <IdleSignOutModal />
     </div>
   );
 }

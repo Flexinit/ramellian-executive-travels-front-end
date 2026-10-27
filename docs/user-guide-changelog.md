@@ -3,6 +3,24 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-10-27 (staying signed in, idle sign-out)
+
+- **Changed:** you're no longer signed out while you're using the portal. Your sign-in is renewed in the background
+  just before it runs out.
+- **Added:** after 30 minutes with no activity, an **Are you still there?** box counts down 60 seconds before signing
+  you out. **Stay signed in** keeps you signed in.
+- **Changed:** **Log Out** now also ends the session on the server.
+
+## 2026-10-27 (security tabs)
+
+- **Changed:** Profile → **Security** is split into tabs — **Password**, **Two-factor** and **Recent activity** — one
+  at a time instead of all stacked. Recent activity now says when there's none yet, or when it can't be loaded.
+
+## 2026-10-27 (logging in again)
+
+- **Fixed:** logging in again on the **Please log in again** box (after your session ended) failed with "Token has
+  expired" even with the right password. It now logs you in and keeps you on the page.
+
 ## 2026-10-27 (batch payouts)
 
 - **Added (administrators):** on **Owner Payouts**, under **To pay** and **Failed**, you can tick several payouts (or

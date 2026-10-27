@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-import { _setTokenGetter } from '../lib/api';
+import { _setRefresher, _setTokenGetter, api } from '../lib/api';
 import { decodeJwt } from '../lib/jwt';
 import { normalizeRoles } from '../lib/constants';
 import { rememberSide } from '../lib/landing';
 
 /** sessionStorage key the access token is mirrored under — see the note below `persistedToken`. */
 const TOKEN_STORAGE_KEY = 'auth:token';
+/** Where the refresh token (`AuthResponse.refreshToken`, live spec 2026-10-27) is kept — beside the access token. */
+const REFRESH_STORAGE_KEY = 'auth:refresh';
 
 /** The `User` shape `setToken` seeds from a token's own claims, pulled out so the module-load
  * rehydration below (`persistedToken`) builds the exact same shape from a stored token. */
@@ -55,7 +57,8 @@ function readLocal() {
     const t = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!t) return null;
     const exp = decodeJwt(t)?.exp;
-    if (exp && exp * 1000 <= Date.now()) {
+    // An expired access token is still worth keeping while there's a refresh token to renew it with.
+    if (exp && exp * 1000 <= Date.now() && !localStorage.getItem(REFRESH_STORAGE_KEY)) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       return null;
     }
@@ -65,9 +68,18 @@ function readLocal() {
   }
 }
 
-const sessionToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+function readStored(storage, key) {
+  try {
+    return storage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+const sessionToken = readStored(sessionStorage, TOKEN_STORAGE_KEY);
 const rememberedToken = sessionToken ? null : readLocal();
 const persistedToken = sessionToken || rememberedToken;
+const persistedRefresh = sessionToken ? readStored(sessionStorage, REFRESH_STORAGE_KEY) : rememberedToken ? readStored(localStorage, REFRESH_STORAGE_KEY) : null;
 if (rememberedToken) rememberMe = true; // a refreshed token stays remembered
 if (persistedToken) _setTokenGetter(() => persistedToken);
 
@@ -91,6 +103,9 @@ if (persistedToken) _setTokenGetter(() => persistedToken);
 const useAuthStore = create((set, get) => ({
   /** @type {string|null} */
   token: persistedToken,
+
+  /** Renews the access token before it expires (`POST /auth/refresh`, see `refreshSession`). @type {string|null} */
+  refreshToken: persistedRefresh,
 
   /** @type {User|null} */
   user: persistedToken ? userFromToken(persistedToken) : null,
@@ -132,22 +147,30 @@ const useAuthStore = create((set, get) => ({
   denyPath: (path) => set((state) => (state.deniedPaths.includes(path) ? state : { deniedPaths: [...state.deniedPaths, path] })),
 
   /**
-   * Store the token, wire it into the Axios interceptor, and seed `user`
-   * from the token's own claims.
+   * Store the token (and the refresh token that renews it — kept as it was when none is given), wire it into the
+   * Axios interceptor, and seed `user` from the token's own claims.
    * @param {string} token
+   * @param {string} [refreshToken]
    */
-  setToken: (token) => {
+  setToken: (token, refreshToken) => {
     _setTokenGetter(() => token);
+    const refresh = refreshToken || get().refreshToken || null;
     // Always in sessionStorage (survives Pesapal's full-page redirect); also in localStorage with "Remember me".
-    sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
     try {
-      if (rememberMe) localStorage.setItem(TOKEN_STORAGE_KEY, token);
-      else localStorage.removeItem(TOKEN_STORAGE_KEY);
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+      if (refresh) sessionStorage.setItem(REFRESH_STORAGE_KEY, refresh);
+      if (rememberMe) {
+        localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        if (refresh) localStorage.setItem(REFRESH_STORAGE_KEY, refresh);
+      } else {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        localStorage.removeItem(REFRESH_STORAGE_KEY);
+      }
     } catch {
-      // storage blocked: the session copy still works
+      // storage blocked: the in-memory copy still works
     }
     const claimsUser = userFromToken(token);
-    set((state) => ({ token, sessionExpired: false, user: claimsUser ? { ...state.user, ...claimsUser } : state.user }));
+    set((state) => ({ token, refreshToken: refresh, sessionExpired: false, user: claimsUser ? { ...state.user, ...claimsUser } : state.user }));
   },
 
   /**
@@ -171,19 +194,54 @@ const useAuthStore = create((set, get) => ({
     })),
 
   /**
-   * Clear all auth state and remove the token from the Axios interceptor.
+   * Clear all auth state and remove the token from the Axios interceptor. The refresh token is revoked on the backend
+   * too (`POST /auth/logout`, best effort — signing out never waits on it or fails because of it).
    */
   clearAuth: () => {
+    const { refreshToken } = get();
+    if (refreshToken) api.post('/auth/logout', { refreshToken }).catch(() => {});
     _setTokenGetter(null);
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
     try {
+      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+      sessionStorage.removeItem(REFRESH_STORAGE_KEY);
       localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem(REFRESH_STORAGE_KEY);
     } catch {
       // nothing to remove
     }
     rememberMe = false;
-    set({ token: null, user: null, mode: null, sessionExpired: false, deniedPaths: [] });
+    set({ token: null, refreshToken: null, user: null, mode: null, sessionExpired: false, deniedPaths: [] });
   },
 }));
+
+let refreshing = null;
+
+/**
+ * Renews the access token with the refresh token (`POST /auth/refresh` `{ refreshToken }` → `AuthResponse`, live spec
+ * 2026-10-27), so someone still using the portal is never signed out by their token running out. Calls made while one
+ * is under way share it. Resolves to the new access token, or `null` when there's no refresh token to try (a session
+ * from before refresh tokens); rejects when the backend refuses it — the session has really ended.
+ * @returns {Promise<string|null>}
+ */
+export function refreshSession() {
+  const { refreshToken } = useAuthStore.getState();
+  if (!refreshToken) return Promise.resolve(null);
+  if (!refreshing) {
+    refreshing = api
+      .post('/auth/refresh', { refreshToken })
+      .then(({ data }) => {
+        // Signed out meanwhile: don't sign them back in.
+        if (useAuthStore.getState().refreshToken !== refreshToken) return null;
+        useAuthStore.getState().setToken(data.accessToken, data.refreshToken || refreshToken);
+        return data.accessToken;
+      })
+      .finally(() => {
+        refreshing = null;
+      });
+  }
+  return refreshing;
+}
+
+_setRefresher(refreshSession);
 
 export { useAuthStore };

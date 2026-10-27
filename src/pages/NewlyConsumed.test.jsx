@@ -195,7 +195,7 @@ describe('SecuritySection', () => {
         return HttpResponse.json({ id: 'me-1', email: 'felix@example.com', twoFactorEnabled: true, twoFactorMethod: 'EMAIL' });
       })
     );
-    renderUi(<SecuritySection />);
+    renderUi(<SecuritySection />, { route: '/?section=2fa' });
     const toggle = await screen.findByRole('switch', { name: 'Two-factor sign-in' });
     await waitFor(() => expect(toggle).toBeEnabled());
     expect(toggle).toHaveAttribute('aria-checked', 'false');
@@ -213,7 +213,7 @@ describe('SecuritySection', () => {
         return HttpResponse.json({ id: 'me-1', twoFactorEnabled: false });
       })
     );
-    renderUi(<SecuritySection />);
+    renderUi(<SecuritySection />, { route: '/?section=2fa' });
     const toggle = await screen.findByRole('switch', { name: 'Two-factor sign-in' });
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'true'));
     await user.click(toggle);
@@ -227,15 +227,27 @@ describe('SecuritySection', () => {
       http.get(`${BASE}/audit-logs/a-1`, () => HttpResponse.json({ ...ENTRY, ipAddress: '10.1.1.1' }))
     );
     renderUi(<SecuritySection />);
+    await user.click(screen.getByRole('tab', { name: 'Recent activity' }));
     await user.click(await screen.findByRole('button', { name: /auth login/i }));
     expect(await screen.findByText('10.1.1.1')).toBeInTheDocument();
   });
 
-  it('shows no activity card when the activity cannot be read', async () => {
+  it('says so when the activity cannot be read', async () => {
     server.use(http.get(`${BASE}/audit-logs`, () => new HttpResponse(null, { status: 403 })));
+    renderUi(<SecuritySection />, { route: '/?section=activity' });
+    expect(await screen.findByText(/your activity isn.t available right now/i)).toBeInTheDocument();
+  });
+
+  it('shows one part at a time, in tabs — Password first', async () => {
+    const user = userEvent.setup();
     renderUi(<SecuritySection />);
-    await screen.findByRole('switch', { name: 'Two-factor sign-in' });
-    expect(screen.queryByText('Recent activity')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Password' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByLabelText('Current password')).toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Two-factor sign-in' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Two-factor' }));
+    expect(await screen.findByRole('switch', { name: 'Two-factor sign-in' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Current password')).not.toBeInTheDocument();
   });
 });
 

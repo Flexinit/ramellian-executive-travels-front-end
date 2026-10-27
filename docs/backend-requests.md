@@ -1427,3 +1427,14 @@ payout, and the batch isn't recorded as one action.
 **Ask.** `POST /admin/disbursements/batch` with `{ ids: [...], reference?, notes? }` (no reference → send through the
 provider; with a reference → record as paid by hand, the same as `trigger`). It should answer with a result per id
 (`{ id, ok, status?, message? }`), so one failure doesn't fail the whole batch. Once it exists the portal switches to it.
+
+## 51. Refresh tokens — consumed 2026-10-27
+
+**Consumed.** `POST /auth/refresh` and `POST /auth/logout` (`RefreshTokenRequest { refreshToken }`), and
+`AuthResponse.refreshToken` from login, Google sign-in and verify-2fa. The portal renews the access token a minute before
+its `exp`, and once more if a request meets an expired one (then retries it). It asks the person to log in again only if
+`/auth/refresh` itself is refused. Logging out (and the 30-minute idle sign-out) calls `/auth/logout`. These calls carry
+no `Authorization` header, since the access token may already have expired.
+
+**Please confirm:** whether `/auth/refresh` rotates the refresh token. The portal keeps the new one if the response has
+one, and otherwise keeps the old one. Also confirm that `/auth/refresh` and `/auth/logout` don't need an access token.

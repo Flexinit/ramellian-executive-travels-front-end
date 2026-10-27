@@ -38,6 +38,25 @@ describe('api — request interceptor', () => {
     await apiGet('/test-no-auth');
     expect(capturedHeader).toBeNull();
   });
+
+  it('sends no token when logging in — an expired one would make the backend refuse the login', async () => {
+    _setTokenGetter(() => 'expired-token');
+    const headers = [];
+    server.use(
+      http.post(`${BASE}/auth/login`, ({ request }) => {
+        headers.push(request.headers.get('Authorization'));
+        return HttpResponse.json({ token: 'new-token' });
+      }),
+      http.post(`${BASE}/auth/google`, ({ request }) => {
+        headers.push(request.headers.get('Authorization'));
+        return HttpResponse.json({ token: 'new-token' });
+      })
+    );
+
+    await apiPost('/auth/login', { email: 'a@example.com', password: 'secret' });
+    await apiPost('/auth/google', { idToken: 'x' });
+    expect(headers).toEqual([null, null]);
+  });
 });
 
 describe('api — response interceptor', () => {
