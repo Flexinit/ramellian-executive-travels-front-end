@@ -12,12 +12,12 @@ import PaymentPage from './PaymentPage';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
-function renderAt(bookingId = 'b1', vehicleId = 'v1') {
+function renderAt(bookingId = 'b1', vehicleId = 'v1', extraState = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[{ pathname: `/book/${vehicleId}/payment`, state: { bookingId } }]}>
+        <MemoryRouter initialEntries={[{ pathname: `/book/${vehicleId}/payment`, state: { bookingId, ...extraState } }]}>
           <Routes>
             <Route path="/book/:vehicleId/payment" element={<PaymentPage />} />
           </Routes>
@@ -50,6 +50,12 @@ afterEach(() => {
   Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
 });
 
+/** Chooses "Card & other" (M-Pesa is the default) and pays through Pesapal. */
+async function payByCard(user) {
+  await user.click(await screen.findByRole('radio', { name: 'Card & other' }));
+  await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
+}
+
 function serveCheckout(onCall = () => {}) {
   server.use(
     http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, ({ params }) => {
@@ -72,15 +78,16 @@ describe('PaymentPage — a booking that no longer holds', () => {
     );
     renderAt();
 
-    await user.click(await screen.findByRole('button', { name: /proceed to payment/i }));
+    await payByCard(user);
 
     await waitFor(() => expect(checkedOut).toBe(true));
     await waitFor(() => expect(sessionStorage.getItem('checkout:b1')).toBe('1'));
-    // Straight to Pesapal — no "ready to pay" countdown in between.
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+    // Pesapal's page opens right here, in a frame — the browser doesn't leave the site.
+    expect(await screen.findByTitle('Pesapal secure payment')).toHaveAttribute('src', 'https://pay.pesapal.com/checkout?booking=b1');
+    expect(assign).not.toHaveBeenCalled();
   });
 
-  it("doesn't poll payment status until the renter actually clicks through to Pesapal", async () => {
+  it("doesn't poll payment status until the payment in the frame is finished", async () => {
     const user = userEvent.setup();
     let statusChecks = 0;
     serveBooking('CONFIRMED');
@@ -98,11 +105,11 @@ describe('PaymentPage — a booking that no longer holds', () => {
     );
     renderAt();
 
-    await user.click(await screen.findByRole('button', { name: /proceed to payment/i }));
-    const link = await screen.findByRole('link', { name: /continue to payment/i });
+    await payByCard(user);
+    await screen.findByTitle('Pesapal secure payment');
     const checksBeforeClick = statusChecks;
 
-    await user.click(link);
+    await user.click(screen.getByRole('button', { name: /i've finished paying/i }));
     await waitFor(() => expect(statusChecks).toBeGreaterThan(checksBeforeClick));
   });
 
@@ -117,6 +124,7 @@ describe('PaymentPage — a booking that no longer holds', () => {
     );
     renderAt();
 
+    await userEvent.setup().click(await screen.findByRole('radio', { name: 'Card & other' }));
     const payButton = await screen.findByRole('button', { name: /proceed to payment/i });
     // Two clicks fired back-to-back with no await between them — before React has a chance to re-render
     // and disable the button — the same race a renter's own fast double-click (or a slow network masking
@@ -124,7 +132,7 @@ describe('PaymentPage — a booking that no longer holds', () => {
     fireEvent.click(payButton);
     fireEvent.click(payButton);
 
-    await screen.findByRole('link', { name: /continue to payment/i });
+    await screen.findByTitle('Pesapal secure payment');
     expect(checkoutCalls).toBe(1);
   });
 
@@ -132,7 +140,7 @@ describe('PaymentPage — a booking that no longer holds', () => {
     serveBooking('CONFIRMED');
     renderAt();
 
-    expect(await screen.findByRole('button', { name: /proceed to payment/i })).toBeInTheDocument();
+    expect(await screen.findByRole('radiogroup', { name: 'How to pay' })).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -144,6 +152,7 @@ describe('PaymentPage — a booking that no longer holds', () => {
     server.use(http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, () => { checkedOut = true; return HttpResponse.json({}); }));
     renderAt();
 
+    await user.click(await screen.findByRole('radio', { name: 'Card & other' }));
     const payButton = await screen.findByRole('button', { name: /proceed to payment/i });
     // The owner declines it the instant before the renter clicks Pay.
     status = 'REJECTED';
@@ -174,13 +183,29 @@ describe('PaymentPage — resuming a payment the local "checkout started" flag l
     expect(screen.queryByRole('button', { name: /proceed to payment/i })).not.toBeInTheDocument();
   });
 
-  it('resumes the normal "confirming payment" view for a payment left mid-flight', async () => {
+  it('a payment started earlier but never confirmed still opens on the choice of how to pay — with a note to check it', async () => {
+    const user = userEvent.setup();
+    let paid = false;
     serveBooking('CONFIRMED');
-    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'PENDING' })));
+    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: paid ? 'SUCCESSFUL' : 'PENDING' })));
     renderAt();
 
-    expect(await screen.findByText(/confirming your payment/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /proceed to payment/i })).not.toBeInTheDocument();
+    expect(await screen.findByText(/you started a payment for this booking earlier/i)).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'How to pay' })).toBeInTheDocument();
+    expect(screen.queryByText(/waiting for your payment to be confirmed/i)).not.toBeInTheDocument();
+
+    // It had gone through after all: checking it moves on to the result.
+    paid = true;
+    await user.click(screen.getByRole('button', { name: /check its status/i }));
+    expect(await screen.findByText('Payment successful')).toBeInTheDocument();
+  });
+
+  it('never shows "waiting for confirmation" before the renter has been asked to pay, even with an old flag', async () => {
+    sessionStorage.setItem('checkout:b1', '1');
+    serveBooking('CONFIRMED');
+    renderAt();
+    expect(await screen.findByRole('radiogroup', { name: 'How to pay' })).toBeInTheDocument();
+    expect(screen.queryByText(/waiting for your payment to be confirmed/i)).not.toBeInTheDocument();
   });
 
   it('still offers "Proceed to Payment" for a booking that was genuinely never checked out', async () => {
@@ -188,24 +213,26 @@ describe('PaymentPage — resuming a payment the local "checkout started" flag l
     // The default mock handler already answers 404 "Payment not found" for this, matching the real backend.
     renderAt();
 
-    expect(await screen.findByRole('button', { name: /proceed to payment/i })).toBeInTheDocument();
+    expect(await screen.findByRole('radiogroup', { name: 'How to pay' })).toBeInTheDocument();
   });
 });
 
 describe('PaymentPage — back from Pesapal (PaymentSuccessPage sets the checkout flag and hands over here)', () => {
   beforeEach(() => sessionStorage.setItem('checkout:b1', '1'));
 
-  it('a failed payment offers Try Again, which goes straight to a fresh Pesapal checkout', async () => {
+  it('a failed payment offers Try Again, which opens a fresh Pesapal checkout in the frame', async () => {
     const user = userEvent.setup();
     let calls = 0;
     serveBooking('PENDING');
     server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'FAILED' })));
     serveCheckout(() => { calls += 1; });
-    renderAt();
+    renderAt('b1', 'v1', { returnedFromPesapal: true });
 
     expect(await screen.findByText(/payment failed/i)).toBeInTheDocument();
     await user.dblClick(screen.getByRole('button', { name: /try again/i }));
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+    // The old attempt's "failed" is forgotten: the fresh link opens in the frame.
+    expect(await screen.findByTitle('Pesapal secure payment')).toHaveAttribute('src', 'https://pay.pesapal.com/checkout?booking=b1');
+    expect(screen.queryByText(/payment failed/i)).not.toBeInTheDocument();
     expect(calls).toBe(1);
   });
 
@@ -214,11 +241,24 @@ describe('PaymentPage — back from Pesapal (PaymentSuccessPage sets the checkou
     serveBooking('PENDING');
     server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'PENDING' })));
     serveCheckout();
-    renderAt();
+    renderAt('b1', 'v1', { returnedFromPesapal: true });
 
     expect(await screen.findByRole('button', { name: /check again/i })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /continue to payment/i }));
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://pay.pesapal.com/checkout?booking=b1'));
+    expect(await screen.findByTitle('Pesapal secure payment')).toBeInTheDocument();
+  });
+
+  it('a payment started before the other options existed can switch to M-Pesa, splitting or card', async () => {
+    const user = userEvent.setup();
+    serveBooking('PENDING');
+    server.use(http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'PENDING' })));
+    renderAt('b1', 'v1', { returnedFromPesapal: true });
+
+    await user.click(await screen.findByRole('button', { name: /choose another way to pay/i }));
+    expect(await screen.findByRole('radio', { name: 'M-Pesa' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Split the cost' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Card & other' })).toBeInTheDocument();
+    expect(sessionStorage.getItem('checkout:b1')).toBeNull();
   });
 
   it("stops waiting and says why when the status check itself fails (e.g. the backend can't reach Pesapal)", async () => {
@@ -228,7 +268,7 @@ describe('PaymentPage — back from Pesapal (PaymentSuccessPage sets the checkou
         HttpResponse.json({ message: 'Pesapal response missing token' }, { status: 500 })
       )
     );
-    renderAt();
+    renderAt('b1', 'v1', { returnedFromPesapal: true });
 
     expect(await screen.findByText("Couldn't check your payment")).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent(/internal error \(500\)/i);

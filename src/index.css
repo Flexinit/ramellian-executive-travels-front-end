@@ -227,17 +227,21 @@
 /* Print / Save as PDF on a contract or an invoice (lib/printContract.js): only that document is printed. */
 @media print {
   body.printing-contract *,
-  body.printing-invoice * {
+  body.printing-invoice *,
+  body.printing-transaction * {
     visibility: hidden;
   }
   body.printing-contract .contract-document,
   body.printing-contract .contract-document *,
   body.printing-invoice .invoice-document,
-  body.printing-invoice .invoice-document * {
+  body.printing-invoice .invoice-document *,
+  body.printing-transaction .transaction-document,
+  body.printing-transaction .transaction-document * {
     visibility: visible;
   }
   body.printing-contract .contract-document,
-  body.printing-invoice .invoice-document {
+  body.printing-invoice .invoice-document,
+  body.printing-transaction .transaction-document {
     position: absolute;
     inset: 0 0 auto 0;
     max-width: none;

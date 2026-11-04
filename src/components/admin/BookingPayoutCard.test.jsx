@@ -47,7 +47,7 @@ describe('BookingPayoutCard', () => {
     expect(screen.getByRole('button', { name: /failed/i })).toBeInTheDocument();
   });
 
-  it('creates a payout by hand when there is none — amount filled in with the owner’s share', async () => {
+  it('creates a payout by hand when there is none — amount the owner’s share, read-only', async () => {
     const user = userEvent.setup();
     let body;
     let created = false;
@@ -65,7 +65,12 @@ describe('BookingPayoutCard', () => {
     renderCard({ id: 'b1', status: 'COMPLETED', ownerPayout: 8500 });
 
     await user.click(await screen.findByRole('button', { name: /create payout/i }));
-    expect(screen.getByLabelText('Amount (KES)')).toHaveValue(8500);
+    // The owner's share, read-only: it can't be typed over.
+    const amount = screen.getByLabelText('Amount (KES)');
+    expect(amount).toHaveValue('KES 8,500');
+    expect(amount).toHaveAttribute('readonly');
+    await user.type(amount, '99999');
+    expect(amount).toHaveValue('KES 8,500');
     await user.type(screen.getByLabelText("Owner's phone (M-Pesa)"), '+254712345678');
     await user.click(screen.getAllByRole('button', { name: /create payout/i }).at(-1));
 

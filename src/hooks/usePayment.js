@@ -11,6 +11,13 @@ import { PAYMENT_POLL_INTERVAL_MS, PAYMENT_POLL_MAX_ATTEMPTS, PAYMENT_STATUSES }
  */
 
 /**
+ * Pesapal's checkout address from `PaymentCheckoutResponse`: `iframeUrl` (live spec 2026-11-04, made to be shown in a
+ * frame, as PesapalFrame does) — `redirectUrl` before that. Read once here, into `redirectUrl`, so everything that
+ * shows the checkout keeps working whichever the backend sends.
+ */
+const withCheckoutUrl = (data) => (data ? { ...data, redirectUrl: data.iframeUrl || data.redirectUrl } : data);
+
+/**
  * Starts Pesapal checkout. Does not redirect on its own — `redirectUrl` is only returned to the caller;
  * PaymentStatusPanel is what renders it as a click-through link and, after a short delay, auto-navigates to
  * it. The mutation itself never navigates the instant the request resolves, so the renter still always sees
@@ -18,7 +25,7 @@ import { PAYMENT_POLL_INTERVAL_MS, PAYMENT_POLL_MAX_ATTEMPTS, PAYMENT_STATUSES }
  */
 export function usePesapalCheckout() {
   return useMutation({
-    mutationFn: (bookingId) => apiPost(`/payments/pesapal/bookings/${bookingId}/checkout`),
+    mutationFn: (bookingId) => apiPost(`/payments/pesapal/bookings/${bookingId}/checkout`).then(withCheckoutUrl),
     onSuccess: (data, bookingId) => {
       if (data?.redirectUrl) {
         // Pesapal's own redirect back is a full page load, which loses React Router state — this is what
@@ -47,7 +54,7 @@ export function usePesapalCheckout() {
  */
 export function useGroupCheckout() {
   return useMutation({
-    mutationFn: (groupId) => apiPost(`/payments/pesapal/booking-groups/${groupId}/checkout`),
+    mutationFn: (groupId) => apiPost(`/payments/pesapal/booking-groups/${groupId}/checkout`).then(withCheckoutUrl),
     onSuccess: (data, groupId) => {
       if (data?.redirectUrl) {
         // Same reasoning as `usePesapalCheckout`'s own stash — survives a remount so "Continue to Pesapal"
@@ -69,23 +76,51 @@ export function useGroupCheckout() {
  * `useQueries`: there is no `.../booking-groups/{groupId}/status` endpoint, so the group's own status is
  * read as "every booking in it reports the same settled status" (see GroupPaymentPage).
  */
-export function paymentStatusKey(bookingId) {
-  return ['payment-status', bookingId];
+export function paymentStatusKey(bookingId, provider = 'pesapal') {
+  return provider === 'mpesa' ? ['payment-status', bookingId, 'mpesa'] : ['payment-status', bookingId];
 }
 
-export function paymentStatusQuery(bookingId, enabled = true) {
+/** An M-Pesa prompt can sit on the renter's phone for about a minute before they enter their PIN: twice the checks. */
+const MPESA_POLL_MAX_ATTEMPTS = PAYMENT_POLL_MAX_ATTEMPTS * 2;
+const maxAttempts = (provider) => (provider === 'mpesa' ? MPESA_POLL_MAX_ATTEMPTS : PAYMENT_POLL_MAX_ATTEMPTS);
+
+/**
+ * @param {string} bookingId @param {boolean} [enabled]
+ * @param {'pesapal'|'mpesa'} [provider] — which status to read: Pesapal's, or the M-Pesa prompt's
+ *   (`GET /payments/mpesa/bookings/{bookingId}/status`, live spec 2026-10-27)
+ */
+export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal') {
   return {
-    queryKey: paymentStatusKey(bookingId),
-    queryFn: () => apiGet(`/payments/pesapal/bookings/${bookingId}/status`),
+    queryKey: paymentStatusKey(bookingId, provider),
+    queryFn: () => apiGet(`/payments/${provider === 'mpesa' ? 'mpesa' : 'pesapal'}/bookings/${bookingId}/status`),
     enabled: enabled && !!bookingId,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       const attempts = query.state.dataUpdateCount;
       const settled = status === PAYMENT_STATUSES.SUCCESSFUL || status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
-      if (settled || attempts >= PAYMENT_POLL_MAX_ATTEMPTS) return false;
+      if (settled || attempts >= maxAttempts(provider)) return false;
       return PAYMENT_POLL_INTERVAL_MS;
     },
   };
+}
+
+/**
+ * Pays a booking by M-Pesa prompt (STK push) — `POST /payments/mpesa/bookings/{bookingId}/checkout?phone=` →
+ * `PaymentCheckoutResponse` (live spec 2026-10-27). Safaricom sends a prompt to `phone`; the renter enters their PIN
+ * there, and the result is read from the M-Pesa status (`usePaymentStatus(…, 'mpesa')`). `phone` is sent the way
+ * Safaricom writes numbers, 2547XXXXXXXX (docs/backend-requests.md item 55).
+ */
+export function useMpesaCheckout() {
+  return useMutation({
+    mutationFn: ({ bookingId, phone }) =>
+      apiPost(`/payments/mpesa/bookings/${bookingId}/checkout?phone=${encodeURIComponent(String(phone).replace(/^\+/, ''))}`),
+    onSuccess: (_, { bookingId }) => {
+      sessionStorage.setItem(`checkout-provider:${bookingId}`, 'mpesa');
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Could not send the M-Pesa prompt. Please try again.');
+    },
+  });
 }
 
 /**
@@ -160,11 +195,11 @@ export function useExistingPaymentChecks(bookingIds, enabled = true) {
  * i.e. Pesapal (or the backend's own callback wiring) never confirmed one way or the other. `dataUpdateCount`
  * is read straight from the query cache rather than tracked separately, so it stays in lockstep with the
  * exact same attempts `paymentStatusQuery`'s own `refetchInterval` just gave up counting. */
-function pollExhausted(queryClient, bookingId, status) {
+function pollExhausted(queryClient, bookingId, status, provider = 'pesapal') {
   const settled = status === PAYMENT_STATUSES.SUCCESSFUL || status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
   if (settled) return false;
-  const attempts = queryClient.getQueryState(paymentStatusKey(bookingId))?.dataUpdateCount ?? 0;
-  return attempts >= PAYMENT_POLL_MAX_ATTEMPTS;
+  const attempts = queryClient.getQueryState(paymentStatusKey(bookingId, provider))?.dataUpdateCount ?? 0;
+  return attempts >= maxAttempts(provider);
 }
 
 /**
@@ -180,14 +215,15 @@ function pollExhausted(queryClient, bookingId, status) {
  *
  * @param {string} bookingId
  * @param {boolean} enabled
+ * @param {'pesapal'|'mpesa'} [provider]
  */
-export function usePaymentStatus(bookingId, enabled = true) {
+export function usePaymentStatus(bookingId, enabled = true, provider = 'pesapal') {
   const queryClient = useQueryClient();
-  const query = useQuery(paymentStatusQuery(bookingId, enabled));
+  const query = useQuery(paymentStatusQuery(bookingId, enabled, provider));
   const failedToCheck = query.isError && !query.data;
   return {
     ...query,
-    exhausted: enabled && (failedToCheck || pollExhausted(queryClient, bookingId, query.data?.status)),
+    exhausted: enabled && (failedToCheck || pollExhausted(queryClient, bookingId, query.data?.status, provider)),
     errorMessage: enabled && failedToCheck ? apiErrorMessage(query.error, "We couldn't check your payment.") : '',
   };
 }
@@ -203,18 +239,18 @@ export function useGroupPollExhausted(bookingIds, statuses, enabled) {
 /**
  * Pays a booking's overstay charge (a late return, `BookingResponse.overstayAmount`) through Pesapal —
  * `POST /payments/pesapal/bookings/{bookingId}/overstay-checkout` → `PaymentCheckoutResponse` (live spec 2026-10-16),
- * then straight to its `redirectUrl`. Pass the `bookingId`.
+ * whose `redirectUrl` is paid in a dialog on the page (OverstayPaymentModal). Pass the `bookingId`.
  */
 export function useOverstayCheckout() {
   return useMutation({
-    mutationFn: (bookingId) => apiPost(`/payments/pesapal/bookings/${bookingId}/overstay-checkout`),
+    mutationFn: (bookingId) => apiPost(`/payments/pesapal/bookings/${bookingId}/overstay-checkout`).then(withCheckoutUrl),
     onSuccess: (data, bookingId) => {
       if (!data?.redirectUrl) {
         toast.error('The overstay payment could not be started. Please try again.');
         return;
       }
       sessionStorage.setItem('lastCheckoutBookingId', bookingId);
-      window.location.assign(data.redirectUrl);
+      // Paid in a frame on the page (BookingRow's dialog, PesapalFrame) — the browser no longer leaves for Pesapal.
     },
     onError: (error) => toast.error(error?.response?.data?.message || 'Could not start the overstay payment. Please try again.'),
   });

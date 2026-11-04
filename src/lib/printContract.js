@@ -18,6 +18,11 @@ export function printContract() {
   printOnly('printing-contract');
 }
 
+/** Prints just a booking's transaction breakdown (`.transaction-document`, AdminBookingTransactionPage). */
+export function printTransaction() {
+  printOnly('printing-transaction');
+}
+
 /** Prints just the quotation or invoice (`.invoice-document`, AdminQuotationPage). */
 export function printInvoice() {
   printOnly('printing-invoice');

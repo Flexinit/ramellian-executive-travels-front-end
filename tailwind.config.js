@@ -37,6 +37,10 @@ export default {
         'brand-navy':      '#16213E',
         'brand-gold':      '#C9A84C',
         'brand-gold-deep': themed('gold-deep'),
+        // M-Pesa's own green, wherever paying by M-Pesa is offered (product owner, 2026-10-27). `mpesa` for icons, lines
+        // and fills; `mpesa-deep` behind white text (the bright green is too light for it).
+        mpesa:        '#3DB54A',
+        'mpesa-deep': '#16862C',
       },
       fontFamily: {
         // Set in src/theme/fonts.js — change the fonts there, not here.

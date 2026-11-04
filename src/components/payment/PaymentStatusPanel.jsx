@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, XCircle, RotateCcw, Clock, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, XCircle, RotateCcw, Clock, CreditCard, Smartphone } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 import Button from '../ui/Button';
 import { PAYMENT_STATUSES } from '../../lib/constants';
 import ReceiptActions from '../booking/ReceiptActions';
-
-const AUTO_REDIRECT_DELAY_MS = 3000;
-const AUTO_REDIRECT_SECONDS = AUTO_REDIRECT_DELAY_MS / 1000;
+import PesapalFrame from './PesapalFrame';
+import MpesaLogo from './MpesaLogo';
+import CircularCountdown from '../ui/CircularCountdown';
 
 /**
  * @param {string} status — a PAYMENT_STATUSES value, or undefined while the first poll is in flight
@@ -19,16 +19,18 @@ const AUTO_REDIRECT_SECONDS = AUTO_REDIRECT_DELAY_MS / 1000;
  *   as the fallback once polling is exhausted with no `redirectUrl` to fall back to (e.g. a different
  *   browser/device than the one checkout started on, where the original link was never stashed)
  * @param {string} [redirectUrl] — the Pesapal checkout URL from the checkout just started (`usePayment.js`
- *   also stashes it in sessionStorage, so it survives a remount — see `checkout-url:{bookingId}`). While the
- *   renter is on the initial "You're ready to pay" panel (not yet `exhausted`, no status back yet), this
- *   auto-navigates to `redirectUrl` after `AUTO_REDIRECT_DELAY_MS`, counting down visibly in the panel's own
- *   text so the auto-redirect isn't a surprise — the button is kept visible as the fallback for a
- *   popup/redirect blocker, or simply so the renter doesn't have to wait. Once
- *   polling is `exhausted`, the equivalent button there is click-only again: a renter coming back later after
- *   already having been through this once shouldn't be auto-sent back to Pesapal without asking.
- * @param {function} [onContinue] — fired the moment "Continue to Pesapal" is actually clicked (including a
- *   middle/ctrl/cmd-click that opens it in a new tab, where this tab's own React app keeps running rather
- *   than unloading). The caller uses this to gate when status polling actually starts — see PaymentPage.jsx.
+ *   also stashes it in sessionStorage, so it survives a remount — see `checkout-url:{bookingId}`). While the renter is
+ *   on the "ready to pay" step (not yet `exhausted`, no status back yet), Pesapal's page is shown right here, in a frame
+ *   (`PesapalFrame`, product owner 2026-10-27 — it used to send the whole browser to Pesapal). Once polling is
+ *   `exhausted`, **Continue to Payment** opens the frame again.
+ * @param {boolean} [paying] — the page has just started a checkout and the renter is paying in the frame: it's shown
+ *   until that link is reported finished, whatever the (paused) status checks last said. Left out, the frame shows
+ *   while there's no status yet and polling hasn't given up.
+ * @param {string} [mpesaPhone] — paying by M-Pesa prompt (STK push) sent to this number: a 60-second countdown to
+ *   approve it on the phone (`MpesaPromptWait`); once it runs out, **Send the prompt again** (`onRetry`) and **Check again**.
+ * @param {number} [mpesaPromptedAt] — when that prompt was sent (ms), so the countdown survives a reload
+ * @param {function} [onContinue] — the payment in the frame is finished (Pesapal's callback said so, or the renter
+ *   pressed **I've finished paying**): the caller starts checking its status — see PaymentPage.jsx.
  * @param {boolean} [retrying] — `onRetry`'s own checkout mutation is in flight. Disables both "Try Again"
  *   buttons while true, the same guard "Proceed to Payment" already has on the page before this panel ever
  *   shows — without it, a fast double-click (or a slow response masking that the first click registered)
@@ -38,46 +40,92 @@ const AUTO_REDIRECT_SECONDS = AUTO_REDIRECT_DELAY_MS / 1000;
  *   renter their receipt right there (see ReceiptActions) — the moment the payment actually completes is
  *   the most natural place to "issue" it, rather than making them go find it in My Bookings afterwards.
  */
-export default function PaymentStatusPanel({ status, exhausted, errorMessage, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle }) {
-  // Only the initial "ready to pay" panel auto-redirects — guarded on `exhausted` and `status` too, since
-  // those cover the SUCCESSFUL/FAILED/INVALID and exhausted-with-redirectUrl branches below, which also
-  // render while `redirectUrl` is set but must never auto-navigate themselves.
-  const autoRedirectReady = !!redirectUrl && !status && !exhausted;
-  const redirectTimerRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
-  // A ref, not a dependency, so a parent re-render that merely recreates the `onContinue` callback (as
-  // PaymentPage.jsx's inline `() => setContinuedToPesapal(true)` does every render) can't restart this timer.
-  const onContinueRef = useRef(onContinue);
-  onContinueRef.current = onContinue;
-  // Ticks down in lockstep with `redirectTimerRef` below purely for display — kept as a second, separate
-  // timer rather than driving the actual redirect off of it, so the one piece of code that navigates the
-  // browser away (the `setTimeout` callback) stays a single, unambiguous place that only ever fires once.
-  const [secondsLeft, setSecondsLeft] = useState(AUTO_REDIRECT_SECONDS);
+/** How long an M-Pesa prompt stays open on the phone before it's offered again. */
+const MPESA_PROMPT_SECONDS = 60;
 
-  useEffect(() => {
-    if (!autoRedirectReady) return;
-    setSecondsLeft(AUTO_REDIRECT_SECONDS);
-    countdownIntervalRef.current = setInterval(() => {
-      setSecondsLeft((s) => Math.max(s - 1, 0));
-    }, 1000);
-    redirectTimerRef.current = setTimeout(() => {
-      onContinueRef.current?.();
-      window.location.href = redirectUrl;
-    }, AUTO_REDIRECT_DELAY_MS);
-    return () => {
-      clearTimeout(redirectTimerRef.current);
-      clearInterval(countdownIntervalRef.current);
-    };
-  }, [autoRedirectReady, redirectUrl]);
+/**
+ * Waiting for the renter to approve an M-Pesa prompt (product owner, 2026-11-04: no endless spinner): a 60-second
+ * countdown while the prompt is open on their phone; when it runs out without the payment coming through, they're told
+ * so and can send it again (or check again, in case it went through). A successful payment moves the page on by itself.
+ */
+function MpesaPromptWait({ phone, promptedAt, onRetry, onRecheck, retrying }) {
+  // Not knowing when the prompt went out (one from before this countdown existed) counts as timed out — the countdown
+  // never restarts by itself; only **Try again** (a new prompt, a new `promptedAt`) starts another.
+  const overAt = promptedAt ? promptedAt + MPESA_PROMPT_SECONDS * 1000 : 0;
+  const [timedOut, setTimedOut] = useState(() => Date.now() >= overAt);
+  const [shownFor, setShownFor] = useState(promptedAt);
+  if (shownFor !== promptedAt) {
+    setShownFor(promptedAt);
+    setTimedOut(Date.now() >= overAt);
+  }
 
-  // Shared by the manual click and the auto-redirect's own `onContinueRef` call above — stops the timer (and
-  // its countdown) from firing a second, redundant navigation on top of a renter who already clicked (or
-  // middle/ctrl/cmd-clicked to open Pesapal in a new tab, where this tab's timer would otherwise still fire
-  // into the current one).
-  function handleManualContinue() {
-    clearTimeout(redirectTimerRef.current);
-    clearInterval(countdownIntervalRef.current);
+  return (
+    <div className="flex flex-col items-center gap-3 text-center py-2">
+      <MpesaLogo size={36} />
+      {timedOut ? (
+        <>
+          <div>
+            <p className="text-ink font-semibold">Didn&apos;t get the prompt, or it timed out?</p>
+            <p className="text-muted text-sm mt-1">
+              We haven&apos;t received your M-Pesa payment from <strong className="text-ink">{phone}</strong>. Try again to get a
+              new prompt, and enter your PIN within a minute — or check again if you&apos;ve just paid.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {onRetry && (
+              <Button variant="mpesa" loading={retrying} disabled={retrying} onClick={onRetry}>
+                {!retrying && <Smartphone size={16} aria-hidden="true" />} Try again
+              </Button>
+            )}
+            {onRecheck && (
+              <Button variant="outline" onClick={onRecheck}>
+                <RotateCcw size={16} aria-hidden="true" /> Check again
+              </Button>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <p className="text-ink font-semibold">Check your phone</p>
+            <p className="text-muted text-sm mt-1">
+              We&apos;ve sent an M-Pesa prompt to <strong className="text-ink">{phone}</strong>. Enter your M-Pesa PIN there —
+              this page moves on by itself once it&apos;s paid.
+            </p>
+          </div>
+          <CircularCountdown key={promptedAt} startedAt={promptedAt} durationSeconds={MPESA_PROMPT_SECONDS} onExpire={() => setTimedOut(true)} label="left to enter your M-Pesa PIN" />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function PaymentStatusPanel({ status, exhausted, errorMessage, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle, paying, mpesaPhone, mpesaPromptedAt }) {
+  // After a slow confirmation, Continue to Payment opens the frame again (rather than leaving the site).
+  const [reopened, setReopened] = useState(false);
+  // The frame stays until that payment link is reported finished; then the status checks take over. Kept per link, so
+  // a retry's brand-new link (Try Again) shows its frame again.
+  const [doneUrl, setDoneUrl] = useState(null);
+  const frameDone = !!redirectUrl && doneUrl === redirectUrl;
+  function finished() {
+    setDoneUrl(redirectUrl);
+    setReopened(false);
     onContinue?.();
+    // Polling had already given up: ask again now that the payment is done.
+    if (exhausted) onRecheck?.();
+  }
+
+  const framed = paying ?? (!status && !exhausted);
+  if (redirectUrl && framed && !frameDone) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="text-ink font-semibold">Pay securely with Pesapal</p>
+          <p className="text-muted text-sm mt-1">Choose how to pay below — you stay on this page.</p>
+        </div>
+        <PesapalFrame url={redirectUrl} onDone={finished} />
+      </div>
+    );
   }
 
   if (status === PAYMENT_STATUSES.SUCCESSFUL) {
@@ -114,6 +162,14 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     );
   }
 
+  if (mpesaPhone) {
+    return <MpesaPromptWait phone={mpesaPhone} promptedAt={mpesaPromptedAt} onRetry={onRetry} onRecheck={onRecheck} retrying={retrying} />;
+  }
+
+  if (exhausted && reopened && redirectUrl) {
+    return <PesapalFrame url={redirectUrl} onDone={finished} />;
+  }
+
   if (exhausted) {
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
@@ -132,7 +188,7 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {redirectUrl ? (
-            <Button size="sm" href={redirectUrl} onClick={onContinue} onAuxClick={onContinue}>
+            <Button size="sm" onClick={() => setReopened(true)}>
               <CreditCard size={14} aria-hidden="true" /> Continue to Payment
             </Button>
           ) : (
@@ -148,24 +204,6 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
             </Button>
           )}
         </div>
-      </div>
-    );
-  }
-
-  if (redirectUrl) {
-    return (
-      <div className="flex flex-col items-center gap-3 text-center py-2">
-        <div>
-          <p className="text-ink font-semibold">You're ready to pay</p>
-          <p className="text-muted text-sm mt-1">
-            {secondsLeft > 0
-              ? `Taking you to complete payment securely in ${secondsLeft}s. If nothing happens, click below to continue.`
-              : "Taking you to complete payment securely. If nothing happens, click below to continue."}
-          </p>
-        </div>
-        <Button size="lg" href={redirectUrl} onClick={handleManualContinue} onAuxClick={handleManualContinue}>
-          <CreditCard size={16} aria-hidden="true" /> Continue to Payment
-        </Button>
       </div>
     );
   }

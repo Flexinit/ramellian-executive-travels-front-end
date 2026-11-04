@@ -3,7 +3,7 @@ import Select from '../ui/Select';
 import PayoutFormModal from './PayoutFormModal';
 import { useAllBookings } from '../../hooks/useBookings';
 import { useCreateDisbursement, useDisbursements } from '../../hooks/useDisbursements';
-import { formatDateRange } from '../../lib/utils';
+import { formatCurrency, formatDateRange } from '../../lib/utils';
 
 const PAID = ['CONFIRMED', 'ACTIVE', 'COMPLETED'];
 
@@ -11,6 +11,7 @@ const PAID = ['CONFIRMED', 'ACTIVE', 'COMPLETED'];
  * **Create payout** from Owner Payouts itself — the same as a booking page's (`BookingPayoutCard`), with the booking
  * picked here: paid bookings (confirmed, active, completed) that don't have a payout yet in any status
  * (`POST /admin/disbursements/bookings/{bookingId}`). Product owner, 2026-10-26: the payout buttons on this page too.
+ * The amount is the chosen booking's owner share (`ownerPayout`), read-only — it can't be typed over (2026-10-27).
  *
  * @param {boolean} isOpen @param {function} onClose
  */
@@ -33,12 +34,17 @@ export default function CreatePayoutModal({ isOpen, onClose }) {
   }, [isOpen]);
 
   const hasPayout = new Set(lists.flatMap((q) => (Array.isArray(q.data) ? q.data : [])).map((d) => d.bookingId));
-  const options = (Array.isArray(bookings) ? bookings : [])
-    .filter((b) => PAID.includes(b.status) && !hasPayout.has(b.id))
-    .map((b) => ({
-      value: b.id,
-      label: [b.vehicleModel || 'Vehicle', b.startTime && formatDateRange(b.startTime, b.endTime), b.renterEmail].filter(Boolean).join(' · '),
-    }));
+  const eligible = (Array.isArray(bookings) ? bookings : []).filter((b) => PAID.includes(b.status) && !hasPayout.has(b.id));
+  // The booking report has no vehicle name: the renter, the dates and the owner's share tell bookings apart.
+  const options = eligible.map((b) => ({
+    value: b.id,
+    label: [
+      b.renterName || b.renterEmail,
+      b.startTime && formatDateRange(b.startTime, b.endTime),
+      b.ownerPayout != null && formatCurrency(b.ownerPayout),
+    ].filter(Boolean).join(' · '),
+  }));
+  const chosen = eligible.find((b) => b.id === bookingId);
   const loading = isLoading || lists.some((q) => q.isLoading);
 
   function submit(fields) {
@@ -53,6 +59,7 @@ export default function CreatePayoutModal({ isOpen, onClose }) {
       title="Create payout"
       submitLabel="Create payout"
       mutation={create}
+      lockedAmount={chosen ? chosen.ownerPayout ?? null : null}
       intro="For a paid booking whose payout wasn't created automatically. It's created as To pay — then send it, or record it as paid by hand."
       onSubmit={submit}
     >

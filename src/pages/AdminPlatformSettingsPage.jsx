@@ -9,6 +9,8 @@ import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import Badge from '../components/ui/Badge';
 import Checkbox from '../components/ui/Checkbox';
+import Switch from '../components/ui/Switch';
+import Collapsible from '../components/ui/Collapsible';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import BookingPolicyForm from '../components/booking/BookingPolicyForm';
@@ -24,7 +26,7 @@ const TABS = [
   { value: 'assistant', label: 'Assistant', icon: Bot },
 ];
 
-const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThresholdDays', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge'];
+const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThresholdDays', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge', 'mpesaStkFee', 'mpesaB2cFee', 'overstayGracePeriodHours', 'overstayRateMultiplier'];
 
 /**
  * Platform-wide settings — `GET`/`PUT /platform-settings` (docs/backend-requests.md item 26): the commission
@@ -37,6 +39,18 @@ const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThres
  * settings as a whole — which is why the save also sends the assistant switch back unchanged. The assistant
  * itself is switched on its own card (`PUT /platform-settings/bot`).
  */
+/**
+ * The charges that can be switched on or off (product owner, 2026-11-04), each with its own flag in the settings
+ * (`…Enabled`, live spec 2026-11-04). Switching one off keeps its amount on the server; pricing just leaves it out.
+ */
+const CHARGES = [
+  { name: 'pesapalTransactionFeeRatePct', flag: 'pesapalTransactionFeeEnabled', label: 'Pesapal transaction fee (%)', hint: 'Of each card & other payment', percent: true, per: 'payment by card & other' },
+  { name: 'deliveryFlatFee', flag: 'deliveryFeeEnabled', label: 'Delivery fee (KES)', hint: 'When the car is delivered to the renter', per: 'delivered booking' },
+  { name: 'driverFlatCharge', flag: 'driverChargeEnabled', label: 'Driver charge (KES)', hint: 'On chauffeured bookings', per: 'chauffeured booking' },
+  { name: 'mpesaStkFee', flag: 'mpesaStkFeeEnabled', label: 'M-Pesa payment fee (KES)', hint: 'Per payment by M-Pesa prompt', per: 'M-Pesa payment' },
+  { name: 'mpesaB2cFee', flag: 'mpesaB2cFeeEnabled', label: 'M-Pesa payout fee (KES)', hint: 'Per payout sent to an owner by M-Pesa', per: 'M-Pesa payment' },
+];
+
 export default function AdminPlatformSettingsPage() {
   // The open tab lives in the address (?tab=policy), so it survives a reload and can be linked to.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,11 +60,21 @@ export default function AdminPlatformSettingsPage() {
   const save = useSavePlatformSettings();
   const [values, setValues] = useState(Object.fromEntries(FIELDS.map((f) => [f, ''])));
   const [errors, setErrors] = useState({});
+  // Which charges are applied: on while they're more than 0.
+  const [chargeOn, setChargeOn] = useState({});
 
   useEffect(() => {
     if (!data) return;
     setValues(Object.fromEntries(FIELDS.map((f) => [f, data[f] != null ? String(data[f]) : ''])));
+    // The backend's flag; settings saved before the flags existed count a charge as on while it's above 0.
+    setChargeOn(Object.fromEntries(CHARGES.map((c) => [c.name, typeof data[c.flag] === 'boolean' ? data[c.flag] : Number(data[c.name]) > 0])));
   }, [data]);
+
+  /** Switches a charge on or off; its amount stays as it is (kept on the server while it's off). */
+  function toggleCharge(name, on) {
+    setChargeOn((c) => ({ ...c, [name]: on }));
+    setErrors((er) => ({ ...er, [name]: undefined }));
+  }
 
   function set(field) {
     return (e) => {
@@ -87,14 +111,31 @@ export default function AdminPlatformSettingsPage() {
       next.multiDayCommissionRatePct = null;
       next.multiDayThresholdDays = null;
     }
-    pct('pesapalTransactionFeeRatePct', false);
-    const amount = (field, message) => {
-      const n = values[field] === '' ? 0 : Number(values[field]);
-      if (Number.isNaN(n) || n < 0) problems[field] = message;
-      else next[field] = n;
-    };
-    amount('deliveryFlatFee', 'Enter an amount of 0 or more (0 = free delivery).');
-    amount('driverFlatCharge', 'Enter an amount of 0 or more (0 = no driver charge).');
+    // Each charge: its on/off flag, and its amount — which a charge that's on needs above 0 (a percentage at most 100).
+    // A charge that's off keeps whatever valid amount it has.
+    CHARGES.forEach((c) => {
+      const on = !!chargeOn[c.name];
+      next[c.flag] = on;
+      const raw = String(values[c.name] ?? '').trim();
+      const n = Number(raw);
+      const valid = raw !== '' && !Number.isNaN(n) && n >= 0 && !(c.percent && n > 100);
+      if (on && (!valid || n <= 0)) problems[c.name] = c.percent && n > 100 ? 'Enter a percentage of at most 100.' : 'Enter the amount, or switch it off.';
+      else if (valid) next[c.name] = n;
+      else if (raw === '') next[c.name] = 0; // off with no amount at all: sent as 0, as before
+    });
+    // Late returns: left empty, they're left out of the save and keep what the backend has.
+    const grace = String(values.overstayGracePeriodHours ?? '').trim();
+    if (grace !== '') {
+      const g = Number(grace);
+      if (!Number.isInteger(g) || g < 0) problems.overstayGracePeriodHours = 'Enter a whole number of hours, 0 or more.';
+      else next.overstayGracePeriodHours = g;
+    }
+    const multiplier = String(values.overstayRateMultiplier ?? '').trim();
+    if (multiplier !== '') {
+      const m = Number(multiplier);
+      if (Number.isNaN(m) || m < 1) problems.overstayRateMultiplier = 'Enter 1 or more (1 = the normal daily rate).';
+      else next.overstayRateMultiplier = m;
+    }
 
     setErrors(problems);
     if (Object.keys(problems).length === 0) save.mutate(next);
@@ -115,10 +156,10 @@ export default function AdminPlatformSettingsPage() {
     />
   );
   const percent = { max: '100', step: '0.1', inputMode: 'decimal' };
-  const money = { step: '50', inputMode: 'numeric' };
 
   return (
-    <PageWrapper className="max-w-3xl">
+    // Wide enough that the fields side by side (with their units inside) aren't squeezed.
+    <PageWrapper className="max-w-5xl">
       <PageTitle title="Platform Settings" />
       <div className="flex flex-col gap-5">
         <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Platform Settings</h1>
@@ -135,34 +176,86 @@ export default function AdminPlatformSettingsPage() {
               ) : isError ? (
                 <ErrorBanner message="Could not load the platform settings." onRetry={refetch} />
               ) : (
-                <form onSubmit={submit} noValidate className="flex flex-col gap-6">
-                  <fieldset className="flex flex-col gap-4">
+                // Less to scroll (product owner, 2026-11-04): the same one column, with compact fields (their unit inside)
+                // and one row per charge.
+                <form onSubmit={submit} noValidate className="flex flex-col gap-5">
+                  <fieldset className="flex flex-col gap-3">
                     <legend className="font-heading text-ink text-base font-semibold mb-1">Commission</legend>
-                    <p className="text-muted text-sm -mt-2">
-                      The platform's share of each booking, taken from the owner's share. Longer bookings can have their
-                      own rate — leave those two empty to use one rate for every booking.
+                    <p className="text-muted text-xs -mt-1">
+                      Taken from the owner&apos;s share. Leave the longer-booking rate and days empty for one rate on every booking.
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {field('commissionRatePct', 'Commission (%)', 'Every booking', percent)}
-                      {field('multiDayCommissionRatePct', 'Longer bookings (%)', 'e.g. 10', percent)}
-                      {field('multiDayThresholdDays', 'From (days)', 'e.g. 2 = 2 days or more', { min: '1', step: '1', inputMode: 'numeric' })}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {field('commissionRatePct', 'Commission', 'Every booking', { ...percent, compact: true, suffix: '%' })}
+                      {field('multiDayCommissionRatePct', 'Longer bookings', 'e.g. 10', { ...percent, compact: true, suffix: '%' })}
+                      {field('multiDayThresholdDays', 'From', 'days or more', { min: '1', step: '1', inputMode: 'numeric', compact: true, suffix: 'days' })}
                     </div>
                   </fieldset>
 
-                  <fieldset className="flex flex-col gap-4 border-t border-ink/10 pt-5">
+                  <fieldset className="border-t border-ink/10 pt-4">
                     <legend className="sr-only">Fees and charges</legend>
-                    <p className="font-heading text-ink text-base font-semibold" aria-hidden="true">Fees and charges</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {field('pesapalTransactionFeeRatePct', 'Pesapal transaction fee (%)', 'Of each payment', { ...percent, step: '0.01' })}
-                      {field('deliveryFlatFee', 'Delivery flat fee (KES)', 'When the car is delivered; 0 = free', money)}
-                      {field('driverFlatCharge', 'Driver flat charge (KES)', 'Chauffeured bookings; 0 = none', money)}
+                    {/* Opens and closes from its heading (product owner, 2026-11-04); it opens itself to show an error. */}
+                    <Collapsible
+                      title="Fees and charges"
+                      summary={`${CHARGES.filter((c) => chargeOn[c.name]).length} of ${CHARGES.length} on`}
+                      forceOpen={CHARGES.some((c) => errors[c.name])}
+                    >
+                      <p className="text-muted text-xs -mt-1">Switch a charge off to stop applying it, on to charge it again.</p>
+                      {/* One compact row per charge: what it is, its amount, its switch. */}
+                      <ul className="flex flex-col divide-y divide-line rounded-tile border border-line" aria-label="Charges">
+                        {CHARGES.map((c) => {
+                          const on = !!chargeOn[c.name];
+                          const name = c.label.replace(/ \((%|KES)\)$/, '');
+                          return (
+                            <li key={c.name} className={`flex items-center gap-3 px-3 py-2 ${on ? '' : 'bg-ink/[0.03]'}`}>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-ink truncate">{name}</p>
+                                <p className="text-xs text-muted truncate">{on ? c.hint : 'Off — not charged; its amount is kept'}</p>
+                              </div>
+                              <Input
+                                hideLabel
+                                compact
+                                label={c.label}
+                                name={c.name}
+                                type="number"
+                                min="0"
+                                suffix={c.percent ? '%' : 'KES'}
+                                value={values[c.name]}
+                                onChange={set(c.name)}
+                                error={errors[c.name]}
+                                disabled={!on}
+                                className="w-44 shrink-0"
+                                {...(c.percent ? { max: '100', step: '0.01', inputMode: 'decimal' } : { step: c.name.startsWith('mpesa') ? '1' : '50', inputMode: 'numeric' })}
+                              />
+                              <Switch
+                                hideLabel
+                                checked={on}
+                                onChange={(next) => toggleCharge(c.name, next)}
+                                label={name}
+                                description={on ? `On — added to each ${c.per}` : 'Off — not charged'}
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </Collapsible>
+                  </fieldset>
+
+                  <fieldset className="flex flex-col gap-3 border-t border-ink/10 pt-4">
+                    <legend className="sr-only">Late returns</legend>
+                    <p className="font-heading text-ink text-base font-semibold" aria-hidden="true">Late returns</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {field('overstayGracePeriodHours', 'Grace period', 'Before overstay is charged', { step: '1', inputMode: 'numeric', compact: true, suffix: 'hours' })}
+                      {field('overstayRateMultiplier', 'Overstay rate', '× the daily rate, e.g. 1.5', { min: '1', step: '0.1', inputMode: 'decimal', compact: true, suffix: '×' })}
                     </div>
                   </fieldset>
 
-                  <Button type="submit" className="self-start" loading={save.isPending}>
-                    {!save.isPending && <Save size={15} aria-hidden="true" />}
-                    Save settings
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-4">
+                    <Button type="submit" loading={save.isPending}>
+                      {!save.isPending && <Save size={15} aria-hidden="true" />}
+                      Save settings
+                    </Button>
+                    <span className="text-xs text-muted">Changes, including switches, apply when you save.</span>
+                  </div>
                 </form>
               )}
             </Card>

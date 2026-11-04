@@ -118,7 +118,7 @@ describe('GroupPaymentPage — one payment for every vehicle in the group', () =
     expect(screen.getByTestId('where')).toHaveAttribute('data-booking', 'bk-1');
   });
 
-  it("doesn't poll payment status until the renter actually clicks through to Pesapal", async () => {
+  it("doesn't poll payment status until the payment in the frame is finished", async () => {
     const user = userEvent.setup();
     let statusChecks = 0;
     seedGroup([line('a', 'Prado', 15000, 'bk-1')]);
@@ -135,10 +135,10 @@ describe('GroupPaymentPage — one payment for every vehicle in the group', () =
     renderAt();
 
     await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
-    const link = await screen.findByRole('link', { name: /continue to payment/i });
+    await screen.findByTitle('Pesapal secure payment');
     const checksBeforeClick = statusChecks;
 
-    await user.click(link);
+    await user.click(screen.getByRole('button', { name: /i've finished paying/i }));
     await waitFor(() => expect(statusChecks).toBeGreaterThan(checksBeforeClick));
   });
 
@@ -158,7 +158,7 @@ describe('GroupPaymentPage — one payment for every vehicle in the group', () =
     fireEvent.click(payButton);
     fireEvent.click(payButton);
 
-    await screen.findByRole('link', { name: /continue to payment/i });
+    await screen.findByTitle('Pesapal secure payment');
     expect(checkoutCalls).toBe(1);
   });
 

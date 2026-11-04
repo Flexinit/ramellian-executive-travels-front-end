@@ -83,7 +83,7 @@ export default function ReauthModal() {
         {(isGoogleSignInEnabled() || import.meta.env.DEV) && (
           <>
             <Divider label="or" />
-            <GoogleSignInButton text="signin_with" onCredential={(token) => googleLogin.mutate(token, afterLogin)} disabled={googleLogin.isPending || login.isPending} />
+            <GoogleSignInButton loading={googleLogin.isPending} text="signin_with" onCredential={(token) => googleLogin.mutate(token, afterLogin)} disabled={googleLogin.isPending || login.isPending} />
           </>
         )}
         <button

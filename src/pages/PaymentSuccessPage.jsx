@@ -49,5 +49,5 @@ export default function PaymentSuccessPage() {
 
   sessionStorage.setItem(`checkout:${bookingId}`, '1');
   sessionStorage.setItem(`booking:${booking.vehicleId}`, bookingId);
-  return <Navigate to={`/book/${booking.vehicleId}/payment`} state={{ bookingId }} replace />;
+  return <Navigate to={`/book/${booking.vehicleId}/payment`} state={{ bookingId, returnedFromPesapal: true }} replace />;
 }

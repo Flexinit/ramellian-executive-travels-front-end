@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText } from 'lucide-react';
+import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText, Undo2, Landmark } from 'lucide-react';
 import { applyTheme } from './lib/theme';
 
 import Navbar from './components/layout/Navbar';
@@ -79,6 +79,9 @@ const AdminRolesPage = lazy(() => import('./pages/AdminRolesPage'));
 const AdminPlatformSettingsPage = lazy(() => import('./pages/AdminPlatformSettingsPage'));
 const AdminRentalTermsPage = lazy(() => import('./pages/AdminRentalTermsPage'));
 const AdminPayoutsPage = lazy(() => import('./pages/AdminPayoutsPage'));
+const AdminRefundsPage = lazy(() => import('./pages/AdminRefundsPage'));
+const AdminFinancesPage = lazy(() => import('./pages/AdminFinancesPage'));
+const AdminBookingTransactionPage = lazy(() => import('./pages/AdminBookingTransactionPage'));
 const AdminQuotationPage = lazy(() => import('./pages/AdminQuotationPage'));
 const AdminVehicleApprovalsPage = lazy(() => import('./pages/AdminVehicleApprovalsPage'));
 const EditVehiclePage = lazy(() => import('./pages/EditVehiclePage'));
@@ -224,6 +227,8 @@ const ADMIN_TOOLS = [
   { label: 'Platform Settings', to: '/admin/settings', icon: Percent },
   { label: 'Rental Terms', to: '/admin/rental-terms', icon: ScrollText },
   { label: 'Owner Payouts', to: '/admin/payouts', icon: Wallet, permissions: [P.BOOKING_MANAGE] },
+  { label: 'Refunds', to: '/admin/refunds', icon: Undo2, permissions: [P.BOOKING_MANAGE] },
+  { label: 'Finances', to: '/admin/finances', icon: Landmark, permissions: [P.BOOKING_MANAGE] },
   // Super admins only (`superAdminOnly`; the route checks too). Invoices will be generated automatically later.
   { label: 'Quotations', to: '/admin/quotations', icon: ReceiptText, superAdminOnly: true },
 ];
@@ -486,6 +491,7 @@ export default function App() {
               <Route path="/admin" element={page(<AdminDashboardPage />)} />
               <Route path="/admin/bookings" element={page(<AdminBookingsPage />)} />
               <Route path="/admin/bookings/:bookingId" element={page(<OwnerBookingDetailPage />)} />
+              <Route path="/admin/bookings/:bookingId/transaction" element={page(<AdminBookingTransactionPage />)} />
               <Route path="/admin/users" element={page(<AdminUsersPage />)} />
               <Route path="/admin/users/:userId" element={page(<AdminUserDetailPage />)} />
               <Route path="/admin/vehicles" element={page(<AdminVehiclesPage />)} />
@@ -505,6 +511,8 @@ export default function App() {
               <Route path="/admin/settings" element={page(<AdminPlatformSettingsPage />)} />
               <Route path="/admin/rental-terms" element={page(<AdminRentalTermsPage />)} />
               <Route path="/admin/payouts" element={page(<AdminPayoutsPage />)} />
+              <Route path="/admin/refunds" element={page(<AdminRefundsPage />)} />
+              <Route path="/admin/finances" element={page(<AdminFinancesPage />)} />
               <Route path="/admin/quotations" element={page(<SuperAdminOnly>{<AdminQuotationPage />}</SuperAdminOnly>)} />
             </Route>
           </Route>

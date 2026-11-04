@@ -1438,3 +1438,129 @@ no `Authorization` header, since the access token may already have expired.
 
 **Please confirm:** whether `/auth/refresh` rotates the refresh token. The portal keeps the new one if the response has
 one, and otherwise keeps the old one. Also confirm that `/auth/refresh` and `/auth/logout` don't need an access token.
+
+## 52. Manual payout amount must be the owner's share — 2026-10-27
+
+**Portal.** **Create payout** (`POST /admin/disbursements/bookings/{bookingId}`) now sends the booking's
+`ownerPayout` as `amount`, shown read-only. Admins can't type a different amount (product owner: to prevent fraud).
+
+**Ask.** A read-only field in the browser can be bypassed by anyone calling the API directly, so please enforce it on
+the backend too. Either ignore `ManualDisbursementRequest.amount` and always use the booking's owner share, or reject
+an amount that differs from it. Also say whether `PATCH /admin/disbursements/{id}` should still allow changing the
+amount. In the portal, **Edit payout** still allows it.
+
+## 53. Platform analytics — consumed 2026-10-27
+
+**Consumed.** The five `analytics-controller` endpoints: `GET /admin/analytics/summary`, `/earnings/daily`,
+`/bookings`, `/vehicles/top` and `/owners/top`. They're on Reports → **Analytics**, always with `from`/`to` (default
+the last 30 days) and the default `limit` of 10.
+
+**Please confirm:**
+- Are `cancellationRate` and `confirmationRate` fractions (0.25) or percentages (25)? The portal reads a value of at
+  most 1 as a fraction.
+- Are the `*GrowthPct` values percentages (12.5 = +12.5%) compared with the previous period of the same length?
+- Does `/earnings/daily` include days with no payments? The chart shows only the days the backend returns.
+
+## 54. Pesapal in an iframe — 2026-10-27
+
+**Portal.** Pesapal's checkout (`redirectUrl` from the booking, group and overstay checkouts) now opens in an iframe
+on the portal's own page instead of a full-page redirect. When Pesapal finishes, it sends the iframe to the callback
+address. If that is this site's `/payment/success`, the page inside the frame tells the page around it, which then
+polls the status as before. If the callback goes anywhere else, the renter has to press **I've finished paying**.
+
+**Please check:**
+- The Pesapal callback URL (`PESAPAL_CALLBACK_URL`) for each environment should be the portal's own
+  `https://<portal>/payment/success` (dev: `http://localhost:5173/payment/success`).
+- The Pesapal account (live and sandbox) must allow its checkout page to be embedded. Pesapal supports iframe
+  checkout, but if it ever sends a header that blocks framing, the box stays blank and renters need **Open the
+  payment page instead**.
+
+## 55. M-Pesa STK push, refunds, M-Pesa fees — consumed 2026-10-27
+
+**Consumed.**
+- `POST /payments/mpesa/bookings/{id}/checkout?phone=` and `GET /payments/mpesa/bookings/{id}/status`: **M-Pesa** is
+  now the default way to pay a single booking. The portal polls the status every 3 s for up to a minute.
+- The Refunds endpoints: a list page, plus a section on the admin booking page.
+- `mpesaStkFee` and `mpesaB2cFee` in Platform Settings.
+
+**Please confirm:**
+- **Phone format.** The portal sends `phone` as `2547XXXXXXXX` (no `+`), and only Kenyan numbers. Is that what you
+  expect? Without `phone`, which number do you use?
+- **Is there one status for all providers?** Receipts and the "already paid?" check read
+  `/payments/pesapal/bookings/{id}/status`. Does that also report a booking paid by M-Pesa? If not, a booking paid by
+  M-Pesa shows no receipt, and the Payment page may offer to pay again in a browser that lost track. A
+  provider-agnostic status endpoint would fix both.
+- **Group and overstay payments by M-Pesa.** There's no M-Pesa checkout for booking groups or overstays yet, so those
+  stay on Pesapal.
+- **Refund limits.** The portal caps a refund at the payment's `amount` and requires a reason. Please enforce both on
+  the backend too.
+
+## 56. Split payments, financial records, overstay settings — consumed 2026-10-27
+
+**Consumed.**
+- Split payment (`POST`/`GET /payments/mpesa/bookings/{id}/split`, and `.../contributions/{id}/retry`). The renter
+  lists the payers (phone as `2547…`, name, optional email, amount) and a deadline of 30, 60, 180 or 1440 minutes. The
+  page polls `GET .../split` every 4 s until it's closed.
+- Financial records: a new **Finances** page (platform profit and unsettled bookings), plus a **Money** section with an
+  overstay preview on the admin booking page.
+- `overstayGracePeriodHours` and `overstayRateMultiplier` in Platform Settings.
+
+**Please confirm:**
+- **`groupStatus` values.** The portal treats `COMPLETED` (or `totalOutstanding` 0) as paid, and `EXPIRED`, `FAILED` or
+  `CANCELLED` as closed. Everything else counts as still waiting.
+- **Contribution `status` values.** The portal treats `SUCCESSFUL`, `COMPLETED` or `PAID` as paid, and `FAILED`,
+  `CANCELLED` or `INVALID` as not paid.
+- **What the shares must add up to.** The portal uses `BookingResponse.estimatedAmount` (falling back to daily price ×
+  days). Is that the exact amount you expect? Is the M-Pesa STK fee charged per payer on top of each share?
+- **Expiry with partial payment.** If a split expires after some people have paid, are their payments refunded
+  automatically? The portal tells the renter "anything already paid is handled by our team".
+- **Does a completed split mark the booking paid everywhere?** That includes the booking status, the receipt
+  (`/payments/pesapal/bookings/{id}/status` today), and the payout.
+- **Notifying payers.** Are payers who gave an email sent anything (the request, their receipt)?
+
+## 56 (update, 2026-10-27). Split payments — answered, consumed
+
+**Answered by the backend:**
+- **The total.** The shares add up to the booking's whole charge: base + processing fee + delivery fee + driver
+  charge, where the processing fee is the M-Pesa STK fee plus the B2C fee. Payers pay nothing on top. The backend
+  allows KES 1 for rounding. The portal now works the total out that way (`splitTotal`: `baseAmount` +
+  `deliveryFee` + `driverCharge` + `mpesaStkFee` + `mpesaB2cFee`), and shows the breakdown under the form.
+- **Statuses.** The group goes PENDING, PARTIAL, then COMPLETE, or ends EXPIRED or CANCELLED. Each person goes
+  PENDING, PROCESSING, then PAID, or FAILED. The portal shows PROCESSING as **Confirming** (no resend) and PARTIAL as
+  "Waiting for the rest to pay".
+- **Expiry.** There's no automatic refund. The renter is told the team will handle what was already paid.
+
+## 57. Refund split contributions automatically when a split expires — 2026-10-27
+
+**Ask.** When `expireStaleGroups()` expires a split group, refund the contributions already marked PAID (M-Pesa
+reversal or B2C back to the payer), or at least create a `Refund` record for each, so they appear under Refunds for
+an admin to settle. Today the money stays captured until someone notices.
+
+## 58. On/off flags for each charge in Platform Settings — 2026-11-04
+
+**Wanted.** Admins can switch each charge on or off: the Pesapal transaction fee, the delivery fee, the driver
+charge, the M-Pesa payment (STK) fee and the M-Pesa payout (B2C) fee.
+
+**Done in the portal for now.** A switched-off charge is saved as 0, and the portal remembers its last amount *in
+that admin's browser*, putting it back when the charge is switched on again. Another admin, or another browser, sees
+the charge off with no amount to restore.
+
+**Ask.** Add a boolean per charge to `PlatformSettingsRequest`/`Response` (e.g. `pesapalTransactionFeeEnabled`,
+`deliveryFeeEnabled`, `driverChargeEnabled`, `mpesaStkFeeEnabled`, `mpesaB2cFeeEnabled`), with the amounts kept as
+they are. Then a switched-off charge keeps its amount on the server, and pricing (quotes, checkouts, splits) skips it.
+
+## 58 (update, 2026-11-04). Charge on/off flags — done by the backend, consumed
+
+`pesapalTransactionFeeEnabled`, `deliveryFeeEnabled`, `driverChargeEnabled`, `mpesaStkFeeEnabled` and
+`mpesaB2cFeeEnabled` are now in Platform Settings. The switches save them, and a switched-off charge keeps its amount on
+the server. The browser-only workaround is gone. For settings saved before the flags existed, a charge counts as on
+while its amount is above 0. The renter's price summary leaves out the Pesapal and M-Pesa fees when they're off.
+
+**Note:** charges switched off with the earlier portal (before the flags) were saved as **0**, so their amounts need
+entering again before switching them back on.
+
+## 59. Pesapal checkout: `iframeUrl` replaces `redirectUrl` — consumed 2026-11-04
+
+`PaymentCheckoutResponse.redirectUrl` was removed and `iframeUrl` added. The portal reads `iframeUrl` (falling back to
+`redirectUrl` from an older backend) for booking, group and overstay checkouts. It shows the checkout in the payment
+box (PesapalFrame) as before.

@@ -16,8 +16,8 @@ import { formatCurrency, formatDateTime } from '../../lib/utils';
  * A booking's payout to its owner, on the admin's booking page — where a payout can be acted on next to the booking
  * it's for (`GET /admin/disbursements/bookings/{bookingId}`). The backend only creates one once the vehicle's pickup is
  * recorded; if that never happened (or the booking is older than payouts), **Create payout** makes one by hand
- * (`POST /admin/disbursements/bookings/{bookingId}`, live spec 2026-10-26), its amount filled in with the owner's
- * share of the booking (`BookingResponse.ownerPayout`).
+ * (`POST /admin/disbursements/bookings/{bookingId}`, live spec 2026-10-26), its amount the owner's share of the booking
+ * (`BookingResponse.ownerPayout`) — read-only, so it can't be typed over (product owner, 2026-10-27).
  *
  * @param {object} booking — `BookingResponse`
  */
@@ -58,7 +58,7 @@ export default function BookingPayoutCard({ booking }) {
             onClose={() => setCreating(false)}
             title="Create payout"
             submitLabel="Create payout"
-            initial={{ amount: booking.ownerPayout }}
+            lockedAmount={booking.ownerPayout ?? null}
             mutation={create}
             intro="For when the automatic payout didn't happen. It's created as To pay — then send it, or record it as paid by hand."
             onSubmit={(fields) => create.mutate({ bookingId: booking.id, ...fields }, { onSuccess: () => setCreating(false) })}

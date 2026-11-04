@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { PenLine, CreditCard } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
@@ -13,7 +13,7 @@ import PaymentStatusPanel from '../components/payment/PaymentStatusPanel';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useCartStore } from '../store/cartStore';
-import { useGroupCheckout, paymentStatusQuery, useGroupPollExhausted, useExistingPaymentChecks } from '../hooks/usePayment';
+import { useGroupCheckout, paymentStatusQuery, paymentStatusKey, useGroupPollExhausted, useExistingPaymentChecks } from '../hooks/usePayment';
 import { apiGet } from '../lib/api';
 import { PAYMENT_STATUSES } from '../lib/constants';
 import { isBookingUnfulfilled } from '../lib/utils';
@@ -43,6 +43,9 @@ export default function GroupPaymentPage() {
   // polling-attempt budget before they've even reached Pesapal.
   const [resuming] = useState(() => !!groupId && sessionStorage.getItem(`group-checkout:${groupId}`) === '1');
   const [continuedToPesapal, setContinuedToPesapal] = useState(false);
+  // Paying in Pesapal's frame right now — the same pause on status checks as PaymentPage's.
+  const [payingInFrame, setPayingInFrame] = useState(false);
+  const queryClient = useQueryClient();
   const [unfulfilledIds, setUnfulfilledIds] = useState([]);
   // Guards all of `handlePay`, not just `checkout.isPending` — see PaymentPage.jsx's own copy of this for
   // why the pre-check phase needs covering too, and why the actual re-entry check needs a ref rather than
@@ -67,7 +70,7 @@ export default function GroupPaymentPage() {
     if (groupId) sessionStorage.setItem(`group-checkout:${groupId}`, '1');
     setCheckoutStarted(true);
   }, [checkoutStarted, hasExistingPayment, groupId]);
-  const pollingEnabled = checkoutStarted && (resuming || continuedToPesapal || hasExistingPayment);
+  const pollingEnabled = checkoutStarted && !payingInFrame && (resuming || continuedToPesapal || hasExistingPayment);
   const statuses = useQueries({ queries: items.map((item) => paymentStatusQuery(item.bookingId, pollingEnabled)) });
   const exhausted = useGroupPollExhausted(
     items.map((item) => item.bookingId),
@@ -79,7 +82,6 @@ export default function GroupPaymentPage() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
-    let leaving = false;
     try {
       // The same last, deliberately fresh check as the single-vehicle Payment page, right before money moves —
       // now across every booking in the group, since any one of them could have been declined meanwhile.
@@ -96,20 +98,16 @@ export default function GroupPaymentPage() {
       // same as the first attempt (see `pollingEnabled`'s own comment above).
       setContinuedToPesapal(false);
       const data = await checkout.mutateAsync(groupId).catch(() => null);
-      // Straight to Pesapal — the renter just chose to pay, so no "ready to pay" countdown in between. The
-      // panel's own Continue to Payment link stays as the fallback if this navigation doesn't happen.
       if (data?.redirectUrl) {
-        setContinuedToPesapal(true);
-        window.location.assign(data.redirectUrl);
-        leaving = true;
+        // A fresh link: forget the last attempt's statuses (and their spent attempts), then pay in the frame.
+        items.forEach((item) => queryClient.removeQueries({ queryKey: paymentStatusKey(item.bookingId) }));
+        setPayingInFrame(true);
       }
+      // Pesapal's page now opens right here, in the panel's frame (PesapalFrame) — the browser no longer leaves for
+      // it. Polling starts once that frame reports the payment finished (the panel's `onContinue`).
     } finally {
-      // Leaving for Pesapal: keep the guard on, so a second click before the page unloads can't start
-      // another checkout (two checkouts could become two real charges).
-      if (!leaving) {
-        submittingRef.current = false;
-        setIsSubmitting(false);
-      }
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -167,7 +165,11 @@ export default function GroupPaymentPage() {
                   onRetry={handlePay}
                   retrying={isSubmitting}
                   redirectUrl={checkout.data?.redirectUrl || sessionStorage.getItem(`group-checkout-url:${groupId}`)}
-                  onContinue={() => setContinuedToPesapal(true)}
+                  paying={payingInFrame}
+                  onContinue={() => {
+                    setPayingInFrame(false);
+                    setContinuedToPesapal(true);
+                  }}
                 />
                 {overallStatus === PAYMENT_STATUSES.SUCCESSFUL && (
                   <Button

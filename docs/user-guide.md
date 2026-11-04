@@ -427,13 +427,36 @@ verifying your email (which signs you in), and picks up where you left off.
    Going back to this step after already accepting that contract (the browser's Back button, or a stale link) no
    longer shows a dead-end error — it offers **Continue to payment** instead (or, if you'd cancelled the booking,
    says so and offers **Browse other vehicles**).
-8. **Pay** — **Proceed to Payment** takes you straight to Pesapal (no waiting page in between). When Pesapal sends
-   you back, you land on the same Payment page, which shows the result:
+8. **Pay** — the page always opens on the choice of how to pay. On a wider screen the booking and what it costs sit
+   on the left, with paying on the right. The summary above it lists exactly what you'll pay
+   the way you've chosen: the rental (e.g. KES 1 a day × 1 day), delivery and driver if any, and that method's fees
+   as one **Processing fee** (by M-Pesa, its payment and transfer fees together; by card, the Pesapal percentage), then **Total to pay**. That's
+   the amount the M-Pesa prompt or Pesapal will ask for. It never shows "waiting for your payment" before
+   you've been asked to pay. If you started a payment for this booking earlier that hasn't been confirmed, a note
+   above the choice offers **Check its status**, in case it went through. Choose how to pay. **M-Pesa** (the default): check the phone number (it starts as your account's) and
+   press **Send M-Pesa prompt**. A prompt appears on that phone; enter your M-Pesa PIN there and the page moves on by
+   itself. A one-minute countdown shows how long the prompt stays open. If it runs out before the payment arrives, the
+   page waits for you: **Try again** sends a fresh prompt with a new minute (or **Check again** if you've just paid), and **Pay another way** (if it fails or goes unanswered) takes you
+   back to the choice. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
+   paying their part by M-Pesa. You're listed first with your details. **Add a person** for each of the others (name,
+   M-Pesa number, email optional for their receipt) and set everyone's share. The total is the whole charge (rental,
+   delivery, driver and the M-Pesa fees, shown under the form), and nobody pays extra on top of their share. **Split equally** divides the total
+   evenly. A line shows what's left to share out, and the requests can only be sent once the shares add up to the total
+   exactly (each number once, Kenyan lines only). Choose how long everyone has to pay (30 minutes to 24 hours), then
+   **Send payment requests**. Everyone gets an M-Pesa prompt. The page then shows how much is in (a progress bar),
+   the time left, and each person as **Waiting**, **Confirming** (PIN entered, M-Pesa confirming) or **Paid** (with their M-Pesa receipt), with **Resend prompt** for
+   anyone who hasn't paid. Once everyone has paid it moves on to **Payment successful** by itself. If time runs out
+   first, it says so and offers **Start again** or **Pay another way**. **Card & other**: **Proceed to Payment** opens Pesapal's
+   secure payment page **right on the Payment page**, in a box —
+   you never leave the site. Choose how to pay and finish there. When Pesapal is done, the page checks your payment
+   by itself; if it doesn't seem to notice (for example you approved it in the M-Pesa app), press **I've finished
+   paying**. If the box doesn't load in your browser, **Open the payment page instead** goes to Pesapal the old way.
+   The page then shows the result:
    - **Paid** — your **Receipt** is right there (**Preview** opens it; the download button opens the same view
      and goes straight to your browser's print dialog, where saving as PDF is the usual option), and **Continue
      to Sign Contract** takes you on to **sign** the contract on screen.
-   - **Failed** — **Try Again** starts a fresh payment and takes you straight to Pesapal.
-   - **Not confirmed yet** (for example you left Pesapal without paying) — **Continue to Payment** picks up where
+   - **Failed** — **Try Again** starts a fresh payment in the same box.
+   - **Not confirmed yet** (for example you closed Pesapal without paying) — **Continue to Payment** reopens the box where
      you left off, and **Check again** re-checks without starting a new payment. After about 30 seconds without an
      answer the page says so ("Still confirming your payment").
    - **Couldn't check** (a problem on the server, such as it being unable to reach Pesapal) — the page says
@@ -486,8 +509,8 @@ verifying your email (which signs you in), and picks up where you left off.
    **Message the owner**. Pick another car that's free for your dates (and add a reason if you like); the dates and
    places stay the same, and the price follows the new car's daily rate. The car's owner can do the same from Fleet
    Bookings (choosing from their own cars), and administrators from All Bookings (any approved car).
-   **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay**, which takes
-   you to Pesapal. The file icon next to **Receipt** downloads the official receipt as a PDF.
+   **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay**, which opens
+   Pesapal's payment page in a box on the same page. The file icon next to **Receipt** downloads the official receipt as a PDF.
 11. **Cancel or review** — a booking that is still Pending or Confirmed has a **Cancel booking** button, both in
    its expanded row on My Bookings and on its own page. The confirmation checks the owner's cancellation
    policy first and tells you what to expect before you confirm: a full refund with enough notice, a reduced
@@ -813,7 +836,7 @@ your permissions" above): an item is only shown if your account holds the permis
   but can't be listed here. Whether the backend accepts "pending" as a review status isn't documented; if
   it refuses, its message is shown and the decision stays as it was.
 - **Add Vehicle** (`/admin/vehicles/new`) — list a vehicle on behalf of any owner.
-- **Reports** (`/admin/reports`, needs `BOOKING_MANAGE`) — the platform report, in four parts:
+- **Reports** (`/admin/reports`, needs `BOOKING_MANAGE`) — the platform report, in tabs:
   **Signed in recently** (everyone who signed in during the last 60 minutes, with when, plus the count for the
   last 24 hours); **People** (accounts, active, disabled, email verified, profiles completed, renters, owners,
   fleet managers, admins, two-factor on — an account counts under every role it holds); **Vehicles** (total,
@@ -821,7 +844,13 @@ your permissions" above): an item is only shown if your account holds the permis
   price per day, documents waiting for review, and vehicles by place); and **Bookings and revenue** (totals, the
   number in each outcome, a **Bookings by month** chart — a stacked bar per month, one color per outcome, with a
   **Table view** toggle for the same numbers as a table, and hovering or focusing a bar shows its breakdown — and
-  the bookings themselves, filterable by date and printable). **"Signed in" is not "online":**
+  the bookings themselves, filterable by date and printable). **Analytics** (its own tab) shows the money and
+  bookings for a period you pick: 7, 30 or 90 days, this year, or your own From/To dates (it starts at the last 30
+  days). It has gross revenue, platform earnings and bookings, each with its change against the previous period of
+  the same length; the average booking; what owners earned, how much has been paid out and how much is still to pay;
+  payments (successful, pending, failed); and the fees taken. Below that are a **Daily earnings** chart (each day's
+  platform earnings and owner payouts stacked, with a **Table view**), the booking confirmation and cancellation
+  rates with the count in each status, and tables of the **Top vehicles** and **Top owners**. **"Signed in" is not "online":**
   the backend has no live-connection count and records sign-ins but not sign-outs, so this is the people who signed
   in within the last hour (the life of a login), refreshed every minute, read from the audit log. The vehicle
   counts come from the vehicle list the backend returns; a vehicle it leaves out isn't counted.
@@ -842,6 +871,33 @@ your permissions" above): an item is only shown if your account holds the permis
 - **Audit Log** (`/admin/audit-log`) — who did what and when (sign-ins, changes…), newest first, a page at a time (**Per page** sets how many)
   (20 entries). Filter by **action** (`LOGIN` finds `AUTH_LOGIN`), the **person's email** and the **kind of
   record**; click an entry for its full details (who, role, what it was about, the details text, IP address).
+- **Finances** (`/admin/finances`) — the platform's money: charged to renters (rental and overstay), commission
+  earned, net profit, owner payouts paid and pending, and what's still owed to owners. Below that is every booking
+  that was paid for but whose owner isn't fully paid yet, with what was collected, what the owner has been paid and
+  what's still owed; open one to pay its owner. Each booking's own page (All Bookings) also has a **Money** section:
+  billed, collected, commission, fees, owner paid and still owed, each charge (rental, overstay…) with how it was
+  paid and its payout. While the car is out, **If it comes back late** works out the overstay charge for a return
+  time you pick.
+  **See the full breakdown** (also **Breakdown** on each unsettled booking in Finances) opens the booking's
+  **Transaction breakdown** (`/admin/bookings/{id}/transaction`), which works through all of its money. For each charge
+  (rental, overstay…):
+  1. **What the renter was charged**, line by line: the rental with its working (e.g. KES 5,000 a day × 3 days), then
+     delivery, driver and the processing fee (e.g. Pesapal 3.5% of 16,000), adding up to the total.
+  2. **How it was split**: the owner's share, commission, processing fee, delivery and driver charge, as a bar and a
+     table with each part's amount and share of the total. Any money the recorded parts don't account for is shown
+     as its own line.
+  3. **Checks**: the commission (the rate that applies, standard or longer-booking, × the rental), the owner's share
+     (rental − commission, recognising a driver charge or delivery fee passed on to the owner) and the processing
+     fee. Each is worked out and compared with what was recorded: **Matches** or **Off by KES …**.
+  4. **Paid to the owner**: paid of owed, still to pay, and the payout reference.
+  Then **The whole booking**: collected from the renter, less what's owed to the owner, less refunds, gives what the
+  platform keeps, compared with the net profit the system recorded. **Print** prints just the breakdown, and
+  **Download CSV** gives every figure for a spreadsheet. The checks use today's settings, so a booking made before a
+  settings change can show a difference that isn't an error.
+- **Refunds** (`/admin/refunds`) — money sent back to renters through Pesapal, under **Pending**, **Processing**,
+  **Refunded** and **Failed**. Start one from the booking's own page (All Bookings → the booking → **Refund**
+  section → **Refund payment**): the amount (empty = all of it, never more than was paid) and a reason (required). If
+  Pesapal doesn't report back, **Mark refunded** or **Mark failed** settles it by hand, after you confirm.
 - **Owner Payouts** (`/admin/payouts`) — each booking's payout to its owner, under **To pay**, **Processing**, **Paid**
   and **Failed**. For when the automatic flow needs a hand:
   - **Send payout now** pays the owner through the payment provider (you confirm first). It shows **Processing** until
@@ -855,9 +911,9 @@ your permissions" above): an item is only shown if your account holds the permis
     payment reference (e.g. a bulk bank transfer). You confirm first. Afterwards it lists any that didn't go through,
     with the reason; those are left as they were, so you can fix and retry them.
   A payout is normally created when the vehicle's pickup is recorded. If that never happened, use **Create payout** at
-  the top of Owner Payouts and choose the booking (only paid bookings without a payout are listed); leave the amount
-  empty for the owner's share. A booking's own page (All Bookings) has the same **Create payout** in its **Owner
-  payout** section, with the owner's share filled in.
+  the top of Owner Payouts and choose the booking (only paid bookings without a payout are listed). The amount fills in
+  with the owner's share of that booking and can't be changed. A booking's own page (All Bookings) has the same
+  **Create payout** in its **Owner payout** section.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside
@@ -878,9 +934,15 @@ your permissions" above): an item is only shown if your account holds the permis
   Contact page and in the footer and given to search engines; an empty field is simply not shown) and **Assistant** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
-  charged on a booking that already exists. Next to it: the **Pesapal transaction fee** (%), the **Delivery fee** (a
+  charged on a booking that already exists. Next to it, **Fees and charges** (it opens and closes from its heading, which says how many are on): each charge
+  is one row with its amount and an on/off switch. Off means it isn't charged; its amount is kept, ready for when
+  it's switched back on. A charge that's on needs an amount above 0, and switches take effect when you **Save settings**. The charges are the
+  **Pesapal transaction fee** (%), the **Delivery fee** (a
   flat amount when the renter has the car delivered; 0 = free) and the **Driver charge** (a flat amount added to a
-  chauffeured booking; 0 = none). **Commission on longer bookings** sets a different rate for bookings of a given
+  chauffeured booking; 0 = none), plus the **M-Pesa payment fee** (a flat amount per payment by M-Pesa prompt) and the
+  **M-Pesa payout fee** (a flat amount per payout sent to an owner by M-Pesa). **Late returns**: the **Grace
+  period** (hours a car can be late before overstay is charged) and the **Overstay rate** (times the daily rate,
+  1 or more, e.g. 1.5). **Commission on longer bookings** sets a different rate for bookings of a given
   number of days or more (e.g. 10% from 2 days: a 1-day booking takes the normal rate, a 2-day one 10%); leave both
   empty for one rate on every booking. Like the normal rate, it comes out of the owner's share — the renter's total
   doesn't change. **Save settings** saves all of them together.

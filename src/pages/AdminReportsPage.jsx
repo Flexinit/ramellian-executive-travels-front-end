@@ -3,6 +3,7 @@ import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import { SignedInSection, PeopleSection, VehiclesSection } from '../components/reports/PlatformOverview';
+import AnalyticsSection from '../components/reports/AnalyticsSection';
 import ReportSummaryCards from '../components/reports/ReportSummaryCards';
 import ReportTable from '../components/reports/ReportTable';
 import BookingsChart from '../components/reports/BookingsChart';
@@ -11,6 +12,7 @@ import { reportBookings } from '../lib/reports';
 
 const TABS = [
   { value: 'activity', label: 'Activity' },
+  { value: 'analytics', label: 'Analytics' },
   { value: 'people', label: 'People' },
   { value: 'vehicles', label: 'Vehicles' },
   { value: 'revenue', label: 'Revenue' },
@@ -27,6 +29,7 @@ const TABS = [
  * via `ReportTable`) is tall enough on its own to deserve its own tab rather than sitting below a chart. Each
  * tab's own data only loads once that tab is actually opened (and stays cached after, via TanStack Query), so
  * switching between them doesn't force every section to fetch upfront just because the page itself was opened.
+ * **Analytics** (2026-10-27) is the platform's money and bookings for a chosen period (`AnalyticsSection`).
  */
 export default function AdminReportsPage() {
   const [tab, setTab] = useState('activity');
@@ -39,6 +42,7 @@ export default function AdminReportsPage() {
         <h1 className="font-heading text-ink text-2xl sm:text-3xl font-bold">Platform Reports</h1>
         <SegmentedControl kind="tab" label="Report section" value={tab} onChange={setTab} options={TABS} />
 
+        {tab === 'analytics' && <AnalyticsSection />}
         {tab === 'activity' && <SignedInSection />}
         {tab === 'people' && <PeopleSection />}
         {tab === 'vehicles' && <VehiclesSection />}

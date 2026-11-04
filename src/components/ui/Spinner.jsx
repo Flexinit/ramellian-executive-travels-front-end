@@ -4,7 +4,7 @@ import React from 'react';
  * Accessible loading spinner.
  * @param {'sm'|'md'|'lg'} size
  * @param {string} label  — aria-label text
- * @param {string} color  — Tailwind border-color class override
+ * @param {string} color  — Tailwind border-colour classes used instead of the accent (e.g. on an accent-filled button)
  */
 export default function Spinner({ size = 'md', label = 'Loading', color = '' }) {
   const sizes = {
@@ -17,7 +17,8 @@ export default function Spinner({ size = 'md', label = 'Loading', color = '' }) 
     <span
       role="status"
       aria-label={label}
-      className={`${sizes[size]} inline-block rounded-full border-accent/30 border-t-accent animate-spin ${color}`}
+      // `color` replaces the accent colour rather than adding to it — two border colours would fight over the stylesheet's order.
+      className={`${sizes[size]} inline-block rounded-full animate-spin ${color || 'border-accent/30 border-t-accent'}`}
     />
   );
 }

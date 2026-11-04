@@ -120,7 +120,7 @@ export default function RegisterModal({ isOpen, onClose, onReopen, onSwitchToLog
 
         {(isGoogleSignInEnabled() || import.meta.env.DEV) && (
           <>
-            <GoogleSignInButton text="signup_with" onCredential={googleLogin.mutate} disabled={googleLogin.isPending || registerUser.isPending} />
+            <GoogleSignInButton loading={googleLogin.isPending} text="signup_with" onCredential={googleLogin.mutate} disabled={googleLogin.isPending || registerUser.isPending} />
             <Divider label="or sign up with your email" />
           </>
         )}

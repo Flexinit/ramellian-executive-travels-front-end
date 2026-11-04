@@ -344,7 +344,7 @@ export const paymentHandlers = [
 
   http.post(`${BASE}/payments/pesapal/bookings/:bookingId/checkout`, ({ params }) =>
     HttpResponse.json({
-      redirectUrl: `https://pay.pesapal.com/checkout?booking=${params.bookingId}`,
+      iframeUrl: `https://pay.pesapal.com/checkout?booking=${params.bookingId}`,
       orderTrackingId: 'mock-tracking-id',
     })
   ),
@@ -380,7 +380,7 @@ export const paymentHandlers = [
   // Confirmed live: requires auth (403 without a token) — one payment for every booking in the group.
   http.post(`${BASE}/payments/pesapal/booking-groups/:groupId/checkout`, ({ params }) =>
     HttpResponse.json({
-      redirectUrl: `https://pay.pesapal.com/checkout?group=${params.groupId}`,
+      iframeUrl: `https://pay.pesapal.com/checkout?group=${params.groupId}`,
       orderTrackingId: 'mock-group-tracking-id',
     })
   ),
@@ -431,6 +431,26 @@ export const adminHandlers = [
 
 // ─── All handlers combined ───────────────────────────────────────────────────
 
+// Refunds (admin) — none by default.
+export const refundHandlers = [
+  http.get(`${BASE}/admin/refunds`, () => HttpResponse.json([])),
+  http.get(`${BASE}/admin/refunds/booking/:bookingId`, () => HttpResponse.json({ message: 'Refund not found' }, { status: 404 })),
+  // Financial records and split payments — nothing by default.
+  http.get(`${BASE}/admin/financials/bookings/:bookingId`, () => HttpResponse.json({ message: 'Not found' }, { status: 404 })),
+  http.get(`${BASE}/admin/financials/unsettled`, () => HttpResponse.json([])),
+  http.get(`${BASE}/admin/financials/platform-profit`, () => HttpResponse.json({})),
+  http.get(`${BASE}/payments/mpesa/bookings/:bookingId/split`, () => HttpResponse.json({ message: 'Not found' }, { status: 404 })),
+];
+
+// Platform analytics (admin) — empty by default; tests that need figures override these.
+export const analyticsHandlers = [
+  http.get(`${BASE}/admin/analytics/summary`, () => HttpResponse.json({ grossRevenue: 0, platformEarnings: 0, totalBookings: 0 })),
+  http.get(`${BASE}/admin/analytics/earnings/daily`, () => HttpResponse.json([])),
+  http.get(`${BASE}/admin/analytics/bookings`, () => HttpResponse.json({ totalBookings: 0, countByStatus: {} })),
+  http.get(`${BASE}/admin/analytics/vehicles/top`, () => HttpResponse.json([])),
+  http.get(`${BASE}/admin/analytics/owners/top`, () => HttpResponse.json([])),
+];
+
 export const chatHandlers = [
   http.get(`${BASE}/notifications`, () => HttpResponse.json([])),
   http.get(`${BASE}/notifications/unread-count`, () => HttpResponse.json({ unreadCount: 0 })),
@@ -448,4 +468,6 @@ export const handlers = [
   ...paymentHandlers,
   ...reportHandlers,
   ...adminHandlers,
+  ...analyticsHandlers,
+  ...refundHandlers,
 ];

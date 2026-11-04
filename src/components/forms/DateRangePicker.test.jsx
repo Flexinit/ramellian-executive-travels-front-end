@@ -48,10 +48,10 @@ describe('DateRangePicker — disabledRanges', () => {
   it('refuses a disabled day as the start date', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    // A wide range covering "today" through the end of the visible month, so this test isn't sensitive to
-    // which day "today" happens to be when it runs.
+    // A wide range covering "today" through the end of NEXT month, so this test isn't sensitive to which day "today"
+    // is: the calendar also shows the first days of next month in its last row (e.g. 1–5 December under November).
     const today = new Date();
-    const disabledRanges = [{ start: today, end: new Date(today.getFullYear(), today.getMonth() + 1, 0) }];
+    const disabledRanges = [{ start: today, end: new Date(today.getFullYear(), today.getMonth() + 2, 0) }];
     render(<Controlled disabledRanges={disabledRanges} onChange={onChange} />);
 
     await open(user);

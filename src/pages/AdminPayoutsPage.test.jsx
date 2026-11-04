@@ -131,16 +131,16 @@ describe('AdminPayoutsPage', () => {
   it('creates a payout from this page for a paid booking that has none', async () => {
     const user = userEvent.setup();
     let posted;
-    const booking = (id, status, vehicleModel) => ({
-      id, status, vehicleModel, startTime: '2026-10-01T09:00:00+03:00', endTime: '2026-10-04T09:00:00+03:00', renterEmail: 'rita@example.com',
+    const booking = (id, status, renterName) => ({
+      id, status, renterName, startTime: '2026-10-01T09:00:00+03:00', endTime: '2026-10-04T09:00:00+03:00', renterEmail: 'rita@example.com',
     });
     server.use(
       // b1 already has a payout; b3 was cancelled, so neither can be picked.
       http.get(`${BASE}/admin/disbursements`, ({ request }) =>
         HttpResponse.json(new URL(request.url).searchParams.get('status') === 'COMPLETED' ? [PAYOUT({ status: 'COMPLETED' })] : [])),
       http.get(`${BASE}/bookings/reports/admin`, () => HttpResponse.json({
-        completed: [booking('b1', 'COMPLETED', 'Toyota Prado'), booking('b2', 'COMPLETED', 'Mazda CX-5')],
-        cancelled: [booking('b3', 'CANCELLED', 'Subaru Forester')],
+        completed: [booking('b1', 'COMPLETED', 'Ann Renter'), { ...booking('b2', 'COMPLETED', 'Mo Renter'), ownerPayout: 7200 }],
+        cancelled: [booking('b3', 'CANCELLED', 'Cy Renter')],
       })),
       http.post(`${BASE}/admin/disbursements/bookings/:bookingId`, async ({ request, params }) => {
         posted = { bookingId: params.bookingId, body: await request.json() };
@@ -153,8 +153,8 @@ describe('AdminPayoutsPage', () => {
     const picker = screen.getByLabelText('Booking');
     await waitFor(() => expect(picker).toBeEnabled());
     const choices = Array.from(picker.options).map((o) => o.textContent);
-    expect(choices.some((c) => c.includes('Mazda CX-5'))).toBe(true);
-    expect(choices.some((c) => c.includes('Toyota Prado') || c.includes('Subaru Forester'))).toBe(false);
+    expect(choices.some((c) => c.includes('Mo Renter') && c.includes('KES 7,200'))).toBe(true);
+    expect(choices.some((c) => c.includes('Ann Renter') || c.includes('Cy Renter'))).toBe(false);
 
     // A booking must be chosen first.
     const dialog = screen.getByRole('dialog');
@@ -162,11 +162,18 @@ describe('AdminPayoutsPage', () => {
     expect(await screen.findByText('Choose the booking this payout is for.')).toBeInTheDocument();
     expect(posted).toBeUndefined();
 
+    const amount = screen.getByLabelText('Amount (KES)');
+    expect(amount).toHaveValue('');
+    expect(amount).toHaveAttribute('readonly');
     await user.selectOptions(picker, 'b2');
+    // Filled in from the booking — the owner's share — and it can't be typed over.
+    expect(amount).toHaveValue('KES 7,200');
+    await user.type(amount, '1');
+    expect(amount).toHaveValue('KES 7,200');
     await user.type(screen.getByLabelText(/owner's phone/i), '+254712345678');
     await user.click(within(dialog).getByRole('button', { name: /^create payout$/i }));
 
-    await waitFor(() => expect(posted).toEqual({ bookingId: 'b2', body: { ownerPhone: '+254712345678' } }));
+    await waitFor(() => expect(posted).toEqual({ bookingId: 'b2', body: { amount: 7200, ownerPhone: '+254712345678' } }));
     expect(await screen.findByText(/payout created/i)).toBeInTheDocument();
   });
 

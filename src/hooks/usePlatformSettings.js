@@ -11,7 +11,8 @@ export { socialLink, whatsappLink };
  * Platform-wide settings — `platform-settings-controller` (docs/backend-requests.md items 26, 48). `GET`/`PUT
  * /platform-settings`; `PlatformSettingsResponse` (live spec 2026-10-26) carries:
  *  - pricing: `commissionRatePct` (required on PUT), `multiDayCommissionRatePct`, `multiDayThresholdDays`,
- *    `pesapalTransactionFeeRatePct`, `deliveryFlatFee`, `driverFlatCharge`;
+ *    `pesapalTransactionFeeRatePct`, `deliveryFlatFee`, `driverFlatCharge`, and (2026-10-27) the flat M-Pesa fees
+ *    `mpesaStkFee` (a payment by STK prompt) and `mpesaB2cFee` (a payout to an owner by M-Pesa);
  *  - the assistant switch: `botAssistantEnabled` (also `PUT /platform-settings/bot` `{ enabled }`, and the public
  *    `GET /bot/status` → `{ enabled }`);
  *  - pickup reminders the backend sends: `pickupReminderEnabled`, `pickupReminderRenterEnabled`,

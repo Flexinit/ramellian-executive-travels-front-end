@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { googleClientId, isGoogleSignInEnabled } from '../../lib/features';
 import { loadGoogleIdentity } from '../../lib/googleIdentity';
+import Spinner from '../ui/Spinner';
 
 /** Google's four-colour "G". */
 function GoogleG() {
@@ -38,8 +39,10 @@ function GooglePreview({ text }) {
  * @param {(credential: string) => void} onCredential
  * @param {'signin_with'|'signup_with'|'continue_with'} [text]
  * @param {boolean} [disabled] — dims the button and ignores it while a sign-in is already under way
+ * @param {boolean} [loading] — the Google sign-in itself is under way: a spinner with "Signing you in with Google…"
+ *   covers the button (Google draws the button, so it can't show one of its own)
  */
-export default function GoogleSignInButton({ onCredential, text = 'continue_with', disabled = false }) {
+export default function GoogleSignInButton({ onCredential, text = 'continue_with', disabled = false, loading = false }) {
   const holder = useRef(null);
   const callback = useRef(onCredential);
   const busy = useRef(disabled);
@@ -78,5 +81,17 @@ export default function GoogleSignInButton({ onCredential, text = 'continue_with
 
   if (!enabled) return import.meta.env.DEV ? <GooglePreview text={text} /> : null;
   if (failed) return null;
-  return <div ref={holder} data-testid="google-signin" className={`flex w-full justify-center min-h-[44px] ${disabled ? 'pointer-events-none opacity-60' : ''}`} />;
+  return (
+    <div className="relative w-full" aria-busy={loading || undefined}>
+      <div ref={holder} data-testid="google-signin" className={`flex w-full justify-center min-h-[44px] ${disabled || loading ? 'pointer-events-none opacity-60' : ''}`} />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#131314] px-5 py-2.5 text-sm font-medium text-white shadow-card">
+            <Spinner size="sm" label="Signing you in with Google" color="border-brand-gold/30 border-t-brand-gold" />
+            Signing you in with Google…
+          </span>
+        </div>
+      )}
+    </div>
+  );
 }

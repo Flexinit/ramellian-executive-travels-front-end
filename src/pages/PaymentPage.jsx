@@ -1,22 +1,34 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { PenLine, CreditCard } from 'lucide-react';
+import { PenLine, CreditCard, RotateCcw, Users } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import PaymentSummary from '../components/payment/PaymentSummary';
 import PaymentStatusPanel from '../components/payment/PaymentStatusPanel';
+import SplitPaymentForm from '../components/payment/SplitPaymentForm';
+import MpesaLogo from '../components/payment/MpesaLogo';
+import SplitPaymentProgress from '../components/payment/SplitPaymentProgress';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import BackLink from '../components/ui/BackLink';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
+import Input from '../components/ui/Input';
+import SegmentedControl from '../components/ui/SegmentedControl';
 import { useBooking } from '../hooks/useBookings';
 import { useVehicle } from '../hooks/useVehicles';
-import { usePesapalCheckout, usePaymentStatus, useExistingPaymentCheck } from '../hooks/usePayment';
+import { useQueryClient } from '@tanstack/react-query';
+import { usePesapalCheckout, useMpesaCheckout, usePaymentStatus, useExistingPaymentCheck, paymentStatusKey } from '../hooks/usePayment';
+import { useAuthStore } from '../store/authStore';
+import { splitIsPaid, splitTotal, useRetryContribution, useSplitPayment, useStartSplit } from '../hooks/useSplitPayment';
+import { usePlatformSettings } from '../hooks/usePlatformSettings';
+import { apiErrorMessage } from '../lib/apiError';
+import { normalizePhone } from '../lib/phone';
 import { PAYMENT_STATUSES } from '../lib/constants';
-import { isBookingUnfulfilled } from '../lib/utils';
+import { calculateTotalPrice, isBookingUnfulfilled } from '../lib/utils';
+import { amountToPay } from '../lib/paymentTotal';
 
 /**
  * Handles both halves of the Pesapal flow on one page: initiating
@@ -33,24 +45,53 @@ import { isBookingUnfulfilled } from '../lib/utils';
  * this same URL, the "resume polling automatically" behavior here needs
  * revisiting once that's known.
  */
+/** How the renter pays (product owner, 2026-10-27: M-Pesa first): a prompt on their phone, or Pesapal's page. */
+/** The M-Pesa options carry M-Pesa's green. */
+const MpesaIcon = () => <MpesaLogo size={18} />;
+const SplitIcon = (props) => <Users {...props} className="text-mpesa-deep" />;
+
+const METHODS = [
+  { value: 'mpesa', label: 'M-Pesa', icon: MpesaIcon },
+  // Several people each pay their share by M-Pesa prompt (product owner, 2026-10-27).
+  { value: 'split', label: 'Split the cost', icon: SplitIcon },
+  { value: 'pesapal', label: 'Card & other', icon: CreditCard },
+];
+
+/** A Kenyan number as Safaricom writes it (+2547…), or null — an M-Pesa prompt can only go to a Kenyan line. */
+function mpesaNumber(input) {
+  const n = normalizePhone(input);
+  return n && n.startsWith('+254') ? n : null;
+}
+
 export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { vehicleId } = useParams();
   const bookingId = location.state?.bookingId || sessionStorage.getItem(`booking:${vehicleId}`);
-  const [checkoutStarted, setCheckoutStarted] = useState(
-    () => !!bookingId && sessionStorage.getItem(`checkout:${bookingId}`) === '1'
-  );
+  // The page opens on "How to pay" (product owner, 2026-11-04: never "waiting for confirmation" before the renter has
+  // been asked to pay). It only opens on a payment's progress when one is really under way from here: back from
+  // Pesapal's own page (PaymentSuccessPage says so), or an M-Pesa prompt / split this browser started. An older,
+  // unconfirmed payment record doesn't count — the choice shows, with a note to check it (`earlierPayment` below).
+  const resumable = () => {
+    if (!bookingId || sessionStorage.getItem(`checkout:${bookingId}`) !== '1') return false;
+    const stored = sessionStorage.getItem(`checkout-provider:${bookingId}`);
+    return !!location.state?.returnedFromPesapal || stored === 'mpesa' || stored === 'split';
+  };
+  const [checkoutStarted, setCheckoutStarted] = useState(resumable);
   // Captured once, at mount, from the same flag `checkoutStarted` reads — so unlike `checkoutStarted` itself
   // (which `handlePay` flips true the instant "Proceed to Payment" is clicked, before Pesapal is even
   // involved), this stays false for a fresh click in *this* page load and only starts true when the page is
   // loading because Pesapal already redirected back here. Together with `continuedToPesapal` below, it's
   // what `pollingEnabled` uses to tell "a payment might genuinely exist to check" apart from "a checkout was
   // merely just clicked" — see that constant's own comment.
-  const [resuming] = useState(() => !!bookingId && sessionStorage.getItem(`checkout:${bookingId}`) === '1');
+  const [resuming] = useState(resumable);
   // Flips true only once the renter actually clicks "Continue to Pesapal" (PaymentStatusPanel's `onContinue`)
   // — including a middle/ctrl/cmd-click that opens it in a new tab, where this tab's app keeps running.
   const [continuedToPesapal, setContinuedToPesapal] = useState(false);
+  // Paying in Pesapal's frame right now (a checkout just started here): status checks wait until the frame reports
+  // the payment finished, so they can't give up — or show an earlier attempt's result — while the renter is paying.
+  const [payingInFrame, setPayingInFrame] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (bookingId) sessionStorage.setItem(`booking:${vehicleId}`, bookingId);
@@ -65,11 +106,18 @@ export default function PaymentPage() {
   // this booking from a checkout the local flag lost track of? If so, resume the normal status view below
   // instead of leaving "Proceed to Payment" offered for something already paid for (or already mid-payment).
   const existingPayment = useExistingPaymentCheck(bookingId, !checkoutStarted);
+  // The renter chose another way to pay: don't bounce them back to the payment they just switched away from.
+  const [choosing, setChoosing] = useState(false);
+  // Already paid (in another tab, another device, or before a reload): straight to the result. Anything short of paid
+  // leaves the choice of how to pay on screen.
   useEffect(() => {
-    if (checkoutStarted || !existingPayment.status) return;
+    if (checkoutStarted || choosing || existingPayment.status !== PAYMENT_STATUSES.SUCCESSFUL) return;
     if (bookingId) sessionStorage.setItem(`checkout:${bookingId}`, '1');
     setCheckoutStarted(true);
-  }, [checkoutStarted, existingPayment.status, bookingId]);
+  }, [checkoutStarted, choosing, existingPayment.status, bookingId]);
+  // A payment started earlier that hasn't been confirmed (or refused): mentioned above the choice, in case it went through.
+  const earlierPayment = !checkoutStarted && !choosing && !!existingPayment.status
+    && ![PAYMENT_STATUSES.SUCCESSFUL, PAYMENT_STATUSES.FAILED, PAYMENT_STATUSES.INVALID].includes(existingPayment.status);
   // Polling only has anything to check once the renter has actually been sent toward Pesapal — resuming a
   // session that already got that far (`resuming`), having just clicked through in this one
   // (`continuedToPesapal`), or a payment record already existing (`existingPayment.status`, the lost-flag
@@ -79,9 +127,36 @@ export default function PaymentPage() {
   // exist yet, and could burn through `usePaymentStatus`'s fixed attempt budget before the renter had even
   // left for Pesapal (worst case if they opened the link in a new tab and this tab kept ticking the whole
   // time they were over there paying).
-  const pollingEnabled = checkoutStarted && (resuming || continuedToPesapal || !!existingPayment.status);
-  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled);
+  // Paying by M-Pesa prompt (STK push) — remembered per booking, so a reload keeps checking the right status.
+  const [provider, setProvider] = useState(() => (bookingId && sessionStorage.getItem(`checkout-provider:${bookingId}`)) || 'pesapal');
+  const [method, setMethod] = useState('mpesa');
+  const accountPhone = useAuthStore((s) => s.user?.phoneNumber || '');
+  const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState(null);
+  const [promptedPhone, setPromptedPhone] = useState(() => (bookingId && sessionStorage.getItem(`checkout-phone:${bookingId}`)) || '');
+  // When the last M-Pesa prompt went out — its 60-second countdown (PaymentStatusPanel) carries on across a reload.
+  const [promptedAt, setPromptedAt] = useState(() => Number(bookingId && sessionStorage.getItem(`checkout-prompted-at:${bookingId}`)) || null);
+  useEffect(() => {
+    if (!phone && accountPhone) setPhone(accountPhone);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountPhone]);
+  const mpesa = useMpesaCheckout();
+  const byMpesa = provider === 'mpesa';
+  const bySplit = provider === 'split';
+  const user = useAuthStore((s) => s.user);
+  const split = useSplitPayment(bookingId, { enabled: checkoutStarted && bySplit });
+  const startSplit = useStartSplit();
+  const resend = useRetryContribution();
+  const [splitError, setSplitError] = useState(null);
+  const { data: settings } = usePlatformSettings();
+  const pollingEnabled = bySplit
+    ? false
+    : byMpesa
+    ? checkoutStarted
+    : checkoutStarted && !payingInFrame && (resuming || continuedToPesapal || !!existingPayment.status);
+  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled, provider);
   const unfulfilled = isBookingUnfulfilled(booking?.status);
+  const settled = [PAYMENT_STATUSES.SUCCESSFUL, PAYMENT_STATUSES.FAILED, PAYMENT_STATUSES.INVALID].includes(paymentStatus.data?.status);
   // Guards the *entire* `handlePay` call, not just `checkout.isPending` — that only covers the mutation
   // itself, not the `await refetchBooking()` pre-check ahead of it. A fast double-click (or a slow network
   // making the first click's effect invisible for a moment) during that window would otherwise still start
@@ -94,11 +169,57 @@ export default function PaymentPage() {
   const submittingRef = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handlePay() {
+  /** Back to choosing how to pay — after an M-Pesa prompt or a split that failed, ran out or went unanswered. */
+  function payAnotherWay(nextMethod = 'pesapal') {
+    sessionStorage.removeItem(`checkout:${bookingId}`);
+    sessionStorage.removeItem(`checkout-provider:${bookingId}`);
+    queryClient.removeQueries({ queryKey: paymentStatusKey(bookingId, 'mpesa') });
+    queryClient.removeQueries({ queryKey: ['split-payment', bookingId] });
+    setSplitError(null);
+    setProvider('pesapal');
+    setMethod(nextMethod);
+    setChoosing(true);
+    setCheckoutStarted(false);
+  }
+
+  /** Sends each person their M-Pesa prompt for their share — the same last check on the booking as any payment. */
+  async function handleSplit(request) {
     if (submittingRef.current) return;
     submittingRef.current = true;
     setIsSubmitting(true);
-    let leaving = false;
+    setSplitError(null);
+    try {
+      const { data: fresh } = await refetchBooking();
+      if (isBookingUnfulfilled(fresh?.status)) {
+        toast.error("This booking is no longer available — see below.");
+        return;
+      }
+      await startSplit.mutateAsync({ bookingId, ...request });
+      sessionStorage.setItem(`checkout:${bookingId}`, '1');
+      setProvider('split');
+      setCheckoutStarted(true);
+      toast.success('Payment requests sent — everyone gets a prompt on their phone.');
+    } catch (error) {
+      setSplitError(apiErrorMessage(error, "Couldn't send the payment requests. Please try again."));
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
+  // A retry keeps the way already being used to pay; a first payment uses the one chosen.
+  async function handlePay(chosen = checkoutStarted ? provider : method) {
+    // The M-Pesa number is checked before anything else, so nothing is started for a number that can't get a prompt.
+    const via = chosen === 'mpesa' ? 'mpesa' : 'pesapal';
+    const mpesaPhone = via === 'mpesa' ? mpesaNumber(byMpesa && checkoutStarted ? promptedPhone || phone : phone) : null;
+    if (via === 'mpesa' && !mpesaPhone) {
+      setPhoneError('Enter a Kenyan M-Pesa number, e.g. 0712 345 678.');
+      return;
+    }
+    setPhoneError(null);
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setIsSubmitting(true);
     try {
       // One last, deliberately fresh check right before money moves — the highest-value moment to catch a
       // booking the owner has just declined, or whose hold has just run out, since the page loaded.
@@ -107,6 +228,23 @@ export default function PaymentPage() {
         toast.error("This booking is no longer available — see below.");
         return;
       }
+      if (via === 'mpesa') {
+        const sent = await mpesa.mutateAsync({ bookingId, phone: mpesaPhone }).catch(() => null);
+        if (!sent) return;
+        // A fresh prompt: forget the last attempt's status (and its spent checks), then wait for the PIN.
+        queryClient.removeQueries({ queryKey: paymentStatusKey(bookingId, 'mpesa') });
+        sessionStorage.setItem(`checkout:${bookingId}`, '1');
+        sessionStorage.setItem(`checkout-phone:${bookingId}`, mpesaPhone);
+        const sentAt = Date.now();
+        sessionStorage.setItem(`checkout-prompted-at:${bookingId}`, String(sentAt));
+        setPromptedAt(sentAt);
+        setPromptedPhone(mpesaPhone);
+        setProvider('mpesa');
+        setCheckoutStarted(true);
+        return;
+      }
+      sessionStorage.removeItem(`checkout-provider:${bookingId}`);
+      setProvider('pesapal');
       if (bookingId) sessionStorage.setItem(`checkout:${bookingId}`, '1');
       setCheckoutStarted(true);
       // A retry (after FAILED, or exhausted with no redirect to fall back to) generates a brand new Pesapal
@@ -116,20 +254,16 @@ export default function PaymentPage() {
       // `usePesapalCheckout`'s own onSuccess/onError still handle the result (sessionStorage, toasts); its
       // error is already surfaced via `onError`, so it's not re-thrown here.
       const data = await checkout.mutateAsync(bookingId).catch(() => null);
-      // Straight to Pesapal — the renter just chose to pay, so no "ready to pay" countdown in between. The
-      // panel's own Continue to Payment link stays as the fallback if this navigation doesn't happen.
       if (data?.redirectUrl) {
-        setContinuedToPesapal(true);
-        window.location.assign(data.redirectUrl);
-        leaving = true;
+        // A fresh link: forget the last attempt's status (and its spent attempts), then pay in the frame.
+        queryClient.removeQueries({ queryKey: paymentStatusKey(bookingId) });
+        setPayingInFrame(true);
       }
+      // Pesapal's page now opens right here, in the panel's frame (PesapalFrame) — the browser no longer leaves for
+      // it. Polling starts once that frame reports the payment finished (the panel's `onContinue`).
     } finally {
-      // Leaving for Pesapal: keep the guard on, so a second click before the page unloads can't start
-      // another checkout (two checkouts could become two real charges).
-      if (!leaving) {
-        submittingRef.current = false;
-        setIsSubmitting(false);
-      }
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -157,11 +291,20 @@ export default function PaymentPage() {
     );
   }
 
-  const status = paymentStatus.data?.status;
+  const status = bySplit ? (splitIsPaid(split.data) ? PAYMENT_STATUSES.SUCCESSFUL : undefined) : paymentStatus.data?.status;
+  // What the shares of a split must add up to: the booking's whole charge, M-Pesa fees included (splitTotal).
+  const due = splitTotal(booking, settings, vehicle);
+  // What this booking costs paid the way being used (or chosen): the rental plus that method's fees — what the M-Pesa
+  // prompt or Pesapal will actually ask for.
+  const payingBy = checkoutStarted ? provider : method;
+  const toPay = amountToPay(booking, vehicle, settings, payingBy);
+  const amountDue = due.total || calculateTotalPrice(vehicle?.dailyPrice, booking?.numberOfDays);
+  const yourName = [user?.firstName, user?.lastName].filter(Boolean).join(' ');
 
   return (
     <>
-    <PageWrapper className="max-w-md mx-auto">
+    {/* Side by side from md up (product owner, 2026-11-04): what it costs on the left, paying it on the right. */}
+    <PageWrapper className="max-w-5xl mx-auto">
       <PageTitle title="Payment" />
       <div className="flex flex-col gap-6">
         {/* Paid: nothing to go back and change, so the way back is the booking itself. */}
@@ -177,32 +320,70 @@ export default function PaymentPage() {
               ? 'Your payment went through.'
               : checkoutStarted
                 ? "We're confirming your payment."
-                : "You'll be redirected to complete payment securely."}
+                : 'Pay by M-Pesa, split the cost with others, or pay by card and other methods through Pesapal.'}
           </p>
         </div>
 
-        {/* The booking on the left, the payment and its next step beside it (stacked on a phone). */}
-        {/* The booking on top, the payment and its next step in a matching card underneath, the same width. */}
-        <div className="flex flex-col gap-4">
-        <PaymentSummary booking={booking} vehicle={vehicle} paid={status === PAYMENT_STATUSES.SUCCESSFUL} />
+        {/* The booking and what it costs on the left (kept in view while paying), the payment and its next step on the
+            right — stacked on a phone. The payment side is the wider: it holds the split form, Pesapal's box, the timer. */}
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] gap-4 items-start">
+        <PaymentSummary
+          className="md:sticky md:top-24"
+          booking={booking}
+          vehicle={vehicle}
+          paid={status === PAYMENT_STATUSES.SUCCESSFUL}
+          paidAmount={paymentStatus.data?.amount}
+          breakdown={booking ? toPay : undefined}
+        />
 
         <Card className="p-4 flex flex-col gap-3">
         {unfulfilled && <BookingUnavailableNotice booking={booking} />}
 
-        {checkoutStarted ? (
+        {checkoutStarted && bySplit && status !== PAYMENT_STATUSES.SUCCESSFUL ? (
+          split.isLoading ? (
+            <div className="flex justify-center py-6"><Spinner label="Loading the split payment" /></div>
+          ) : split.data ? (
+            <SplitPaymentProgress
+              split={split.data}
+              yourPhone={accountPhone}
+              resendingId={resend.isPending ? resend.variables?.contributionId : null}
+              onResend={(contributionId) => resend.mutate({ bookingId, contributionId })}
+              onStartAgain={() => payAnotherWay('split')}
+              onPayAnotherWay={() => payAnotherWay('mpesa')}
+            />
+          ) : (
+            <ErrorBanner
+              message={split.isError ? apiErrorMessage(split.error, "Couldn't load the split payment.") : "We couldn't find this split payment."}
+              onRetry={split.isError ? () => split.refetch() : () => payAnotherWay('split')}
+            />
+          )
+        ) : checkoutStarted ? (
           <>
             <PaymentStatusPanel
               status={status}
               exhausted={paymentStatus.exhausted}
               errorMessage={paymentStatus.errorMessage}
               onRecheck={() => paymentStatus.refetch()}
-              onRetry={handlePay}
+              onRetry={() => handlePay()}
               retrying={isSubmitting}
-              redirectUrl={checkout.data?.redirectUrl || sessionStorage.getItem(`checkout-url:${bookingId}`)}
-              onContinue={() => setContinuedToPesapal(true)}
+              redirectUrl={byMpesa ? undefined : checkout.data?.redirectUrl || sessionStorage.getItem(`checkout-url:${bookingId}`)}
+              mpesaPhone={byMpesa && !settled ? promptedPhone : undefined}
+              mpesaPromptedAt={promptedAt}
+              paying={payingInFrame}
+              onContinue={() => {
+                setPayingInFrame(false);
+                setContinuedToPesapal(true);
+              }}
               booking={booking}
               vehicle={vehicle}
             />
+            {/* Any payment not through yet — including one started before M-Pesa and splitting existed — can switch to
+                another way: back to the choice of M-Pesa, Split the cost or Card & other. */}
+            {status !== PAYMENT_STATUSES.SUCCESSFUL && !payingInFrame && (
+              <Button variant="outline" size="sm" className="self-center" onClick={() => payAnotherWay(byMpesa ? 'pesapal' : 'mpesa')}>
+                <CreditCard size={14} aria-hidden="true" /> Choose another way to pay
+              </Button>
+            )}
             {status === PAYMENT_STATUSES.SUCCESSFUL && (
               <Button
                 onClick={() => navigate(`/book/${vehicleId}/sign`, { state: { bookingId }, replace: true })}
@@ -212,9 +393,47 @@ export default function PaymentPage() {
             )}
           </>
         ) : !unfulfilled ? (
-          <Button loading={isSubmitting} disabled={isSubmitting} onClick={handlePay}>
-            {!isSubmitting && <CreditCard size={16} aria-hidden="true" />} Proceed to Payment
-          </Button>
+          <div className="flex flex-col gap-4">
+            {earlierPayment && (
+              <div role="status" className="rounded-tile bg-amber-500/10 px-4 py-3 text-sm text-ink flex flex-wrap items-center justify-between gap-2">
+                <span>You started a payment for this booking earlier that hasn&apos;t been confirmed. Already paid?</span>
+                <Button size="sm" variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: paymentStatusKey(bookingId) })}>
+                  <RotateCcw size={14} aria-hidden="true" /> Check its status
+                </Button>
+              </div>
+            )}
+            <SegmentedControl label="How to pay" size="sm" options={METHODS} value={method} onChange={setMethod} className="self-start" />
+            {method === 'split' ? (
+              <SplitPaymentForm
+                total={amountDue}
+                breakdown={due.lines}
+                you={{ name: yourName, phone: accountPhone, email: user?.email }}
+                onSubmit={handleSplit}
+                submitting={isSubmitting}
+                error={splitError}
+              />
+            ) : method === 'mpesa' ? (
+              <>
+                <Input
+                  label="M-Pesa phone number"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  hint="We'll send a payment prompt to this phone — enter your M-Pesa PIN there."
+                  value={phone}
+                  onChange={(e) => { setPhone(e.target.value); setPhoneError(null); }}
+                  error={phoneError}
+                />
+                <Button variant="mpesa" loading={isSubmitting} disabled={isSubmitting} onClick={() => handlePay('mpesa')}>
+                  {!isSubmitting && <MpesaLogo size={20} />} Send M-Pesa prompt
+                </Button>
+              </>
+            ) : (
+              <Button loading={isSubmitting} disabled={isSubmitting} onClick={() => handlePay('pesapal')}>
+                {!isSubmitting && <CreditCard size={16} aria-hidden="true" />} Proceed to Payment
+              </Button>
+            )}
+          </div>
         ) : null}
         </Card>
         </div>

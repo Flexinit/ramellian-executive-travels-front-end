@@ -35,7 +35,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })));
     renderUi();
 
-    expect(await screen.findByLabelText('Commission (%)')).toHaveValue(1);
+    expect(await screen.findByLabelText('Commission')).toHaveValue(1);
   });
 
   it('saves a new rate with PUT /platform-settings', async () => {
@@ -50,7 +50,7 @@ describe('AdminPlatformSettingsPage', () => {
     );
     renderUi();
 
-    const input = await screen.findByLabelText('Commission (%)');
+    const input = await screen.findByLabelText('Commission');
     await user.clear(input);
     await user.type(input, '2.5');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -68,7 +68,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.put(`${BASE}/platform-settings`, () => { called = true; return HttpResponse.json({}); }));
     renderUi();
 
-    const input = await screen.findByLabelText('Commission (%)');
+    const input = await screen.findByLabelText('Commission');
     await user.clear(input);
     await user.type(input, '150');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -83,7 +83,7 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.put(`${BASE}/platform-settings`, () => HttpResponse.json({ message: 'Only an administrator can change this.' }, { status: 403 })));
     renderUi();
 
-    const input = await screen.findByLabelText('Commission (%)');
+    const input = await screen.findByLabelText('Commission');
     await user.clear(input);
     await user.type(input, '5');
     await user.click(screen.getByRole('button', { name: /save/i }));
@@ -109,7 +109,9 @@ describe('AdminPlatformSettingsPage', () => {
     }));
     renderUi();
 
-    const fee = await screen.findByLabelText("Delivery flat fee (KES)");
+    // Delivery is off (0): switch it on, then set the fee.
+    await user.click(await screen.findByRole("switch", { name: "Delivery fee" }));
+    const fee = screen.getByLabelText("Delivery fee (KES)");
     await user.clear(fee);
     await user.type(fee, "1500");
     await user.click(screen.getByRole("button", { name: /save settings/i }));
@@ -133,12 +135,115 @@ describe('AdminPlatformSettingsPage', () => {
     }));
     renderUi();
 
-    const charge = await screen.findByLabelText('Driver flat charge (KES)');
+    await user.click(await screen.findByRole('switch', { name: 'Driver charge' }));
+    const charge = screen.getByLabelText('Driver charge (KES)');
     await user.clear(charge);
     await user.type(charge, '2500');
     await user.click(screen.getByRole('button', { name: /save settings/i }));
 
     await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, driverFlatCharge: 2500 }));
+  });
+
+  it('sets the M-Pesa payment and payout fees, showing the saved ones', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, mpesaStkFee: 10, mpesaB2cFee: 0 })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    expect(await screen.findByLabelText('M-Pesa payment fee (KES)')).toHaveValue(10);
+    await user.click(screen.getByRole('switch', { name: 'M-Pesa payout fee' }));
+    const payout = screen.getByLabelText('M-Pesa payout fee (KES)');
+    await user.clear(payout);
+    await user.type(payout, '25');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+
+    await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, mpesaStkFee: 10, mpesaB2cFee: 25 }));
+  });
+
+  it('sets the late-return grace period and overstay rate, refusing a rate below 1', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, overstayGracePeriodHours: 2, overstayRateMultiplier: 1 })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    expect(await screen.findByLabelText('Grace period')).toHaveValue(2);
+    const rate = screen.getByLabelText('Overstay rate');
+    await user.clear(rate);
+    await user.type(rate, '0.5');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    expect(await screen.findByText(/enter 1 or more/i)).toBeInTheDocument();
+    expect(body).toBeUndefined();
+
+    await user.clear(rate);
+    await user.type(rate, '1.5');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    await waitFor(() => expect(body).toMatchObject({ overstayGracePeriodHours: 2, overstayRateMultiplier: 1.5 }));
+  });
+
+  it('switches a charge off with its flag, keeping its amount on the server, and back on', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, deliveryFlatFee: 1000, mpesaStkFee: 33 })));
+    const bodies = [];
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      const body = await request.json();
+      bodies.push(body);
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    const delivery = await screen.findByRole('switch', { name: 'Delivery fee' });
+    expect(delivery).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('switch', { name: 'Driver charge' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByLabelText('Driver charge (KES)')).toBeDisabled();
+
+    await user.click(delivery);
+    expect(delivery).toHaveAttribute('aria-checked', 'false');
+    expect(delivery).toHaveAccessibleDescription('Off — not charged');
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    await waitFor(() => expect(bodies.at(-1)).toMatchObject({ deliveryFeeEnabled: false, deliveryFlatFee: 1000, mpesaStkFee: 33, mpesaStkFeeEnabled: true }));
+
+    // Back on: the amount was kept all along.
+    await user.click(delivery);
+    expect(screen.getByLabelText('Delivery fee (KES)')).toHaveValue(1000);
+    expect(screen.getByLabelText('Delivery fee (KES)')).toBeEnabled();
+  });
+
+  it('Fees and charges opens and closes from its heading, saying how many are on', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, deliveryFlatFee: 1000, deliveryFeeEnabled: true, mpesaStkFee: 33, mpesaStkFeeEnabled: false })));
+    renderUi();
+
+    const heading = await screen.findByRole('button', { name: /fees and charges/i });
+    expect(heading).toHaveAttribute('aria-expanded', 'true');
+    expect(heading).toHaveTextContent('1 of 5 on');
+    // The backend's flag decides: the M-Pesa fee is off although it has an amount.
+    expect(screen.getByRole('switch', { name: 'M-Pesa payment fee' })).toHaveAttribute('aria-checked', 'false');
+
+    await user.click(heading);
+    expect(heading).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('switch', { name: 'Delivery fee' })).not.toBeInTheDocument();
+    await user.click(heading);
+    expect(screen.getByRole('switch', { name: 'Delivery fee' })).toBeInTheDocument();
+  });
+
+  it('a charge switched on needs its amount', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2 })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => { body = await request.json(); return HttpResponse.json(body); }));
+    renderUi();
+    await user.click(await screen.findByRole('switch', { name: 'Driver charge' }));
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    expect(await screen.findByText('Enter the amount, or switch it off.')).toBeInTheDocument();
+    expect(body).toBeUndefined();
   });
 
   it('turns the assistant off with PUT /platform-settings/bot', async () => {
@@ -168,13 +273,13 @@ describe('AdminPlatformSettingsPage', () => {
     }));
     renderUi();
 
-    await user.type(await screen.findByLabelText('Longer bookings (%)'), '10');
+    await user.type(await screen.findByLabelText('Longer bookings'), '10');
     await user.click(screen.getByRole('button', { name: /save settings/i }));
     // A rate without the number of days it applies from isn't saved.
     expect(await screen.findByText(/enter from how many days it applies/i)).toBeInTheDocument();
     expect(body).toBeUndefined();
 
-    await user.type(screen.getByLabelText('From (days)'), '2');
+    await user.type(screen.getByLabelText('From'), '2');
     await user.click(screen.getByRole('button', { name: /save settings/i }));
     await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, multiDayCommissionRatePct: 10, multiDayThresholdDays: 2 }));
   });
@@ -183,8 +288,8 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.get(`${BASE}/platform-settings`, () =>
       HttpResponse.json({ id: 's1', commissionRatePct: 2, multiDayCommissionRatePct: 10, multiDayThresholdDays: 2 })));
     renderUi();
-    expect(await screen.findByLabelText('Longer bookings (%)')).toHaveValue(10);
-    expect(screen.getByLabelText('From (days)')).toHaveValue(2);
+    expect(await screen.findByLabelText('Longer bookings')).toHaveValue(10);
+    expect(screen.getByLabelText('From')).toHaveValue(2);
   });
 
   it('splits the settings into tabs, the open one kept in the address', async () => {
@@ -192,13 +297,13 @@ describe('AdminPlatformSettingsPage', () => {
     server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, botAssistantEnabled: true })));
     renderUi();
 
-    expect(await screen.findByLabelText('Commission (%)')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Commission')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Fees & commission' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('button', { name: /turn the assistant/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Booking policy' }));
     expect(await screen.findByText('Standard booking policy')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Commission (%)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Commission')).not.toBeInTheDocument();
   });
 
   it("saving the contact details keeps every other setting (the PUT replaces them all)", async () => {

@@ -478,7 +478,7 @@ describe('App routing', () => {
           const labels = within(menu).getAllByRole('link').map((l) => l.textContent);
           expect(labels).toEqual([
             'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Refunds', 'Finances', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
             'Back to Main Site',
           ]);
@@ -524,7 +524,7 @@ describe('App routing', () => {
         signInWith(['SUPER_ADMIN', 'MANAGE', 'CAR_OWNER'], LIVE_ADMIN_PERMISSIONS);
         expect(await menuLabels('/admin')).toEqual([
           'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Refunds', 'Finances', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
           'Back to Main Site',
         ]);

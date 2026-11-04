@@ -3,6 +3,120 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-04 (charge switches kept on the server, collapsible fees)
+
+- **Changed (administrators):** switching a charge off now keeps its amount on the server, so any admin can switch
+  it back on. **Fees and charges** opens and closes from its heading, which shows how many charges are on. The
+  settings page is wider, so the fields side by side aren't squeezed.
+- **Changed:** a fee switched off in Platform Settings is left out of what renters are asked to pay.
+
+## 2026-11-04 (compact fees and charges)
+
+- **Changed:** **Platform Settings → Fees and charges** shows each charge on one row (name, amount, switch), so all
+  five fit on screen without scrolling.
+
+## 2026-11-04 (switch charges on or off)
+
+- **Added (administrators):** in **Platform Settings → Fees and charges**, each charge (Pesapal fee, delivery fee,
+  driver charge, M-Pesa payment fee, M-Pesa payout fee) has an on/off switch. Off stops it being charged, and on
+  brings back its amount. Changes apply when you save.
+
+## 2026-11-04 (one processing fee)
+
+- **Changed:** the Payment page shows the payment method's fees as one **Processing fee** line, instead of separate
+  M-Pesa payment and transfer fees, or "Card & other processing fee (1.5%)".
+
+## 2026-11-04 (payment page layout, M-Pesa Try again)
+
+- **Changed:** on a wider screen, the booking and what it costs sit beside the payment instead of above it.
+- **Changed:** when the M-Pesa countdown runs out, it stops and waits for **Try again**. It doesn't start counting
+  again by itself.
+
+## 2026-11-04 (what you pay, M-Pesa countdown)
+
+- **Fixed:** the Payment page showed the rental alone as the total (e.g. KES 1), while the M-Pesa prompt asked for
+  KES 84. The summary now lists the rental, any delivery or driver charge, and the fees for the way you're paying
+  (M-Pesa payment and transfer fees, or the card processing fee), then **Total to pay**. That's the amount you'll
+  actually be asked for.
+- **Changed:** after an M-Pesa prompt is sent, a one-minute countdown replaces the endless spinner. If it runs out,
+  **Send the prompt again** or **Check again**.
+
+## 2026-11-04 (M-Pesa logo)
+
+- **Changed:** M-Pesa's own logo now appears on the **M-Pesa** choice, the **Send M-Pesa prompt** and **Send payment
+  requests** buttons, and the "Check your phone" panel.
+
+## 2026-11-04 (payment page opens on the choice)
+
+- **Fixed:** the Payment page sometimes opened on "Waiting for your payment to be confirmed" before you'd been asked
+  to pay. It now always opens on **How to pay**. An earlier payment that was never confirmed is mentioned above it,
+  with **Check its status**. It only shows payment progress for a payment that's actually under way: an M-Pesa
+  prompt or split you started, or a return from Pesapal's own page.
+
+## 2026-10-27 (payment options, loading spinners, M-Pesa green)
+
+- **Fixed:** a payment started before M-Pesa and splitting existed went straight to "Still confirming", with no way
+  to choose another method. Any payment that hasn't gone through now has **Choose another way to pay**, which goes
+  back to M-Pesa, Split the cost or Card & other.
+- **Fixed:** Pesapal's page could take over the whole browser tab instead of staying in its box on the Payment page.
+- **Fixed:** the loading spinner was invisible on dark buttons such as **Log in**. Spinners are now gold. Signing in
+  with Google shows "Signing you in with Google…" over its button.
+- **Changed:** M-Pesa options and buttons use M-Pesa's green.
+
+## 2026-10-27 (split payment total and statuses)
+
+- **Fixed:** in **Split the cost**, the shares now add up to the booking's whole charge: rental, delivery, driver
+  and the M-Pesa fees, shown under the form. Nobody pays anything on top of their share.
+- **Changed:** a payer who has entered their PIN shows as **Confirming** while M-Pesa confirms it, and the page says
+  "Waiting for the rest to pay" once some have paid.
+
+## 2026-10-27 (transaction breakdown)
+
+- **Added (administrators):** a **Transaction breakdown** for each booking, opened from its **Money** section or from
+  **Finances**. It works through every charge: how the total was built, how it was split between the owner, the
+  platform and fees, and each figure checked against how it's worked out (**Matches** or **Off by**). It also shows
+  what reached the owner and the booking reconciled against the recorded profit. You can print it or download it
+  as CSV.
+
+## 2026-10-27 (split payments, finances, late-return settings)
+
+- **Added:** **Split the cost** on the Payment page. List who pays what (you first), and everyone gets an M-Pesa
+  prompt for their share. You can watch the payments come in, resend anyone's prompt, and the booking is paid once
+  everyone has paid.
+- **Added (administrators):** **Finances**, with the platform's profit and what's owed to owners, and the bookings
+  not yet settled with their owner. A **Money** section on each booking shows every charge and payout, plus an
+  overstay calculator while the car is out.
+- **Added (administrators):** **Platform Settings → Late returns**, with the grace period and the overstay rate.
+
+## 2026-10-27 (M-Pesa payments, refunds, M-Pesa fees)
+
+- **Added:** you can pay a booking by **M-Pesa**. A prompt is sent to your phone and you enter your PIN there. It's
+  the default on the Payment page. **Card & other** still uses Pesapal. Group and overstay payments stay on Pesapal
+  for now.
+- **Added (administrators):** **Refunds**. Start a refund from a booking's page (amount and reason), follow it under
+  **Refunds**, and mark it refunded or failed by hand if Pesapal doesn't report back.
+- **Added (administrators):** **Platform Settings** has an **M-Pesa payment fee** and an **M-Pesa payout fee**.
+
+## 2026-10-27 (paying without leaving the site)
+
+- **Changed:** paying a booking, a group of bookings or an overstay charge opens Pesapal's secure payment page in a box
+  on the page, instead of taking you to Pesapal's site. The page checks the payment by itself when you're done.
+  **I've finished paying** is there in case it doesn't notice, and **Open the payment page instead** is there if
+  the box won't load.
+
+## 2026-10-27 (platform analytics)
+
+- **Added (administrators):** **Reports** has an **Analytics** tab. Pick a period (7, 30 or 90 days, this year, or
+  your own dates) to see revenue, platform earnings and bookings with growth against the previous period, owner
+  payouts, payments and fees, a daily earnings chart, booking confirmation and cancellation rates, and the top
+  vehicles and owners.
+
+## 2026-10-27 (payout amount locked)
+
+- **Changed (administrators):** when you **Create payout**, the amount fills in with the owner's share of the booking
+  you choose, and it's read-only, so it can't be typed over. The booking list shows the renter, the dates and the
+  owner's share.
+
 ## 2026-10-27 (staying signed in, idle sign-out)
 
 - **Changed:** you're no longer signed out while you're using the portal. Your sign-in is renewed in the background

@@ -50,6 +50,8 @@ export default function Button({
     danger: `border border-red-500 text-red-600 bg-surface hover:bg-red-50 ${off}`,
     dark: `border border-on-accent bg-on-accent text-accent hover:bg-on-accent/90 ${off}`,
     navy: filled,
+    // Paying by M-Pesa: its own green.
+    mpesa: `border border-mpesa-deep bg-mpesa-deep text-white hover:bg-[#126f24] hover:border-[#126f24] ${off}`,
   };
 
   const sizes = {
@@ -62,9 +64,12 @@ export default function Button({
   };
 
   const classes = `${base} ${variants[variant]} ${sizes[size]} ${className}`;
+  // The loading spinner is Ramellian gold (product owner, 2026-10-27) — it reads on the navy fill, where the default
+  // accent spinner was invisible, and on the light outline buttons alike.
+  const spinnerColor = 'border-brand-gold/30 border-t-brand-gold';
   const content = (
     <>
-      {loading && <Spinner size="sm" label="Loading" />}
+      {loading && <Spinner size="sm" label="Loading" color={spinnerColor} />}
       {children}
     </>
   );

@@ -4,6 +4,7 @@ import Input from '../ui/Input';
 import Textarea from '../ui/Textarea';
 import Button from '../ui/Button';
 import { apiErrorMessage } from '../../lib/apiError';
+import { formatCurrency } from '../../lib/utils';
 
 /**
  * A payout's details — amount, the owner's phone (where an M-Pesa payout goes) and notes — for creating one by hand
@@ -17,8 +18,11 @@ import { apiErrorMessage } from '../../lib/apiError';
  * @param {object} mutation — the create/update mutation (for its pending/error state)
  * @param {React.ReactNode} [intro]
  * @param {React.ReactNode} [children] — extra fields shown before the amount (e.g. which booking)
+ * @param {number|null} [lockedAmount] — creating a payout for a booking: the amount is the owner's share of that booking
+ *   (`BookingResponse.ownerPayout`), shown read-only and sent as is, so it can't be typed over (product owner,
+ *   2026-10-27: to prevent fraud). `null` while no booking is chosen yet. Left out, the amount can be edited.
  */
-export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, initial = {}, onSubmit, mutation, intro, children }) {
+export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, initial = {}, onSubmit, mutation, intro, children, lockedAmount }) {
   const [amount, setAmount] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -34,8 +38,19 @@ export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, i
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  const locked = lockedAmount !== undefined;
+
   function submit(e) {
     e.preventDefault();
+    if (locked) {
+      if (phone.trim() && phone.replace(/\D/g, '').length < 9) {
+        setError({ phone: 'Enter the full number, with its country code.' });
+        return;
+      }
+      setError(null);
+      onSubmit({ amount: lockedAmount != null ? String(lockedAmount) : '', ownerPhone: phone.trim(), notes: notes.trim() });
+      return;
+    }
     if (amount !== '' && (Number.isNaN(Number(amount)) || Number(amount) <= 0)) {
       setError({ amount: 'Enter an amount above 0, or leave it empty for the owner’s share.' });
       return;
@@ -53,17 +68,28 @@ export default function PayoutFormModal({ isOpen, onClose, title, submitLabel, i
       <form onSubmit={submit} noValidate className="flex flex-col gap-4">
         {intro && <div className="text-sm text-muted">{intro}</div>}
         {children}
-        <Input
-          label="Amount (KES)"
-          type="number"
-          min="0"
-          step="1"
-          inputMode="decimal"
-          hint="Leave empty for the owner's share of the booking"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          error={error?.amount}
-        />
+        {locked ? (
+          <Input
+            label="Amount (KES)"
+            value={lockedAmount != null ? formatCurrency(lockedAmount) : ''}
+            readOnly
+            aria-readonly="true"
+            className="[&_input]:bg-subtle [&_input]:cursor-not-allowed"
+            hint={lockedAmount != null ? "The owner's share of this booking. It can't be changed." : 'Filled in from the booking you choose.'}
+          />
+        ) : (
+          <Input
+            label="Amount (KES)"
+            type="number"
+            min="0"
+            step="1"
+            inputMode="decimal"
+            hint="Leave empty for the owner's share of the booking"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            error={error?.amount}
+          />
+        )}
         <Input
           label="Owner's phone (M-Pesa)"
           type="tel"

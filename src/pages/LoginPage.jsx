@@ -93,7 +93,7 @@ export default function LoginPage() {
           {(isGoogleSignInEnabled() || import.meta.env.DEV) && (
             <>
               <Divider label="or" />
-              <GoogleSignInButton text="signin_with" onCredential={googleLogin.mutate} disabled={googleLogin.isPending || login.isPending} />
+              <GoogleSignInButton loading={googleLogin.isPending} text="signin_with" onCredential={googleLogin.mutate} disabled={googleLogin.isPending || login.isPending} />
             </>
           )}
 

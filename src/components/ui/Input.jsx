@@ -15,6 +15,9 @@ import { Eye, EyeOff } from 'lucide-react';
  * @param {boolean} required — shows a * and sets aria-required (validation itself is the caller's, e.g. zod)
  * @param {object} register  — RHF register result spread onto the input
  * @param {string} className
+ * @param {boolean} [hideLabel] — the label is for screen readers only (the row around the field already names it)
+ * @param {boolean} [compact] — a shorter field, for dense rows of settings
+ * @param {string} [suffix] — a unit shown inside the field's right edge, e.g. "KES" or "%"
  */
 export default function Input({
   label,
@@ -25,6 +28,9 @@ export default function Input({
   required = false,
   register,
   className = '',
+  hideLabel = false,
+  compact = false,
+  suffix,
   ...rest
 }) {
   const id = useId();
@@ -34,9 +40,9 @@ export default function Input({
   const [shown, setShown] = useState(false);
 
   return (
-    <div className={`flex flex-col gap-1 pt-2 ${className}`}>
+    <div className={`flex flex-col gap-1 ${hideLabel ? '' : 'pt-2'} ${className}`}>
       <div className="relative">
-      <label htmlFor={id} className="field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,rgb(var(--c-surface))_50%)]">
+      <label htmlFor={id} className={hideLabel ? 'sr-only' : 'field-label absolute -top-2 left-3 z-[1] px-1 text-xs leading-none text-muted bg-[linear-gradient(to_bottom,transparent_50%,rgb(var(--c-surface))_50%)]'}>
         {label}
         {required && (
           <span aria-hidden="true" className="text-accent">
@@ -52,11 +58,15 @@ export default function Input({
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={hasDesc ? descId : undefined}
         className={`field-control w-full rounded-tile bg-surface border px-4 text-ink placeholder-muted text-sm
-          focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition h-12
-          ${error ? 'border-red-500' : 'border-line hover:border-accent/60'} ${isPassword ? 'pr-11' : ''}`}
+          focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition ${compact ? 'h-10 px-3' : 'h-12'}
+          disabled:bg-ink/[0.04] disabled:text-muted disabled:cursor-not-allowed
+          ${error ? 'border-red-500' : 'border-line hover:border-accent/60'} ${isPassword ? 'pr-11' : suffix ? 'pr-12' : ''}`}
         {...(register || {})}
         {...rest}
       />
+      {suffix && !isPassword && (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs text-muted">{suffix}</span>
+      )}
       {isPassword && (
         <button
           type="button"
