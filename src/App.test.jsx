@@ -279,7 +279,7 @@ describe('App routing', () => {
         });
         renderWithProviders(<App />, { route: '/admin' });
         const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
-        expect(headingButtons(menu)).toEqual(['Administration', 'Vehicles', 'Documents', 'My Fleet']);
+        expect(headingButtons(menu)).toEqual(['Administration', 'Finances', 'Vehicles', 'Documents', 'My Fleet']);
       });
 
       it('keeps the section holding the current page open and folds the others away', async () => {
@@ -319,7 +319,7 @@ describe('App routing', () => {
         const labels = within(menu).getAllByRole('link').map((l) => l.textContent);
         expect(labels).not.toContain('My Vehicles');
         expect(labels).not.toContain('Fleet Bookings');
-        expect(headingButtons(menu)).toEqual(['Administration', 'Vehicles', 'Documents']);
+        expect(headingButtons(menu)).toEqual(['Administration', 'Finances', 'Vehicles', 'Documents']);
       });
 
       it('groups an owner who also rents into My Fleet and My Rentals', async () => {
@@ -341,7 +341,7 @@ describe('App routing', () => {
         });
         renderWithProviders(<App />, { route: '/admin' });
         const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
-        for (const name of ['Administration', 'Vehicles', 'Documents', 'My Fleet']) {
+        for (const name of ['Administration', 'Finances', 'Vehicles', 'Documents', 'My Fleet']) {
           expect(within(menu).getByRole('button', { name }).querySelectorAll('svg')).toHaveLength(2); // its icon and the fold arrow
         }
       });
@@ -361,6 +361,23 @@ describe('App routing', () => {
           expect(within(menu).getByRole('link', { name: label })).toHaveAttribute('href', href);
         }
         expect(await screen.findByRole('heading', { name: 'Approved Vehicles' })).toBeInTheDocument();
+      });
+
+      it('puts the money pages together under Finances, including Payment Transactions', async () => {
+        act(() => {
+          useAuthStore.setState({ token: 'test-token', user: { id: '1', firstName: 'Felix', lastName: 'W', email: 'felixwanzetse@gmail.com' } });
+          useAuthStore.getState().setUser({ roles: ['SUPER_ADMIN'] });
+        });
+        renderWithProviders(<App />, { route: '/admin/payment-transactions' });
+        const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
+        expect(within(menu).getByRole('button', { name: 'Finances' })).toHaveAttribute('aria-expanded', 'true');
+        for (const [label, href] of [
+          ['Finances', '/admin/finances'], ['Owner Payouts', '/admin/payouts'], ['Refunds', '/admin/refunds'],
+          ['Payment Transactions', '/admin/payment-transactions'],
+        ]) {
+          expect(within(menu).getByRole('link', { name: label })).toHaveAttribute('href', href);
+        }
+        expect(await screen.findByRole('heading', { name: 'Payment Transactions' })).toBeInTheDocument();
       });
 
       it('lists Approved and Rejected documents under Documents, next to Review Documents', async () => {
@@ -478,7 +495,7 @@ describe('App routing', () => {
           const labels = within(menu).getAllByRole('link').map((l) => l.textContent);
           expect(labels).toEqual([
             'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Refunds', 'Finances', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+            'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Quotations', 'Finances', 'Owner Payouts', 'Refunds', 'Payment Transactions', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
             'Back to Main Site',
           ]);
@@ -524,7 +541,7 @@ describe('App routing', () => {
         signInWith(['SUPER_ADMIN', 'MANAGE', 'CAR_OWNER'], LIVE_ADMIN_PERMISSIONS);
         expect(await menuLabels('/admin')).toEqual([
           'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
-          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Owner Payouts', 'Refunds', 'Finances', 'Quotations', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
+          'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Quotations', 'Finances', 'Owner Payouts', 'Refunds', 'Payment Transactions', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
             'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
           'Back to Main Site',
         ]);

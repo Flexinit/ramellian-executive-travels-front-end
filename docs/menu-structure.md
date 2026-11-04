@@ -195,6 +195,11 @@ administrators (followed by **Announcements**, `/admin/announcements`); **Vehicl
 (`/admin/roles`, `PERMISSION_MANAGE`, right after Users); and **Contract Templates** (`/owner/contracts`, after Reports; also in an owner-who-rents's My Fleet
 group) for owners.*
 
+*Updated 2026-11-04: a **Finances** heading in the Admin Panel, right after Administration, holds **Finances**
+(`/admin/finances`), **Owner Payouts** (`/admin/payouts`), **Refunds** (`/admin/refunds`) and the new **Payment
+Transactions** (`/admin/payment-transactions`, the M-Pesa/Pesapal ledger), all `BOOKING_MANAGE`. The first three
+used to sit at the end of Administration.*
+
 ### Renter Dashboard (`/dashboard/*`)
 
 ```

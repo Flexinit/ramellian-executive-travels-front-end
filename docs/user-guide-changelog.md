@@ -3,6 +3,20 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-04 (M-Pesa ref and payload in Payment Transactions)
+
+- **Added (administrators):** **Payment Transactions** shows each transaction's M-Pesa ref in the list, and its
+  details list every field M-Pesa sent (**M-Pesa details**), the M-Pesa ref first.
+- **Changed:** M-Pesa times in those details (**Paid at**, a payout's **Completed at**) read like "04 Nov 2026,
+  12:30 PM" instead of M-Pesa's `20261104123045`.
+
+## 2026-11-04 (Payment Transactions, Finances menu)
+
+- **Added (administrators):** **Payment Transactions** (`/admin/payment-transactions`): every M-Pesa and Pesapal
+  payment and payout, with a tab for each kind and filters for status, phone, booking and dates, each opening its full details.
+- **Changed:** the Admin Panel menu has a **Finances** heading with Finances, Owner Payouts, Refunds and Payment
+  Transactions, which used to sit under Administration.
+
 ## 2026-11-04 (charge switches kept on the server, collapsible fees)
 
 - **Changed (administrators):** switching a charge off now keeps its amount on the server, so any admin can switch

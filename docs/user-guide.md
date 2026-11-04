@@ -61,13 +61,14 @@ Contact.
 super admin as an **Administrator** and a `MANAGE` account as a **Fleet Manager**. An administrator always gets
 the **Admin Panel** menu — Overview, Profile, Messages, Inbox and Assistant, then the platform tools under an
 **Administration** heading (Users, Roles & Permissions, All Bookings, Reports, Contract Templates, Audit Log, Announcements),
+the money pages under a **Finances** heading (Finances, Owner Payouts, Refunds, Payment Transactions),
 the vehicle tools under a **Vehicles** heading (All Vehicles, Add Vehicle, Vehicle Approvals, Approved Vehicles, Rejected
 Vehicles), the
 document tools under a **Documents** heading (Review Documents, Approved Documents, Rejected Documents), plus
 **My Vehicles** and **Fleet Bookings** under a **My Fleet** heading if they also own vehicles.
 
 **Menus for people with two roles are grouped.** Instead of one long list, related items sit under a heading
-you can click to fold or open (**Administration**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
+you can click to fold or open (**Administration**, **Finances**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
 **My Rentals**), each with its own icon.
 The heading holding the page you're on is open by itself and the others are folded away. Menus for a single role
 aren't grouped. On a phone the same menu opens from the left: tap **☰** at the top-left corner. It slides in with your
@@ -914,6 +915,17 @@ your permissions" above): an item is only shown if your account holds the permis
   the top of Owner Payouts and choose the booking (only paid bookings without a payout are listed). The amount fills in
   with the owner's share of that booking and can't be changed. A booking's own page (All Bookings) has the same
   **Create payout** in its **Owner payout** section.
+- **Payment Transactions** (`/admin/payment-transactions`) — every M-Pesa and Pesapal transaction, newest first:
+  payments from renters (shown with **+**) and payouts to owners (**−**), with who, the amount and the status, a page at
+  a time. Tabs pick the kind: **All**, **M-Pesa payments**, **M-Pesa split payments**, **M-Pesa payouts**, **Pesapal
+  payments**, **Pesapal payouts**. Filter further by **status** (as the provider writes it, e.g. `SUCCESSFUL`), **phone**, the booking's full **ID**, and **From** / **To**
+  days. Each row shows its **Ref**: the M-Pesa ref (receipt number, e.g. `NLJ7RT61SV`) for M-Pesa, the provider's
+  reference otherwise. Click one for its details: the M-Pesa ref first, the provider's and the platform's references,
+  the provider's message, the booking it belongs to (**Open the booking**), then **M-Pesa details**, which lists every
+  field M-Pesa sent. For a payment that's the amount, paid-at time, phone, checkout and merchant request IDs, and the
+  result code and message. For a payout it's the amount, who it was paid to, completion time, conversation IDs,
+  whether they're a registered M-Pesa customer, and the account balances. The provider's raw reply stays at the
+  bottom, for support.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside

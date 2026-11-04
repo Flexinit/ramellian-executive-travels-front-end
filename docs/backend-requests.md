@@ -1564,3 +1564,30 @@ entering again before switching them back on.
 `PaymentCheckoutResponse.redirectUrl` was removed and `iframeUrl` added. The portal reads `iframeUrl` (falling back to
 `redirectUrl` from an older backend) for booking, group and overstay checkouts. It shows the checkout in the payment
 box (PesapalFrame) as before.
+
+## 60. Payment transaction ledger — consumed 2026-11-04
+
+`GET /admin/payment-transactions` (filters `type`, `status`, `phone`, `bookingId`, `from`, `to`, paged) and
+`GET /admin/payment-transactions/{id}` are new in the live spec. They're shown on a new admin page, **Payment
+Transactions**, under a new **Finances** menu heading. The list is sorted with `sort=createdAt,desc`.
+
+**Request:** please list the `status` values in the spec (as `type` already is), so the portal can offer them as a
+dropdown instead of a free-text filter.
+
+Checked against the same spec: every other endpoint is already used by the portal, apart from backend-only callbacks
+and `POST /auth/verify-code` (a duplicate of `verify-email` / `verify-whatsapp`, see the user-guide changelog).
+
+**Not on the VPS yet** (`102.68.87.231:8090`, checked 2026-11-04): its spec has no `/admin/payment-transactions`.
+Until it's deployed there, the page gets a 404, says it isn't available and drops out of the menu for that session.
+Everything else in the VPS spec matches the local backend (`192.168.8.31:8090`).
+
+## 60 (update, 2026-11-04). M-Pesa fields on each ledger transaction — consumed
+
+`PaymentTransactionResponse` gained `mpesaReceiptNumber`, `mpesaTransactionDate`, `mpesaPhoneNumber`, `mpesaBalance`,
+`mpesaMerchantRequestId`, `mpesaCheckoutRequestId`, `mpesaResultCode` and `mpesaResultDesc` (local backend only; the
+VPS still has no ledger). Payment Transactions now uses `mpesaReceiptNumber` as each row's M-Pesa ref, and the M-Pesa
+details list these fields first. The raw callback still fills in anything they don't cover, which is mainly a payout's
+B2C result: the amount, who it was paid to, completion time, conversation IDs and account balances.
+
+**Request:** the same for payouts (B2C), e.g. `mpesaTransactionReceipt`, `mpesaReceiverPartyPublicName` and
+`mpesaConversationId`, so the portal doesn't depend on parsing the raw callback for them.
