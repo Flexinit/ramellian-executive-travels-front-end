@@ -90,8 +90,11 @@ const maxAttempts = (provider) => (provider === 'mpesa' ? MPESA_POLL_MAX_ATTEMPT
  * @param {'pesapal'|'mpesa'|'any'} [provider] — which status to read: Pesapal's, the M-Pesa prompt's
  *   (`GET /payments/mpesa/bookings/{bookingId}/status`, live spec 2026-10-27), or whichever knows of a payment
  *   (`fetchBookingPayment` — a group whose bookings may end up paid different ways)
+ * @param {{ holdFailedUntil?: number }} [options] — until this time (ms), FAILED/INVALID doesn't stop the checks: an M-Pesa
+ *   prompt just sent (or re-sent through `/retry`, which reuses the payment) can still read as the last attempt's FAILED
+ *   before this one has even reached the phone, so only SUCCESSFUL ends the wait early. See PaymentPage.
  */
-export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal') {
+export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal', { holdFailedUntil = 0 } = {}) {
   return {
     queryKey: paymentStatusKey(bookingId, provider),
     queryFn: () =>
@@ -105,7 +108,9 @@ export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapa
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       const attempts = query.state.dataUpdateCount;
-      const settled = status === PAYMENT_STATUSES.SUCCESSFUL || status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
+      // A failure isn't final while it may still be the last attempt's (see `holdFailedUntil`): keep checking.
+      const failed = status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
+      const settled = status === PAYMENT_STATUSES.SUCCESSFUL || (failed && Date.now() >= holdFailedUntil);
       if (settled || attempts >= maxAttempts(provider)) return false;
       return PAYMENT_POLL_INTERVAL_MS;
     },
@@ -134,6 +139,23 @@ export function useMpesaCheckout() {
 /** Most useful first when both providers answer: paid, then still going, then whatever's left (failed/invalid). */
 const STATUS_RANK = { [PAYMENT_STATUSES.SUCCESSFUL]: 0, [PAYMENT_STATUSES.PENDING]: 1 };
 const rank = (p) => STATUS_RANK[p?.status] ?? 2;
+
+/**
+ * Sends the M-Pesa prompt again for a booking whose M-Pesa payment is PENDING or FAILED —
+ * `POST /payments/mpesa/bookings/{bookingId}/retry?phone=` → `PaymentCheckoutResponse` (live spec 2026-11-05). Reuses
+ * that payment rather than starting a second one; `phone` (optional, `2547…`) sends it to a different number. Rejects
+ * with the backend's error — a 404 when there's no M-Pesa payment to retry, which the caller answers with a fresh
+ * checkout (`useMpesaCheckout`). No toast here: the caller decides what a failure means.
+ */
+export function useMpesaRetry() {
+  return useMutation({
+    mutationFn: ({ bookingId, phone }) =>
+      apiPost(`/payments/mpesa/bookings/${bookingId}/retry${phone ? `?phone=${encodeURIComponent(String(phone).replace(/^\+/, ''))}` : ''}`),
+    onSuccess: (_, { bookingId }) => {
+      sessionStorage.setItem(`checkout-provider:${bookingId}`, 'mpesa');
+    },
+  });
+}
 
 /**
  * A booking's payment whichever way it was paid — Pesapal, an M-Pesa prompt or a split (whose payment the M-Pesa
@@ -248,9 +270,9 @@ function pollExhausted(queryClient, bookingId, status, provider = 'pesapal') {
  * @param {boolean} enabled
  * @param {'pesapal'|'mpesa'} [provider]
  */
-export function usePaymentStatus(bookingId, enabled = true, provider = 'pesapal') {
+export function usePaymentStatus(bookingId, enabled = true, provider = 'pesapal', options) {
   const queryClient = useQueryClient();
-  const query = useQuery(paymentStatusQuery(bookingId, enabled, provider));
+  const query = useQuery(paymentStatusQuery(bookingId, enabled, provider, options));
   const failedToCheck = query.isError && !query.data;
   return {
     ...query,

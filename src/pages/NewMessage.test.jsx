@@ -145,7 +145,7 @@ describe('creating a new message', () => {
     expect(await within(dialog).findByRole('alert')).toHaveTextContent(/you cannot message this user/i);
   });
 
-  it('shows only the first few matches and says so', async () => {
+  it('lists people a page at a time, so everyone can be reached', async () => {
     signInAs(['ADMIN']);
     const many = Array.from({ length: 12 }, (_, i) => ({ id: `x-${i}`, email: `person${i}@example.com`, firstName: `Person${i}`, lastName: 'Test', enabled: true, roles: [] }));
     server.use(http.get(`${BASE}/users/admin`, () => HttpResponse.json([ME, ...many])));
@@ -155,7 +155,10 @@ describe('creating a new message', () => {
     const dialog = await screen.findByRole('dialog');
     await within(dialog).findAllByRole('radio');
     expect(within(dialog).getAllByRole('radio')).toHaveLength(8);
-    expect(within(dialog).getByText(/showing 8 of 12/i)).toBeInTheDocument();
+    const pager = within(dialog).getByRole('navigation', { name: 'Pagination' });
+    expect(within(pager).getByText(/showing/i)).toHaveTextContent('Showing 1–8 of 12 people');
+    await user.click(within(pager).getByRole('button', { name: 'Next page' }));
+    expect(within(dialog).getAllByRole('radio')).toHaveLength(4);
   });
 
   it('has no accessibility violations', async () => {

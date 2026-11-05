@@ -3,6 +3,23 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-05 (M-Pesa prompt gets its full minute)
+
+- **Fixed:** right after **Try again** (or a first prompt on a booking with an earlier failed attempt), the page could
+  show **Payment failed** within a second, reading the earlier attempt's result before the new prompt had even reached
+  the phone. It now keeps the countdown for the whole minute; a failure only shows once this prompt itself has failed
+  or the minute is up. A successful payment still moves on at once.
+
+## 2026-11-05 (M-Pesa retry, payout provider, renter on transactions, three more paged lists)
+
+- **Changed:** **Try again** on an M-Pesa prompt, and sending it to a different number, now re-sends the prompt for
+  the same M-Pesa payment (the backend's new retry) instead of starting a second payment.
+- **Added (administrators):** **Platform Settings → Payouts to owners**: pay owners by **M-Pesa** or **Pesapal**.
+- **Added (administrators):** Payment Transactions shows whose booking a payment was for when someone else paid it,
+  and its details list the **Renter** and **Renter phone**.
+- **Added:** paging on the Reports **Daily earnings** table, the cars in **Change vehicle** and the people in **New
+  message** (which used to show only the first 8).
+
 ## 2026-11-05 (View on payment transactions, the same paging on every list)
 
 - **Added (administrators):** a **View** button on each Payment Transactions row opens the transaction (clicking the

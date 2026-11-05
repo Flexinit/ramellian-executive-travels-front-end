@@ -10,6 +10,8 @@ import EmptyState from '../ui/EmptyState';
 import ErrorBanner from '../ui/ErrorBanner';
 import SegmentedControl from '../ui/SegmentedControl';
 import ToggleChip from '../ui/ToggleChip';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import StatTile from './StatTile';
 import {
   ratePercent, useAnalyticsSummary, useBookingAnalytics, useDailyEarnings, useTopOwners, useTopVehicles,
@@ -85,6 +87,8 @@ function DailyEarnings({ range }) {
     () => (Array.isArray(data) ? data : []).map((d) => ({ ...d, label: d.date ? format(parseISO(d.date), 'd MMM', { locale: enGB }) : '' })),
     [data]
   );
+  // The table view a page at a time — a long period is a row per day.
+  const pager = usePagination(days, 10, `${range?.from}|${range?.to}`);
 
   return (
     <Card className="p-5 flex flex-col gap-4">
@@ -102,6 +106,7 @@ function DailyEarnings({ range }) {
       ) : days.length === 0 ? (
         <EmptyState icon={BarChart3} title="No earnings in this period" description="Pick a longer period, or check back once payments come in." />
       ) : tableView ? (
+        <>
         <div className="table-scroll">
           <table className="w-full text-sm" aria-labelledby={titleId}>
             <thead>
@@ -113,7 +118,7 @@ function DailyEarnings({ range }) {
               </tr>
             </thead>
             <tbody>
-              {days.map((d) => (
+              {pager.pageItems.map((d) => (
                 <tr key={d.date} className="border-b border-ink/5">
                   <td className="py-2 pr-4 text-ink">{d.label}</td>
                   <td className="py-2 pr-4 text-right text-ink font-semibold tabular-nums">{money(d.grossRevenue)}</td>
@@ -124,6 +129,8 @@ function DailyEarnings({ range }) {
             </tbody>
           </table>
         </div>
+        <Pagination {...pager.props} noun="days" />
+        </>
       ) : (
         <>
           <div style={{ width: '100%', height: 280 }} role="img" aria-labelledby={titleId}>

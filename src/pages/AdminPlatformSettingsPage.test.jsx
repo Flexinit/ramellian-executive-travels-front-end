@@ -144,6 +144,22 @@ describe('AdminPlatformSettingsPage', () => {
     await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, driverFlatCharge: 2500 }));
   });
 
+  it('chooses how owners are paid out (disbursementProvider), showing the saved one', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, disbursementProvider: 'MPESA' })));
+    let body;
+    server.use(http.put(`${BASE}/platform-settings`, async ({ request }) => {
+      body = await request.json();
+      return HttpResponse.json({ id: 's1', ...body });
+    }));
+    renderUi();
+
+    expect(await screen.findByRole('radio', { name: 'M-Pesa' })).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('radio', { name: 'Pesapal' }));
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+    await waitFor(() => expect(body).toMatchObject({ commissionRatePct: 2, disbursementProvider: 'PESAPAL' }));
+  });
+
   it('sets the M-Pesa payment and payout fees, showing the saved ones', async () => {
     const user = userEvent.setup();
     server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 2, mpesaStkFee: 10, mpesaB2cFee: 0 })));

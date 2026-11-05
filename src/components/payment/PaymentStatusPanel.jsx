@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, XCircle, RotateCcw, Clock, CreditCard, Smartphone } from 'lucide-react';
 import Spinner from '../ui/Spinner';
 import Button from '../ui/Button';
-import { PAYMENT_STATUSES } from '../../lib/constants';
+import { MPESA_PROMPT_SECONDS, PAYMENT_STATUSES } from '../../lib/constants';
 import ReceiptActions from '../booking/ReceiptActions';
 import PesapalFrame from './PesapalFrame';
 import MpesaLogo from './MpesaLogo';
@@ -43,8 +43,6 @@ import CircularCountdown from '../ui/CircularCountdown';
  *   renter their receipt right there (see ReceiptActions) — the moment the payment actually completes is
  *   the most natural place to "issue" it, rather than making them go find it in My Bookings afterwards.
  */
-/** How long an M-Pesa prompt stays open on the phone before it's offered again. */
-const MPESA_PROMPT_SECONDS = 60;
 
 /**
  * Waiting for the renter to approve an M-Pesa prompt (product owner, 2026-11-04: no endless spinner): a 60-second

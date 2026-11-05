@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import Modal from '../ui/Modal';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import Input from '../ui/Input';
@@ -15,7 +17,6 @@ import { matchesUserSearch, roleBadges, userDisplayName } from '../../lib/adminU
 import { apiErrorMessage } from '../../lib/apiError';
 import { ANNOUNCEMENT_MAX_LENGTH, cleanAnnouncement } from '../../lib/announcements';
 
-const SHOWN = 8;
 
 /**
  * Write a message to anyone, from scratch: find the person, type, send — then land in that conversation. Finding
@@ -49,7 +50,10 @@ export default function NewMessageModal({ isOpen, onClose, toId }) {
   const matches = everyone.filter((u) => matchesUserSearch(u, search));
   const chosen = everyone.find((u) => u.id === recipientId);
   // The chosen person stays in the list even when the search no longer matches them.
-  const shown = [...(chosen && !matches.includes(chosen) ? [chosen] : []), ...matches].slice(0, SHOWN);
+  const listed = [...(chosen && !matches.includes(chosen) ? [chosen] : []), ...matches];
+  // A page at a time; a new search goes back to the first page.
+  const pager = usePagination(listed, 8, search);
+  const shown = pager.pageItems;
   const clean = cleanAnnouncement(message);
 
   function submit(e) {
@@ -107,7 +111,7 @@ export default function NewMessageModal({ isOpen, onClose, toId }) {
                 </label>
               );
             })}
-            {matches.length > SHOWN && <p className="text-xs text-muted">Showing {SHOWN} of {matches.length} — type more to narrow it down.</p>}
+            <Pagination {...pager.props} noun="people" />
           </fieldset>
         )}
 

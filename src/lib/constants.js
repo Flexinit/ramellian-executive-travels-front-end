@@ -241,6 +241,9 @@ export const PAYMENT_POLL_INTERVAL_MS = 3000;
 /** Maximum payment status poll attempts */
 export const PAYMENT_POLL_MAX_ATTEMPTS = 10;
 
+/** How long an M-Pesa prompt stays open on the renter's phone: the time they're given to enter their PIN. */
+export const MPESA_PROMPT_SECONDS = 60;
+
 /** TanStack Query stale time (5 min) */
 export const QUERY_STALE_TIME = 5 * 60 * 1000;
 

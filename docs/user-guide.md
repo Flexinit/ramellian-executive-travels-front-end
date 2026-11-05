@@ -70,8 +70,8 @@ document tools under a **Documents** heading (Review Documents, Approved Documen
 **Long lists come a page at a time, everywhere.** Every list that grows has the same controls under it: "Showing
 21–40 of 95", **Per page** (10, 25, 50 or 100, plus the list's own default), **Previous** / **Next** and numbered pages.
 They apply to bookings, vehicles, documents, users, roles, templates, messages, notifications, reviews, the audit
-log, payment transactions, payouts (yours and the admin's), refunds, unsettled bookings and the owner's statement
-tables. A new search or filter goes back to the first page. A printed statement still lists every row. The controls
+log, payment transactions, payouts (yours and the admin's), refunds, unsettled bookings, the owner's statement
+tables, the Reports **Daily earnings** table, the cars offered in **Change vehicle** and the people in **New message**. A new search or filter goes back to the first page. A printed statement still lists every row. The controls
 only appear once a list is longer than the smallest page size.
 
 **Menus for people with two roles are grouped.** Instead of one long list, related items sit under a heading
@@ -443,10 +443,13 @@ verifying your email (which signs you in), and picks up where you left off.
    you've been asked to pay. If you started a payment for this booking earlier that hasn't been confirmed, a note
    above the choice offers **Check its status**, in case it went through. Choose how to pay. **M-Pesa** (the default): check the phone number (it starts as your account's) and
    press **Send M-Pesa prompt**. A prompt appears on that phone; enter your M-Pesa PIN there and the page moves on by
-   itself. A one-minute countdown shows how long the prompt stays open. If it runs out before the payment arrives, the
+   itself. A one-minute countdown shows how long the prompt stays open, and you get that whole minute: the page only
+   says the payment failed once this prompt has actually failed (cancelled, wrong PIN, not enough balance) or the
+   minute is up — never because of an earlier attempt. If it runs out before the payment arrives, the
    page checks once more, then waits for you: **Try again** sends a fresh prompt with a new minute (or **Check again** if you've just paid), and **Pay another way** (if it fails or goes unanswered) takes you
    back to the choice. **Use a different number** (once the prompt has failed or timed out) goes back to the number,
-   for a prompt sent to the wrong phone. A failed prompt says what can go wrong (cancelled, timed out, wrong PIN, not
+   for a prompt sent to the wrong phone. **Try again** and a changed number both re-send the prompt for the same
+   M-Pesa payment, rather than starting a second one. A failed prompt says what can go wrong (cancelled, timed out, wrong PIN, not
    enough balance) and that nothing was taken. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
    paying their part by M-Pesa. You're listed first with your details. **Add a person** for each of the others (name,
    M-Pesa number, email optional for their receipt) and set everyone's share. The total is the whole charge (rental,
@@ -940,7 +943,9 @@ your permissions" above): an item is only shown if your account holds the permis
   a time. Tabs pick the kind: **All**, **M-Pesa payments**, **M-Pesa split payments**, **M-Pesa payouts**, **Pesapal
   payments**, **Pesapal payouts**. Filter further by **status** (as the provider writes it, e.g. `SUCCESSFUL`), **phone**, the booking's full **ID**, and **From** / **To**
   days. Each row shows its **Ref**: the M-Pesa ref (receipt number, e.g. `NLJ7RT61SV`) for M-Pesa, the provider's
-  reference otherwise. **View** on a row (or clicking the row) opens its details: the M-Pesa ref first, the provider's and the platform's references,
+  reference otherwise. A payment made by someone other than the renter (a split payer) also says whose booking it was
+  for ("for Jane Renter"). **View** on a row (or clicking the row) opens its details, including the **Renter** and
+  **Renter phone** when they differ from the payer: the M-Pesa ref first, the provider's and the platform's references,
   the provider's message, the booking it belongs to (**Open the booking**), then **M-Pesa details**, which lists every
   field M-Pesa sent. For a payment that's the amount, paid-at time, phone, checkout and merchant request IDs, and the
   result code and message. For a payout it's the amount, who it was paid to, completion time, conversation IDs,
@@ -972,7 +977,8 @@ your permissions" above): an item is only shown if your account holds the permis
   **Pesapal transaction fee** (%), the **Delivery fee** (a
   flat amount when the renter has the car delivered; 0 = free) and the **Driver charge** (a flat amount added to a
   chauffeured booking; 0 = none), plus the **M-Pesa payment fee** (a flat amount per payment by M-Pesa prompt) and the
-  **M-Pesa payout fee** (a flat amount per payout sent to an owner by M-Pesa). **Late returns**: the **Grace
+  **M-Pesa payout fee** (a flat amount per payout sent to an owner by M-Pesa). **Payouts to owners** picks how owners
+  are sent their share, **M-Pesa** or **Pesapal**; payouts already sent aren't affected. **Late returns**: the **Grace
   period** (hours a car can be late before overstay is charged) and the **Overstay rate** (times the daily rate,
   1 or more, e.g. 1.5). **Commission on longer bookings** sets a different rate for bookings of a given
   number of days or more (e.g. 10% from 2 days: a 1-day booking takes the normal rate, a 2-day one 10%); leave both

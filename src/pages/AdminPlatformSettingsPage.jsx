@@ -26,6 +26,16 @@ const TABS = [
   { value: 'assistant', label: 'Assistant', icon: Bot },
 ];
 
+/**
+ * How owners are paid out (`disbursementProvider`, live spec 2026-11-05 — a plain string there): by M-Pesa (B2C) or
+ * through Pesapal, the two payout kinds the ledger records (MPESA_B2C, PESAPAL_B2C). A value the backend holds that
+ * isn't one of these is still shown, as it is, so a save never changes it by accident.
+ */
+const PAYOUT_PROVIDERS = [
+  { value: 'MPESA', label: 'M-Pesa' },
+  { value: 'PESAPAL', label: 'Pesapal' },
+];
+
 const FIELDS = ['commissionRatePct', 'multiDayCommissionRatePct', 'multiDayThresholdDays', 'pesapalTransactionFeeRatePct', 'deliveryFlatFee', 'driverFlatCharge', 'mpesaStkFee', 'mpesaB2cFee', 'overstayGracePeriodHours', 'overstayRateMultiplier'];
 
 /**
@@ -62,11 +72,13 @@ export default function AdminPlatformSettingsPage() {
   const [errors, setErrors] = useState({});
   // Which charges are applied: on while they're more than 0.
   const [chargeOn, setChargeOn] = useState({});
+  const [payoutProvider, setPayoutProvider] = useState('');
 
   useEffect(() => {
     if (!data) return;
     setValues(Object.fromEntries(FIELDS.map((f) => [f, data[f] != null ? String(data[f]) : ''])));
     // The backend's flag; settings saved before the flags existed count a charge as on while it's above 0.
+    setPayoutProvider(data.disbursementProvider || '');
     setChargeOn(Object.fromEntries(CHARGES.map((c) => [c.name, typeof data[c.flag] === 'boolean' ? data[c.flag] : Number(data[c.name]) > 0])));
   }, [data]);
 
@@ -136,6 +148,8 @@ export default function AdminPlatformSettingsPage() {
       if (Number.isNaN(m) || m < 1) problems.overstayRateMultiplier = 'Enter 1 or more (1 = the normal daily rate).';
       else next.overstayRateMultiplier = m;
     }
+
+    if (payoutProvider) next.disbursementProvider = payoutProvider;
 
     setErrors(problems);
     if (Object.keys(problems).length === 0) save.mutate(next);
@@ -247,6 +261,23 @@ export default function AdminPlatformSettingsPage() {
                       {field('overstayGracePeriodHours', 'Grace period', 'Before overstay is charged', { step: '1', inputMode: 'numeric', compact: true, suffix: 'hours' })}
                       {field('overstayRateMultiplier', 'Overstay rate', '× the daily rate, e.g. 1.5', { min: '1', step: '0.1', inputMode: 'decimal', compact: true, suffix: '×' })}
                     </div>
+                  </fieldset>
+
+                  <fieldset className="flex flex-col gap-2 border-t border-ink/10 pt-4">
+                    <legend className="sr-only">Payouts to owners</legend>
+                    <p className="font-heading text-ink text-base font-semibold" aria-hidden="true">Payouts to owners</p>
+                    <p className="text-muted text-xs -mt-1">How owners are sent their share. Payouts already sent aren&apos;t affected.</p>
+                    <SegmentedControl
+                      label="Pay owners through"
+                      size="sm"
+                      className="self-start"
+                      options={[
+                        ...PAYOUT_PROVIDERS,
+                        ...(payoutProvider && !PAYOUT_PROVIDERS.some((p) => p.value === payoutProvider) ? [{ value: payoutProvider, label: payoutProvider }] : []),
+                      ]}
+                      value={payoutProvider}
+                      onChange={setPayoutProvider}
+                    />
                   </fieldset>
 
                   <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-4">

@@ -164,8 +164,12 @@ export default function AdminPaymentTransactionsPage() {
                         <td data-label="Type" className="px-4 py-3 text-sm text-ink">{typeLabel}</td>
                         <td data-label="Ref" className="px-4 py-3 text-sm font-medium text-ink tracking-wide break-all">{ref || '—'}</td>
                         <td data-label="Who" className="stack-full px-4 py-3 text-sm text-ink break-all">
-                          {t.partyName || t.phone || t.email || '—'}
-                          {t.partyName && t.phone && <span className="block text-xs text-muted">{t.phone}</span>}
+                          {t.partyName || t.renterName || t.phone || t.renterPhone || t.email || '—'}
+                          {(t.partyName || t.renterName) && (t.phone || t.renterPhone) && <span className="block text-xs text-muted">{t.phone || t.renterPhone}</span>}
+                          {/* Paid by someone other than the renter (a split payer): whose booking it was for. */}
+                          {!out && t.partyName && t.renterName && t.renterName !== t.partyName && (
+                            <span className="block text-xs text-muted">for {t.renterName}</span>
+                          )}
                         </td>
                         <td data-label="Amount" className={`px-4 py-3 text-sm font-semibold tabular-nums whitespace-nowrap ${out ? 'text-ink' : 'text-green-700 dark:text-green-400'}`}>
                           {out ? '−' : '+'} {formatCurrency(Number(t.amount) || 0)}

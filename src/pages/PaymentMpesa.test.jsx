@@ -13,6 +13,24 @@ import { useAuthStore } from '../store/authStore';
 
 const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
+/**
+ * An M-Pesa status that behaves like the real one for a prompt that fails: nothing until the first prompt, then each
+ * prompt reads PENDING (it's on the phone) before it reads FAILED (cancelled, wrong PIN…). `sent()` marks a new prompt.
+ */
+function failingPrompts() {
+  let prompts = 0;
+  let polls = 0;
+  return {
+    sent: () => { prompts += 1; polls = 0; },
+    get prompts() { return prompts; },
+    status: () => {
+      if (!prompts) return HttpResponse.json({ message: 'Payment not found' }, { status: 404 });
+      polls += 1;
+      return HttpResponse.json({ status: polls === 1 ? 'PENDING' : 'FAILED' });
+    },
+  };
+}
+
 function renderAt() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -138,9 +156,10 @@ describe('PaymentPage — paying by M-Pesa prompt (STK push)', () => {
 
   it('after a failed prompt, Pay another way goes back to choosing — Card & other', async () => {
     const user = userEvent.setup();
+    const mpesa = failingPrompts();
     server.use(
-      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/checkout`, () => HttpResponse.json({ status: 'PENDING' })),
-      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'FAILED' }))
+      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/checkout`, () => { mpesa.sent(); return HttpResponse.json({ status: 'PENDING' }); }),
+      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => mpesa.status())
     );
     renderAt();
     await user.click(await screen.findByRole('button', { name: /send m-pesa prompt/i }));
@@ -153,9 +172,10 @@ describe('PaymentPage — paying by M-Pesa prompt (STK push)', () => {
 
   it('after a failed prompt, says what can go wrong, and Use a different number goes back to the number', async () => {
     const user = userEvent.setup();
+    const mpesa = failingPrompts();
     server.use(
-      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/checkout`, () => HttpResponse.json({ status: 'PENDING' })),
-      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => HttpResponse.json({ status: 'FAILED' }))
+      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/checkout`, () => { mpesa.sent(); return HttpResponse.json({ status: 'PENDING' }); }),
+      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => mpesa.status())
     );
     renderAt();
     await user.click(await screen.findByRole('button', { name: /send m-pesa prompt/i }));
@@ -165,6 +185,70 @@ describe('PaymentPage — paying by M-Pesa prompt (STK push)', () => {
     expect(await screen.findByLabelText('M-Pesa phone number')).toHaveValue('+254712345678');
     expect(screen.getByRole('radio', { name: 'M-Pesa' })).toHaveAttribute('aria-checked', 'true');
   });
+
+  it('Try again and a different number prompt again through the retry endpoint, reusing the payment', async () => {
+    const user = userEvent.setup();
+    const retries = [];
+    let checkouts = 0;
+    const mpesa = failingPrompts();
+    server.use(
+      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/checkout`, () => { checkouts += 1; mpesa.sent(); return HttpResponse.json({ status: 'PENDING' }); }),
+      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/retry`, ({ request, params }) => {
+        mpesa.sent();
+        retries.push({ bookingId: params.bookingId, phone: new URL(request.url).searchParams.get('phone') });
+        return HttpResponse.json({ status: 'PENDING' });
+      }),
+      // No M-Pesa payment until the first prompt; every prompt then fails.
+      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => mpesa.status())
+    );
+    renderAt();
+    await user.click(await screen.findByRole('button', { name: /send m-pesa prompt/i }));
+    expect(await screen.findByText(/payment failed/i)).toBeInTheDocument();
+    expect(checkouts).toBe(1);
+    expect(retries).toEqual([]);
+
+    await user.click(screen.getByRole('button', { name: /^try again$/i }));
+    await waitFor(() => expect(retries).toEqual([{ bookingId: 'b1', phone: '254712345678' }]));
+
+    await user.click(await screen.findByRole('button', { name: /use a different number/i }));
+    const phone = await screen.findByLabelText('M-Pesa phone number');
+    await user.clear(phone);
+    await user.type(phone, '0722 000 111');
+    await user.click(screen.getByRole('button', { name: /send m-pesa prompt/i }));
+    await waitFor(() => expect(retries.at(-1)).toEqual({ bookingId: 'b1', phone: '254722000111' }));
+    expect(checkouts).toBe(1);
+  });
+
+  it("gives the renter the prompt's minute: the last attempt's FAILED, read right after re-sending, doesn't end the wait", async () => {
+    const user = userEvent.setup();
+    let polls = 0;
+    let paid = false;
+    sessionStorage.setItem('checkout:b1', '1');
+    sessionStorage.setItem('checkout-provider:b1', 'mpesa');
+    sessionStorage.setItem('checkout-phone:b1', '+254712345678');
+    sessionStorage.setItem('checkout-prompted-at:b1', String(Date.now() - 61_000));
+    server.use(
+      http.post(`${BASE}/payments/mpesa/bookings/:bookingId/retry`, () => HttpResponse.json({ status: 'PENDING' })),
+      // The payment still reads as the last attempt's FAILED until the renter enters their PIN for this one.
+      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () => {
+        polls += 1;
+        return HttpResponse.json({ status: paid ? 'SUCCESSFUL' : 'FAILED' });
+      })
+    );
+    renderAt();
+
+    await user.click(await screen.findByRole('button', { name: /^try again$/i }));
+    expect(await screen.findByText('Check your phone')).toBeInTheDocument();
+    const before = polls;
+    await waitFor(() => expect(polls).toBeGreaterThan(before + 1), { timeout: 8000 });
+    // Still counting down, still checking — not "Payment failed".
+    expect(screen.getByText('Check your phone')).toBeInTheDocument();
+    expect(screen.getByRole('timer')).toBeInTheDocument();
+    expect(screen.queryByText(/payment failed/i)).not.toBeInTheDocument();
+
+    paid = true; // the PIN goes in
+    expect(await screen.findByText('Payment successful', {}, { timeout: 8000 })).toBeInTheDocument();
+  }, 20000);
 
   it('Try again after the minute ran out sends no second prompt when the first payment landed late', async () => {
     const user = userEvent.setup();

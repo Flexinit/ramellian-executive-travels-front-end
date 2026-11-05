@@ -1629,3 +1629,36 @@ started again. This only narrows the window, so please guard the backend too.
   `overstayPaid` (or `overstayPaymentStatus`) to `BookingResponse`, or `GET /payments/pesapal/bookings/{id}/overstay-status`.
   Also: does a paid overstay set `overstayAmount` back to 0?
 - **An M-Pesa option for groups and overstays** (still Pesapal only, item 55).
+
+## 61 / 62 (update, 2026-11-05). Backend changes — consumed; the rest to confirm
+
+Re-checked the live spec (dev, `/v3/api-docs`, 2026-11-05) after the backend said these were taken care of. What the
+spec shows, and what the portal now does with it:
+- **`POST /payments/mpesa/bookings/{bookingId}/retry?phone=`** ("Retry M-Pesa STK Push for a PENDING or FAILED
+  payment") — **consumed.** Every M-Pesa **Try again**, and a prompt sent to a changed number, goes through it. A fresh
+  `.../checkout` is only used when there's no M-Pesa payment to retry (a 404).
+- **`PaymentTransactionResponse.renterName` / `renterPhone`** — **consumed** on Payment Transactions (list and details).
+- **`PlatformSettings.disbursementProvider`** — **consumed** as **Payouts to owners** in Platform Settings. It's a
+  plain string in the spec; the portal sends `MPESA` or `PESAPAL`. **Please confirm those are the values you expect**
+  (or add an enum to the spec).
+
+**Not visible in the spec, so please confirm they're in place** (behaviour the portal can't see from the spec):
+- A 409 from the booking, M-Pesa and split checkouts for a booking that's already paid; the group checkout skipping
+  bookings already paid; one STK prompt at a time.
+- A single provider-agnostic payment status: nothing new appeared, so the portal still asks both
+  `/pesapal/.../status` and `/mpesa/.../status`.
+- An overstay payment status: `BookingResponse` has no `overstayPaid` / `overstayPaymentStatus` and there's no
+  overstay status endpoint, so the portal still remembers a finished overstay payment only in that browser. Does a paid
+  overstay set `overstayAmount` back to 0?
+
+## 63. M-Pesa status right after `/retry` — 2026-11-05
+
+**Seen.** Right after `POST /payments/mpesa/bookings/{id}/retry`, `GET /payments/mpesa/bookings/{id}/status` can still
+answer the previous attempt's `FAILED` (the retry reuses the payment), so the portal showed "Payment failed" before the
+renter had seen the new prompt.
+
+**Portal (done).** While a prompt's 60 seconds run, a FAILED only counts once that prompt has been seen PENDING;
+otherwise the portal keeps the countdown and keeps checking until the minute is up.
+
+**Ask.** Set the payment back to `PENDING` when `/retry` (or a new `/checkout`) sends a prompt, and ideally add the
+attempt's `CheckoutRequestID` or an `updatedAt` to `PaymentStatusResponse`, so a result can be matched to its prompt.

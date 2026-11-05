@@ -23,6 +23,10 @@ const rows = (t, ref) =>
     ['Name', t.partyName],
     ['Phone', t.phone],
     ['Email', t.email],
+    // The booking's renter (live spec 2026-11-05) — shown when it isn't already the person above: a split payer paying
+    // for a friend's booking, or the owner a payout went to.
+    ['Renter', t.renterName && t.renterName !== t.partyName && t.renterName],
+    ['Renter phone', t.renterPhone && t.renterPhone !== t.phone && t.renterPhone],
     ['Description', t.description],
     ['Provider reference', t.providerReference],
     ['Our reference', t.internalReference],

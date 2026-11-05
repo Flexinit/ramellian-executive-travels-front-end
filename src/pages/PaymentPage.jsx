@@ -20,13 +20,13 @@ import SegmentedControl from '../components/ui/SegmentedControl';
 import { useBooking } from '../hooks/useBookings';
 import { useVehicle } from '../hooks/useVehicles';
 import { useQueryClient } from '@tanstack/react-query';
-import { usePesapalCheckout, useMpesaCheckout, usePaymentStatus, useExistingPaymentCheck, paymentStatusKey, fetchBookingPayment } from '../hooks/usePayment';
+import { usePesapalCheckout, useMpesaCheckout, useMpesaRetry, usePaymentStatus, useExistingPaymentCheck, paymentStatusKey, fetchBookingPayment } from '../hooks/usePayment';
 import { useAuthStore } from '../store/authStore';
 import { splitIsClosed, splitIsPaid, splitTotal, useRetryContribution, useSplitPayment, useStartSplit } from '../hooks/useSplitPayment';
 import { usePlatformSettings } from '../hooks/usePlatformSettings';
 import { apiErrorMessage } from '../lib/apiError';
 import { normalizePhone } from '../lib/phone';
-import { PAYMENT_STATUSES } from '../lib/constants';
+import { MPESA_PROMPT_SECONDS, PAYMENT_STATUSES } from '../lib/constants';
 import { calculateTotalPrice, isBookingUnfulfilled } from '../lib/utils';
 import { amountToPay } from '../lib/paymentTotal';
 
@@ -143,6 +143,7 @@ export default function PaymentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountPhone]);
   const mpesa = useMpesaCheckout();
+  const mpesaRetry = useMpesaRetry();
   const byMpesa = provider === 'mpesa';
   const bySplit = provider === 'split';
   const user = useAuthStore((s) => s.user);
@@ -166,9 +167,32 @@ export default function PaymentPage() {
     : byMpesa
     ? checkoutStarted
     : checkoutStarted && !payingInFrame && (resuming || continuedToPesapal || !!existingPayment.status);
-  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled, provider);
+  // The renter gets the prompt's whole minute. A just-sent (or re-sent) prompt can still read as the last attempt's FAILED
+  // before it has even reached the phone — `/retry` reuses that payment — so while the minute runs, FAILED only counts
+  // once this prompt has been seen PENDING (then it's this prompt's own result: cancelled, wrong PIN, no balance).
+  // Paid ends the wait at once; otherwise the result shows when the minute is up.
+  const promptEndsAt = promptedAt ? promptedAt + MPESA_PROMPT_SECONDS * 1000 : 0;
+  const [promptOverFor, setPromptOverFor] = useState(null);
+  useEffect(() => {
+    if (!byMpesa || !promptedAt) return undefined;
+    const left = promptEndsAt - Date.now();
+    if (left <= 0) {
+      setPromptOverFor(promptedAt);
+      return undefined;
+    }
+    const timer = setTimeout(() => setPromptOverFor(promptedAt), left);
+    return () => clearTimeout(timer);
+  }, [byMpesa, promptedAt, promptEndsAt]);
+  const [sawPendingFor, setSawPendingFor] = useState(null);
+  const holdFailed = byMpesa && !!promptedAt && promptOverFor !== promptedAt && sawPendingFor !== promptedAt;
+  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled, provider, { holdFailedUntil: holdFailed ? promptEndsAt : 0 });
+  const rawStatus = paymentStatus.data?.status;
+  useEffect(() => {
+    if (byMpesa && promptedAt && rawStatus === PAYMENT_STATUSES.PENDING) setSawPendingFor(promptedAt);
+  }, [byMpesa, promptedAt, rawStatus]);
+  const shownStatus = holdFailed && (rawStatus === PAYMENT_STATUSES.FAILED || rawStatus === PAYMENT_STATUSES.INVALID) ? PAYMENT_STATUSES.PENDING : rawStatus;
   const unfulfilled = isBookingUnfulfilled(booking?.status);
-  const settled = [PAYMENT_STATUSES.SUCCESSFUL, PAYMENT_STATUSES.FAILED, PAYMENT_STATUSES.INVALID].includes(paymentStatus.data?.status);
+  const settled = [PAYMENT_STATUSES.SUCCESSFUL, PAYMENT_STATUSES.FAILED, PAYMENT_STATUSES.INVALID].includes(shownStatus);
   // Guards the *entire* `handlePay` call, not just `checkout.isPending` — that only covers the mutation
   // itself, not the `await refetchBooking()` pre-check ahead of it. A fast double-click (or a slow network
   // making the first click's effect invisible for a moment) during that window would otherwise still start
@@ -263,7 +287,19 @@ export default function PaymentPage() {
       }
       if (await alreadyPaid()) return;
       if (via === 'mpesa') {
-        const sent = await mpesa.mutateAsync({ bookingId, phone: mpesaPhone }).catch(() => null);
+        // An earlier M-Pesa attempt for this booking (retried from the panel, sent to a number being changed, or found
+        // pending from another browser) is prompted again through the retry endpoint, reusing that payment; only
+        // with none to retry (404) does a fresh checkout start one.
+        const priorMpesa = (byMpesa && checkoutStarted) || !!sessionStorage.getItem(`checkout-phone:${bookingId}`) || existingPayment.via === 'mpesa';
+        let sent = null;
+        if (priorMpesa) {
+          sent = await mpesaRetry.mutateAsync({ bookingId, phone: mpesaPhone }).catch((error) => {
+            if (error?.response?.status !== 404) toast.error(apiErrorMessage(error, 'Could not send the M-Pesa prompt again. Please try again.'));
+            return error?.response?.status === 404 ? 'none' : null;
+          });
+          if (!sent) return;
+        }
+        if (!priorMpesa || sent === 'none') sent = await mpesa.mutateAsync({ bookingId, phone: mpesaPhone }).catch(() => null);
         if (!sent) return;
         // A fresh prompt: forget the last attempt's status (and its spent checks), then wait for the PIN.
         queryClient.removeQueries({ queryKey: paymentStatusKey(bookingId, 'mpesa') });
@@ -330,7 +366,7 @@ export default function PaymentPage() {
     );
   }
 
-  const status = bySplit ? (splitIsPaid(split.data) ? PAYMENT_STATUSES.SUCCESSFUL : undefined) : paymentStatus.data?.status;
+  const status = bySplit ? (splitIsPaid(split.data) ? PAYMENT_STATUSES.SUCCESSFUL : undefined) : shownStatus;
   // What the shares of a split must add up to: the booking's whole charge, M-Pesa fees included (splitTotal).
   const due = splitTotal(booking, settings, vehicle);
   // What this booking costs paid the way being used (or chosen): the rental plus that method's fees — what the M-Pesa

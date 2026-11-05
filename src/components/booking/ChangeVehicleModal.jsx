@@ -4,6 +4,8 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Textarea from '../ui/Textarea';
 import Spinner from '../ui/Spinner';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import { useChangeVehicle } from '../../hooks/useBookings';
 import { useAdminVehicles, useMyVehicles, useVehicleAvailability } from '../../hooks/useVehicles';
 import { BOOKING_STATUSES } from '../../lib/constants';
@@ -39,6 +41,7 @@ const CHOICES = { renter: RenterChoices, owner: OwnerChoices, admin: AdminChoice
 function Choices({ booking, vehicles, isLoading, selected, onSelect, hasMore, onLoadMore, loadingMore }) {
   const currentId = booking.vehicleId || booking.vehicle?.id;
   const options = vehicles.filter((v) => v.id !== currentId);
+  const pager = usePagination(options, 5);
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -50,8 +53,9 @@ function Choices({ booking, vehicles, isLoading, selected, onSelect, hasMore, on
     return <p className="rounded-tile bg-subtle px-4 py-3 text-sm text-muted">There&apos;s no other vehicle to switch to for these dates.</p>;
   }
   return (
-    <div role="radiogroup" aria-label="Choose the new vehicle" className="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1">
-      {options.map((v) => {
+    <div className="flex flex-col gap-3">
+    <div role="radiogroup" aria-label="Choose the new vehicle" className="flex flex-col gap-2">
+      {pager.pageItems.map((v) => {
         const active = selected === v.id;
         return (
           <button
@@ -77,8 +81,10 @@ function Choices({ booking, vehicles, isLoading, selected, onSelect, hasMore, on
           </button>
         );
       })}
-      {/* The renter's list is loaded a page at a time (useVehicleAvailability). */}
-      {hasMore && (
+    </div>
+      <Pagination {...pager.props} noun="vehicles" />
+      {/* The renter's list comes from the backend in batches (useVehicleAvailability): fetch the next once these run out. */}
+      {hasMore && pager.page === pager.totalPages && (
         <Button variant="outline" size="sm" className="self-center" loading={loadingMore} onClick={onLoadMore}>
           Show more vehicles
         </Button>

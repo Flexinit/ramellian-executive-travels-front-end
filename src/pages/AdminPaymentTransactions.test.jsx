@@ -83,6 +83,22 @@ describe('Payment Transactions page (GET /admin/payment-transactions)', () => {
     expect(asked.at(-1)).toMatchObject({ type: 'MPESA_B2C' });
   });
 
+  it('shows whose booking a payment was for when someone else paid it, in the list and the details', async () => {
+    const user = userEvent.setup();
+    const split = TX({ id: 't9', type: 'MPESA_SPLIT_STK', partyName: 'Ben Friend', phone: '254722000111', renterName: 'Jane Renter', renterPhone: '254712345678' });
+    server.use(
+      http.get(`${BASE}/admin/payment-transactions`, () => HttpResponse.json(page([split]))),
+      http.get(`${BASE}/admin/payment-transactions/t9`, () => HttpResponse.json(split))
+    );
+    renderUi(<AdminPaymentTransactionsPage />);
+
+    expect(await screen.findByText('for Jane Renter')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /^view /i }));
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('Renter')).toBeInTheDocument();
+    expect(within(dialog).getByText('Renter phone')).toBeInTheDocument();
+  });
+
   it('each row has a View action that opens that transaction', async () => {
     const user = userEvent.setup();
     let fetched = null;
