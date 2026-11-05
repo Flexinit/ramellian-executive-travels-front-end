@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { PenLine, CreditCard } from 'lucide-react';
+import { PenLine, CreditCard, RotateCcw } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import BackLink from '../components/ui/BackLink';
@@ -13,7 +13,7 @@ import PaymentStatusPanel from '../components/payment/PaymentStatusPanel';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useCartStore } from '../store/cartStore';
-import { useGroupCheckout, paymentStatusQuery, paymentStatusKey, useGroupPollExhausted, useExistingPaymentChecks } from '../hooks/usePayment';
+import { useGroupCheckout, paymentStatusQuery, paymentStatusKey, useGroupPollExhausted, useExistingPaymentChecks, fetchBookingPayment } from '../hooks/usePayment';
 import { apiGet } from '../lib/api';
 import { PAYMENT_STATUSES } from '../lib/constants';
 import { isBookingUnfulfilled } from '../lib/utils';
@@ -71,11 +71,14 @@ export default function GroupPaymentPage() {
     setCheckoutStarted(true);
   }, [checkoutStarted, hasExistingPayment, groupId]);
   const pollingEnabled = checkoutStarted && !payingInFrame && (resuming || continuedToPesapal || hasExistingPayment);
-  const statuses = useQueries({ queries: items.map((item) => paymentStatusQuery(item.bookingId, pollingEnabled)) });
+  // Each booking's payment whichever way it was made: after a part-paid group, the rest are paid one at a time — by
+  // M-Pesa too — and this page still has to see the whole group as paid.
+  const statuses = useQueries({ queries: items.map((item) => paymentStatusQuery(item.bookingId, pollingEnabled, 'any')) });
   const exhausted = useGroupPollExhausted(
     items.map((item) => item.bookingId),
     statuses.map((s) => s.data?.status),
-    pollingEnabled
+    pollingEnabled,
+    'any'
   );
 
   async function handlePay() {
@@ -92,6 +95,19 @@ export default function GroupPaymentPage() {
         toast.error('One of these bookings is no longer available — see below.');
         return;
       }
+      // Right before charging the whole group: is any of it paid already (a payment that landed late, or paid
+      // elsewhere)? Then no new group charge — all paid shows as paid, part paid offers the rest one at a time.
+      const latest = await Promise.all(items.map((item) => fetchBookingPayment(item.bookingId).catch(() => null)));
+      const paidNow = latest.filter((p) => p?.status === PAYMENT_STATUSES.SUCCESSFUL);
+      if (paidNow.length > 0) {
+        items.forEach((item, i) => latest[i] && queryClient.setQueryData(paymentStatusKey(item.bookingId, 'any'), latest[i]));
+        if (groupId) sessionStorage.setItem(`group-checkout:${groupId}`, '1');
+        setPayingInFrame(false);
+        setCheckoutStarted(true);
+        toast.success(paidNow.length === items.length ? 'These bookings are already paid — no need to pay again.' : 'Some of these bookings are already paid — pay the rest below.');
+        return;
+      }
+      const firstAttempt = !checkoutStarted;
       if (groupId) sessionStorage.setItem(`group-checkout:${groupId}`, '1');
       setCheckoutStarted(true);
       // A retry generates a brand new combined Pesapal link — pause polling again until it's actually clicked,
@@ -102,6 +118,10 @@ export default function GroupPaymentPage() {
         // A fresh link: forget the last attempt's statuses (and their spent attempts), then pay in the frame.
         items.forEach((item) => queryClient.removeQueries({ queryKey: paymentStatusKey(item.bookingId) }));
         setPayingInFrame(true);
+      } else if (firstAttempt) {
+        // Nothing was started (the hook has said why): back to Proceed to Payment, not "waiting for your payment".
+        if (groupId) sessionStorage.removeItem(`group-checkout:${groupId}`);
+        setCheckoutStarted(false);
       }
       // Pesapal's page now opens right here, in the panel's frame (PesapalFrame) — the browser no longer leaves for
       // it. Polling starts once that frame reports the payment finished (the panel's `onContinue`).
@@ -123,6 +143,12 @@ export default function GroupPaymentPage() {
   const anyFailed = statuses.some((s) => s.data?.status === PAYMENT_STATUSES.FAILED || s.data?.status === PAYMENT_STATUSES.INVALID);
   const overallStatus = anyFailed ? PAYMENT_STATUSES.FAILED : allSuccessful ? PAYMENT_STATUSES.SUCCESSFUL : PAYMENT_STATUSES.PENDING;
   const blocked = unfulfilledIds.length > 0;
+  // Some bookings paid and the rest failed (or never confirmed): paying the group again would charge the paid ones
+  // twice, so each unpaid booking is paid on its own Payment page instead.
+  const paidIds = items.filter((_, i) => statuses[i]?.data?.status === PAYMENT_STATUSES.SUCCESSFUL).map((item) => item.bookingId);
+  const stillPending = statuses.some((s) => s.data?.status === PAYMENT_STATUSES.PENDING);
+  const partlyPaid = checkoutStarted && !payingInFrame && paidIds.length > 0 && !allSuccessful && (!stillPending || exhausted);
+  const unpaidItems = items.filter((item) => !paidIds.includes(item.bookingId));
 
   return (
     <PageWrapper className="max-w-5xl mx-auto">
@@ -156,7 +182,30 @@ export default function GroupPaymentPage() {
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
             <CartTotals items={items} />
 
-            {checkoutStarted ? (
+            {partlyPaid ? (
+              <section role="status" aria-label="Part paid" className="flex flex-col gap-3 rounded-tile bg-amber-500/10 px-4 py-3">
+                <p className="text-sm text-ink">
+                  {paidIds.length} of {items.length} bookings are paid. The rest didn&apos;t go through — pay each of them below.
+                  You won&apos;t be charged again for the ones already paid.
+                </p>
+                <ul className="flex flex-col gap-2">
+                  {unpaidItems.map((item) => (
+                    <li key={item.bookingId} className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-sm text-ink font-medium">{item.vehicle?.model || 'Vehicle'}</span>
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(`/book/${item.vehicleId}/payment`, { state: { bookingId: item.bookingId } })}
+                      >
+                        <CreditCard size={14} aria-hidden="true" /> Pay this booking
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+                <Button size="sm" variant="outline" className="self-start" onClick={() => statuses.forEach((s) => s.refetch())}>
+                  <RotateCcw size={14} aria-hidden="true" /> Check again
+                </Button>
+              </section>
+            ) : checkoutStarted ? (
               <>
                 <PaymentStatusPanel
                   status={overallStatus}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, MessageSquare, PenLine, KeyRound, FlagOff, CalendarClock, CreditCard } from 'lucide-react';
+import { ChevronDown, MessageSquare, PenLine, KeyRound, FlagOff, CalendarClock } from 'lucide-react';
 import Button from '../ui/Button';
 import AuthImage from '../vehicles/AuthImage';
 import GenericVehiclePlaceholder from '../vehicles/GenericVehiclePlaceholder';
@@ -8,9 +8,8 @@ import ReceiptActions from './ReceiptActions';
 import BookingStatusBadge from './BookingStatusBadge';
 import CancelBookingModal from './CancelBookingModal';
 import PostponeBookingModal from './PostponeBookingModal';
-import { useOverstayCheckout } from '../../hooks/usePayment';
+import OverstayPayButton from '../payment/OverstayPayButton';
 import VehicleHandoverModal from './VehicleHandoverModal';
-import OverstayPaymentModal from '../payment/OverstayPaymentModal';
 import HandoverHistory from './HandoverHistory';
 import { useVehicle } from '../../hooks/useVehicles';
 import { sessionContractId } from '../../lib/contracts';
@@ -69,9 +68,6 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
   const [expanded, setExpanded] = useState(false);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [movingDates, setMovingDates] = useState(false);
-  const overstay = useOverstayCheckout();
-  // The overstay checkout's Pesapal link, paid in a dialog on this page (OverstayPaymentModal).
-  const [overstayUrl, setOverstayUrl] = useState(null);
   // Which handover modal is open, if either — mirrors BookingDetailPage's own version of this, so a renter
   // can record a pickup or return straight from the list without opening the booking's full page.
   const [handover, setHandover] = useState(null);
@@ -277,11 +273,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
                 <MessageSquare size={14} aria-hidden="true" />
                 {isRenterView ? 'Message the owner' : 'Message the renter'}
               </Button>
-              {isRenterView && Number(booking.overstayAmount) > 0 && (
-                <Button size="sm" loading={overstay.isPending} onClick={(e) => { e.stopPropagation(); overstay.mutate(booking.id, { onSuccess: (data) => setOverstayUrl(data?.redirectUrl || null) }); }}>
-                  {!overstay.isPending && <CreditCard size={14} aria-hidden="true" />} Pay overstay {formatCurrency(booking.overstayAmount)}
-                </Button>
-              )}
+              {isRenterView && Number(booking.overstayAmount) > 0 && <OverstayPayButton booking={booking} />}
               {canCancel && (
                 <Button size="sm" onClick={(e) => { e.stopPropagation(); setMovingDates(true); }}>
                   <CalendarClock size={14} aria-hidden="true" /> Move dates
@@ -317,7 +309,6 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
 
             <CancelBookingModal isOpen={confirmingCancel} onClose={() => setConfirmingCancel(false)} booking={booking} />
             <PostponeBookingModal isOpen={movingDates} onClose={() => setMovingDates(false)} booking={booking} />
-            <OverstayPaymentModal url={overstayUrl} booking={booking} onClose={() => setOverstayUrl(null)} />
             <VehicleHandoverModal
               isOpen={!!handover}
               onClose={() => setHandover(null)}

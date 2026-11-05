@@ -5,6 +5,8 @@ import QrCode from '../ui/QrCode';
 import { formatCurrency, formatDateRange, formatDateTime } from '../../lib/utils';
 import { BOOKING_MODES, TRIP_TYPE_LABELS } from '../../lib/constants';
 
+const PROVIDER_LABELS = { MPESA: 'M-Pesa', PESAPAL: 'Pesapal' };
+
 /** A string that's actually a link, for the backend's own `receipt` reference — shown as one only when it
  * looks like it; otherwise it's just printed as plain text (a receipt/confirmation number, most likely). */
 function isUrl(value) {
@@ -35,6 +37,12 @@ function isUrl(value) {
  * `BookingDetailPage` already trust for the same reason), so it's used here first; `receipt.amount` is only
  * a fallback for a booking that doesn't carry it.
  *
+ * **Except** once the payment record itemises itself (`baseRentalAmount`, live spec 2026-11-05): its `amount` is then
+ * the whole charge — rental, delivery, driver and the processing fee of the way it was paid (M-Pesa's flat fees or
+ * Pesapal's percentage) — which the booking's own quote can't know, so that's the amount paid.
+ *
+ * Payment Method reads "M-Pesa"/"Pesapal" rather than the backend's MPESA/PESAPAL.
+ *
  * @param {object} booking — a `BookingResponse`
  * @param {object} [vehicle] — the matching `VehicleResponse`, for its model/registration (falls back to
  *   `booking.vehicleModel`/`vehicleId` when not loaded, same fallback `BookingRow` already uses)
@@ -43,7 +51,8 @@ function isUrl(value) {
 export default function Receipt({ booking, vehicle, receipt }) {
   const vehicleLabel = vehicle?.model || booking?.vehicleModel || booking?.vehicleId;
   const billedTo = [booking?.renterName, booking?.renterEmail].filter(Boolean).join(' · ');
-  const amountPaid = booking?.totalPrice ?? booking?.estimatedAmount ?? receipt?.amount;
+  const itemised = receipt?.baseRentalAmount != null && receipt?.amount != null;
+  const amountPaid = itemised ? receipt.amount : booking?.totalPrice ?? booking?.estimatedAmount ?? receipt?.amount;
 
   const rows = [
     { label: 'Booking Reference', value: booking?.id },
@@ -59,7 +68,7 @@ export default function Receipt({ booking, vehicle, receipt }) {
     { label: 'Trip Dates', value: formatDateRange(booking?.startTime, booking?.endTime) },
     booking?.pickupLocation ? { label: 'Pickup Location', value: booking.pickupLocation } : null,
     booking?.dropoffLocation ? { label: 'Drop-off Location', value: booking.dropoffLocation } : null,
-    receipt?.provider ? { label: 'Payment Method', value: receipt.provider } : null,
+    receipt?.provider ? { label: 'Payment Method', value: PROVIDER_LABELS[receipt.provider] || receipt.provider } : null,
     receipt?.orderTrackingId ? { label: 'Transaction Reference', value: receipt.orderTrackingId } : null,
     receipt?.receipt
       ? {

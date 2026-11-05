@@ -12,13 +12,15 @@ import { formatCurrency } from '../../lib/utils';
  * @param {string|null} url — the overstay checkout's `redirectUrl`; the dialog is open while it's set
  * @param {object} booking
  * @param {function} onClose
+ * @param {function} [onPaid] — the payment in the frame is finished (before the dialog closes)
  */
-export default function OverstayPaymentModal({ url, booking, onClose }) {
+export default function OverstayPaymentModal({ url, booking, onClose, onPaid }) {
   const queryClient = useQueryClient();
 
   function done() {
     queryClient.invalidateQueries({ queryKey: ['bookings'] });
     toast.success("Thanks — your overstay payment is being confirmed.");
+    onPaid?.();
     onClose();
   }
 

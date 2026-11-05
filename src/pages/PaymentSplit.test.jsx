@@ -72,13 +72,16 @@ describe('PaymentPage — split the cost', () => {
   it('the renter lists who pays what; everyone gets a prompt; the page follows the payments until all are in', async () => {
     const user = userEvent.setup();
     let body;
-    let state = splitResponse();
+    let state = null; // no split until the renter sends one
     server.use(
       http.post(`${BASE}/payments/mpesa/bookings/b1/split`, async ({ request }) => {
         body = await request.json();
+        state = splitResponse();
         return HttpResponse.json(state);
       }),
-      http.get(`${BASE}/payments/mpesa/bookings/b1/split`, () => HttpResponse.json(state))
+      http.get(`${BASE}/payments/mpesa/bookings/b1/split`, () =>
+        state ? HttpResponse.json(state) : HttpResponse.json({ message: 'Not found' }, { status: 404 })
+      )
     );
     renderAt();
     const form = await chooseSplit(user);

@@ -67,6 +67,13 @@ Vehicles), the
 document tools under a **Documents** heading (Review Documents, Approved Documents, Rejected Documents), plus
 **My Vehicles** and **Fleet Bookings** under a **My Fleet** heading if they also own vehicles.
 
+**Long lists come a page at a time, everywhere.** Every list that grows has the same controls under it: "Showing
+21–40 of 95", **Per page** (10, 25, 50 or 100, plus the list's own default), **Previous** / **Next** and numbered pages.
+They apply to bookings, vehicles, documents, users, roles, templates, messages, notifications, reviews, the audit
+log, payment transactions, payouts (yours and the admin's), refunds, unsettled bookings and the owner's statement
+tables. A new search or filter goes back to the first page. A printed statement still lists every row. The controls
+only appear once a list is longer than the smallest page size.
+
 **Menus for people with two roles are grouped.** Instead of one long list, related items sit under a heading
 you can click to fold or open (**Administration**, **Finances**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
 **My Rentals**), each with its own icon.
@@ -437,8 +444,10 @@ verifying your email (which signs you in), and picks up where you left off.
    above the choice offers **Check its status**, in case it went through. Choose how to pay. **M-Pesa** (the default): check the phone number (it starts as your account's) and
    press **Send M-Pesa prompt**. A prompt appears on that phone; enter your M-Pesa PIN there and the page moves on by
    itself. A one-minute countdown shows how long the prompt stays open. If it runs out before the payment arrives, the
-   page waits for you: **Try again** sends a fresh prompt with a new minute (or **Check again** if you've just paid), and **Pay another way** (if it fails or goes unanswered) takes you
-   back to the choice. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
+   page checks once more, then waits for you: **Try again** sends a fresh prompt with a new minute (or **Check again** if you've just paid), and **Pay another way** (if it fails or goes unanswered) takes you
+   back to the choice. **Use a different number** (once the prompt has failed or timed out) goes back to the number,
+   for a prompt sent to the wrong phone. A failed prompt says what can go wrong (cancelled, timed out, wrong PIN, not
+   enough balance) and that nothing was taken. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
    paying their part by M-Pesa. You're listed first with your details. **Add a person** for each of the others (name,
    M-Pesa number, email optional for their receipt) and set everyone's share. The total is the whole charge (rental,
    delivery, driver and the M-Pesa fees, shown under the form), and nobody pays extra on top of their share. **Split equally** divides the total
@@ -447,7 +456,8 @@ verifying your email (which signs you in), and picks up where you left off.
    **Send payment requests**. Everyone gets an M-Pesa prompt. The page then shows how much is in (a progress bar),
    the time left, and each person as **Waiting**, **Confirming** (PIN entered, M-Pesa confirming) or **Paid** (with their M-Pesa receipt), with **Resend prompt** for
    anyone who hasn't paid. Once everyone has paid it moves on to **Payment successful** by itself. If time runs out
-   first, it says so and offers **Start again** or **Pay another way**. **Card & other**: **Proceed to Payment** opens Pesapal's
+   first, it says so and offers **Start again** or **Pay another way**. A split still collecting (started on another
+   phone or browser) picks up where it is when you open the Payment page, rather than letting you start a second one. **Card & other**: **Proceed to Payment** opens Pesapal's
    secure payment page **right on the Payment page**, in a box —
    you never leave the site. Choose how to pay and finish there. When Pesapal is done, the page checks your payment
    by itself; if it doesn't seem to notice (for example you approved it in the M-Pesa app), press **I've finished
@@ -462,8 +472,14 @@ verifying your email (which signs you in), and picks up where you left off.
      answer the page says so ("Still confirming your payment").
    - **Couldn't check** (a problem on the server, such as it being unable to reach Pesapal) — the page says
      **Couldn't check your payment** instead of spinning, with **Check again** and **Try Again**.
-   One click starts one payment, even if you double-click. The same Receipt is also reachable later from the
-   booking itself — its own row in My Bookings, or the booking's own page.
+   If Pesapal's payment can't be started at all, the page says why and stays on the choice of how to pay.
+   One click starts one payment, even if you double-click. Every **Try again**, **Send M-Pesa prompt**, **Send
+   payment requests** or **Proceed to Payment** first checks whether the booking was paid in the meantime (a PIN entered
+   at the last second, a payment in another tab); if it was, you see **Paid** and nothing is charged again. Coming back to the page (from the M-Pesa prompt, or
+   another tab) checks your payment again straight away. A booking you've already paid for, by any method and in any
+   browser, opens on **Paid** instead of asking you to pay again. The same Receipt is also reachable later from the
+   booking itself — its own row in My Bookings, or the booking's own page — whether you paid by M-Pesa, a split or
+   card. It shows the full amount charged, processing fee included, and the method as M-Pesa or Pesapal.
    **Your saved signature:** under Profile → **Signature** tab, draw or upload your signature once (agreeing it can be
    used to sign your contracts). When you sign a contract you can then choose **Sign with my saved signature**, or
    **Draw a new one**; when drawing, you can tick **Save this signature for my next contracts**. The owner signs the
@@ -472,7 +488,9 @@ verifying your email (which signs you in), and picks up where you left off.
    **Back to contract** (or **View booking** once paid), and signing goes **Back to payment**.
 9. **More than one vehicle** — each vehicle is its own booking (each has its own owner and contract), but they're
    all created together and **paid for once**: you read and accept each owner's contract in turn, then make one
-   combined payment for all of them, then sign each contract.
+   combined payment for all of them, then sign each contract. If only some of them get paid (the rest failed or never
+   confirmed), the page lists the unpaid ones, each with **Pay this booking** (its own Payment page, where M-Pesa works
+   too), instead of charging the whole group again. Once they're all paid, **Continue to Sign Contracts** appears.
 10. **Track your trip** — see every booking under **My Bookings**. Status is a row of quick tabs along the top
    (Confirmed, Pending Payment, Active, Completed, Cancelled, Rejected, Expired, All — Confirmed is where you
    land by default), each with its own icon and a count of how many bookings are currently in it (counting
@@ -510,8 +528,10 @@ verifying your email (which signs you in), and picks up where you left off.
    **Message the owner**. Pick another car that's free for your dates (and add a reason if you like); the dates and
    places stay the same, and the price follows the new car's daily rate. The car's owner can do the same from Fleet
    Bookings (choosing from their own cars), and administrators from All Bookings (any approved car).
-   **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay**, which opens
-   Pesapal's payment page in a box on the same page. The file icon next to **Receipt** downloads the official receipt as a PDF.
+   **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay** (in its row on
+   My Bookings and on its own page), which opens Pesapal's payment page in a box on the same page. Once you've finished
+   paying, the button becomes **Overstay payment being confirmed**, so a second click doesn't charge you twice; **Didn't
+   go through? Pay again** is there if it failed. The file icon next to **Receipt** downloads the official receipt as a PDF.
 11. **Cancel or review** — a booking that is still Pending or Confirmed has a **Cancel booking** button, both in
    its expanded row on My Bookings and on its own page. The confirmation checks the owner's cancellation
    policy first and tells you what to expect before you confirm: a full refund with enough notice, a reduced
@@ -920,7 +940,7 @@ your permissions" above): an item is only shown if your account holds the permis
   a time. Tabs pick the kind: **All**, **M-Pesa payments**, **M-Pesa split payments**, **M-Pesa payouts**, **Pesapal
   payments**, **Pesapal payouts**. Filter further by **status** (as the provider writes it, e.g. `SUCCESSFUL`), **phone**, the booking's full **ID**, and **From** / **To**
   days. Each row shows its **Ref**: the M-Pesa ref (receipt number, e.g. `NLJ7RT61SV`) for M-Pesa, the provider's
-  reference otherwise. Click one for its details: the M-Pesa ref first, the provider's and the platform's references,
+  reference otherwise. **View** on a row (or clicking the row) opens its details: the M-Pesa ref first, the provider's and the platform's references,
   the provider's message, the booking it belongs to (**Open the booking**), then **M-Pesa details**, which lists every
   field M-Pesa sent. For a payment that's the amount, paid-at time, phone, checkout and merchant request IDs, and the
   result code and message. For a payout it's the amount, who it was paid to, completion time, conversation IDs,

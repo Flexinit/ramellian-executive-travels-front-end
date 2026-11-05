@@ -21,6 +21,12 @@ AI crawlers mostly don't. Now:
 
 Signed-in areas, booking steps and sign-in pages are `noindex` and disallowed in `robots.txt`.
 
+**The page text is in the HTML but not drawn.** It sits in `#root` inside `<div data-seo-copy>`, which a style in
+`index.html` keeps off screen (the usual "visually hidden" rule). Crawlers, link previews and screen readers still
+read it, and the app replaces it as soon as it loads. Without that style, visitors saw the text unstyled for a moment
+before the landing page, with its `·` and `—` separators (2026-11-04). Keep the marker on anything new the build
+writes into `#root`.
+
 **Vehicle pages are written at build time.** A vehicle added later still works (the app fills it in and Google
 renders it), but it only gets its own HTML file and sitemap entry on the next deploy.
 

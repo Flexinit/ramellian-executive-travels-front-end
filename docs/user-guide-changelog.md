@@ -3,6 +3,37 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-05 (View on payment transactions, the same paging on every list)
+
+- **Added (administrators):** a **View** button on each Payment Transactions row opens the transaction (clicking the
+  row still works).
+- **Changed:** every list that grows uses the same page controls with **Per page**. Payment Transactions and Audit
+  Log now have numbered pages and "Showing x–y of z" instead of Newer/Older.
+- **Added:** paging on Owner Payouts, Refunds, Finances (unsettled bookings), **Your payouts**, the owner statement's
+  tables (all rows still print) and vehicle reviews.
+
+## 2026-11-05 (payment retries and edge cases)
+
+- **Fixed:** **Pay overstay** on a booking's own page did nothing; it now opens the payment like the one in My Bookings.
+- **Fixed:** a group where only some bookings got paid no longer offers **Try Again** for the whole group (which would
+  charge the paid ones twice). It lists the unpaid bookings, each with **Pay this booking**.
+- **Changed:** every retry or new payment first checks whether the booking was paid in the meantime; if it was, the
+  page shows **Paid** and charges nothing.
+- **Changed:** if Pesapal's payment can't be started, the page stays on the choice instead of "waiting for your payment".
+- **Added:** **Use a different number** after an M-Pesa prompt fails or times out; a clearer failed-prompt message; one
+  more check as the minute runs out.
+- **Added:** a split already collecting is picked up when the Payment page opens, instead of allowing a second split.
+- **Added:** after paying an overstay, **Overstay payment being confirmed** replaces the button, with **Didn't go
+  through? Pay again**.
+
+## 2026-11-05 (payments found whichever way they were paid)
+
+- **Fixed:** a booking paid by M-Pesa or a split now shows its **Receipt**. The Payment page also recognises it as
+  paid in another browser instead of offering to pay again. Before, only Pesapal payments were found.
+- **Changed:** returning to the Payment page (from the M-Pesa prompt or another tab) re-checks the payment at once.
+- **Changed:** the receipt shows the full amount charged, processing fee included, and reads **M-Pesa**/**Pesapal**
+  rather than MPESA/PESAPAL. After a split, the payment summary's **Total Paid** is what the group paid.
+
 ## 2026-11-04 (M-Pesa ref and payload in Payment Transactions)
 
 - **Added (administrators):** **Payment Transactions** shows each transaction's M-Pesa ref in the list, and its

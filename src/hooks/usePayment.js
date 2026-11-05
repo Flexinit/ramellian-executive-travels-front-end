@@ -77,7 +77,8 @@ export function useGroupCheckout() {
  * read as "every booking in it reports the same settled status" (see GroupPaymentPage).
  */
 export function paymentStatusKey(bookingId, provider = 'pesapal') {
-  return provider === 'mpesa' ? ['payment-status', bookingId, 'mpesa'] : ['payment-status', bookingId];
+  if (provider === 'mpesa' || provider === 'any') return ['payment-status', bookingId, provider];
+  return ['payment-status', bookingId];
 }
 
 /** An M-Pesa prompt can sit on the renter's phone for about a minute before they enter their PIN: twice the checks. */
@@ -86,14 +87,21 @@ const maxAttempts = (provider) => (provider === 'mpesa' ? MPESA_POLL_MAX_ATTEMPT
 
 /**
  * @param {string} bookingId @param {boolean} [enabled]
- * @param {'pesapal'|'mpesa'} [provider] — which status to read: Pesapal's, or the M-Pesa prompt's
- *   (`GET /payments/mpesa/bookings/{bookingId}/status`, live spec 2026-10-27)
+ * @param {'pesapal'|'mpesa'|'any'} [provider] — which status to read: Pesapal's, the M-Pesa prompt's
+ *   (`GET /payments/mpesa/bookings/{bookingId}/status`, live spec 2026-10-27), or whichever knows of a payment
+ *   (`fetchBookingPayment` — a group whose bookings may end up paid different ways)
  */
 export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal') {
   return {
     queryKey: paymentStatusKey(bookingId, provider),
-    queryFn: () => apiGet(`/payments/${provider === 'mpesa' ? 'mpesa' : 'pesapal'}/bookings/${bookingId}/status`),
+    queryFn: () =>
+      provider === 'any'
+        ? fetchBookingPayment(bookingId)
+        : apiGet(`/payments/${provider === 'mpesa' ? 'mpesa' : 'pesapal'}/bookings/${bookingId}/status`),
     enabled: enabled && !!bookingId,
+    // Back on the page (from the M-Pesa prompt, Pesapal in another tab, the banking app) → check straight away, rather
+    // than waiting for the next tick or, once the checks have run out, for the renter to press Check again.
+    refetchOnWindowFocus: 'always',
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       const attempts = query.state.dataUpdateCount;
@@ -123,6 +131,29 @@ export function useMpesaCheckout() {
   });
 }
 
+/** Most useful first when both providers answer: paid, then still going, then whatever's left (failed/invalid). */
+const STATUS_RANK = { [PAYMENT_STATUSES.SUCCESSFUL]: 0, [PAYMENT_STATUSES.PENDING]: 1 };
+const rank = (p) => STATUS_RANK[p?.status] ?? 2;
+
+/**
+ * A booking's payment whichever way it was paid — Pesapal, an M-Pesa prompt or a split (whose payment the M-Pesa
+ * status reports). There's no one status endpoint for every provider (docs/backend-requests.md item 55), so both are
+ * asked at once and the most useful answer wins, tagged `via` with the provider that gave it. A booking neither knows
+ * of rejects with the Pesapal error (a 404 "Payment not found"), as asking Pesapal alone used to.
+ */
+export async function fetchBookingPayment(bookingId) {
+  const [pesapal, mpesa] = await Promise.allSettled([
+    apiGet(`/payments/pesapal/bookings/${bookingId}/status`).then((p) => p && { ...p, via: 'pesapal' }),
+    apiGet(`/payments/mpesa/bookings/${bookingId}/status`).then((p) => p && { ...p, via: 'mpesa' }),
+  ]);
+  const found = [pesapal, mpesa].filter((r) => r.status === 'fulfilled' && r.value?.status).map((r) => r.value);
+  if (found.length === 0) throw pesapal.reason ?? mpesa.reason ?? new Error('Payment not found');
+  return found.sort((a, b) => rank(a) - rank(b))[0];
+}
+
+/** Shares the `payment-status` prefix, so invalidating or removing a booking's status reaches this lookup too. */
+const bookingPaymentKey = (bookingId) => paymentStatusKey(bookingId, 'any');
+
 /**
  * A one-shot (non-polling) check for whether `bookingId` already has a payment record — used to resume the
  * normal status view (`usePaymentStatus`) when the local "checkout started" flag has been lost: a
@@ -134,22 +165,22 @@ export function useMpesaCheckout() {
  * Deliberately not just reusing `usePaymentStatus` with `enabled: true` outright: a booking that has never
  * been checked out at all answers this 404 ("Payment not found"), and `usePaymentStatus`'s own
  * `refetchInterval` would otherwise keep re-asking that forever (its "give up after N attempts" counter
- * only advances on a *successful* response). This checks once (`retry: false`, no polling) and shares
- * `paymentStatusKey` with `usePaymentStatus`, so if it does find a record, switching over to normal
- * polling for the same booking sees that answer already cached instead of fetching it twice.
+ * only advances on a *successful* response). This checks once (`retry: false`, no polling), with
+ * `fetchBookingPayment`, so a booking paid by M-Pesa or a split is found too; `via` says which provider's status
+ * to keep polling.
  */
 export function useExistingPaymentCheck(bookingId, enabled = true) {
   const active = enabled && !!bookingId;
   const query = useQuery({
-    queryKey: paymentStatusKey(bookingId),
-    queryFn: () => apiGet(`/payments/pesapal/bookings/${bookingId}/status`),
+    queryKey: bookingPaymentKey(bookingId),
+    queryFn: () => fetchBookingPayment(bookingId),
     enabled: active,
     retry: false,
   });
   // `isLoading` so a caller gating on "is this actually paid" (e.g. VehicleHandoverModal, before letting
   // a car be collected) can tell "still checking" apart from "checked, and there's no successful payment"
   // — both otherwise look identical from `status` alone (undefined either way).
-  return { status: query.data?.status, isLoading: active && query.isLoading };
+  return { status: query.data?.status, via: query.data?.via, isLoading: active && query.isLoading };
 }
 
 /**
@@ -168,8 +199,8 @@ export function useExistingPaymentCheck(bookingId, enabled = true) {
 export function useBookingReceipt(bookingId, enabled = true) {
   const active = enabled && !!bookingId;
   const query = useQuery({
-    queryKey: paymentStatusKey(bookingId),
-    queryFn: () => apiGet(`/payments/pesapal/bookings/${bookingId}/status`),
+    queryKey: bookingPaymentKey(bookingId),
+    queryFn: () => fetchBookingPayment(bookingId),
     enabled: active,
     retry: false,
   });
@@ -182,8 +213,8 @@ export function useBookingReceipt(bookingId, enabled = true) {
 export function useExistingPaymentChecks(bookingIds, enabled = true) {
   const results = useQueries({
     queries: (bookingIds || []).map((id) => ({
-      queryKey: paymentStatusKey(id),
-      queryFn: () => apiGet(`/payments/pesapal/bookings/${id}/status`),
+      queryKey: bookingPaymentKey(id),
+      queryFn: () => fetchBookingPayment(id),
       enabled: enabled && !!id,
       retry: false,
     })),
@@ -230,10 +261,10 @@ export function usePaymentStatus(bookingId, enabled = true, provider = 'pesapal'
 
 /** Same "gave up without an answer" check as `usePaymentStatus`, for a group payment polling several
  * bookings at once via `useQueries` (see GroupPaymentPage) rather than this single-booking hook. */
-export function useGroupPollExhausted(bookingIds, statuses, enabled) {
+export function useGroupPollExhausted(bookingIds, statuses, enabled, provider = 'pesapal') {
   const queryClient = useQueryClient();
   if (!enabled || bookingIds.length === 0) return false;
-  return bookingIds.every((id, i) => pollExhausted(queryClient, id, statuses[i]));
+  return bookingIds.every((id, i) => pollExhausted(queryClient, id, statuses[i], provider));
 }
 
 /**

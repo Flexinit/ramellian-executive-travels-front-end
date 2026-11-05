@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeftRight, ChevronLeft, ChevronRight, CreditCard, Landmark, List, Send, Smartphone, Users } from 'lucide-react';
+import { ArrowLeftRight, CreditCard, Eye, Landmark, List, Send, Smartphone, Users } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Badge from '../components/ui/Badge';
-import PageSizeSelect from '../components/ui/PageSizeSelect';
+import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Skeleton from '../components/ui/Skeleton';
@@ -18,6 +18,7 @@ import {
   transactionStatusVariant,
   usePaymentTransactions,
 } from '../hooks/usePaymentTransactions';
+import { useServerPagination } from '../hooks/usePagination';
 import { useAuthStore } from '../store/authStore';
 import { apiErrorMessage } from '../lib/apiError';
 import { transactionRef } from '../lib/mpesaCallback';
@@ -65,8 +66,6 @@ export default function AdminPaymentTransactionsPage() {
   const [bookingId, setBookingId] = useState('');
   const [fromDay, setFromDay] = useState('');
   const [toDay, setToDay] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [openId, setOpenId] = useState(null);
 
   const settledBooking = useDebounced(bookingId.trim());
@@ -80,11 +79,9 @@ export default function AdminPaymentTransactionsPage() {
     to: dayBound(toDay, true),
   };
   // A new filter starts again from the first page.
-  useEffect(() => {
-    setPage(0);
-  }, [filters.type, filters.status, filters.phone, filters.bookingId, filters.from, filters.to]);
+  const pager = useServerPagination(PAGE_SIZE, [filters.type, filters.status, filters.phone, filters.bookingId, filters.from, filters.to].join('|'));
 
-  const { data, isLoading, isError, error, refetch, isFetching } = usePaymentTransactions({ ...filters, page, size: pageSize });
+  const { data, isLoading, isError, error, refetch, isFetching } = usePaymentTransactions({ ...filters, ...pager.request });
   const entries = Array.isArray(data?.content) ? data.content : [];
   // A backend without the ledger yet (the VPS, 2026-11-04) answers 404, and one that refuses this account 403: either
   // way the page says it isn't available and leaves the menu (never an error the admin can't do anything about).
@@ -141,6 +138,9 @@ export default function AdminPaymentTransactionsPage() {
                         {col}
                       </th>
                     ))}
+                    <th scope="col" className="px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wider text-right">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
@@ -173,6 +173,16 @@ export default function AdminPaymentTransactionsPage() {
                         <td data-label="Status" className="px-4 py-3">
                           <Badge label={transactionStatusLabel(t.status)} variant={transactionStatusVariant(t.status)} />
                         </td>
+                        <td data-label="" className="stack-full px-4 py-3 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => { e.stopPropagation(); open(); }}
+                            aria-label={`View ${typeLabel} of ${formatCurrency(Number(t.amount) || 0)}`}
+                          >
+                            <Eye size={14} aria-hidden="true" /> View
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -181,24 +191,7 @@ export default function AdminPaymentTransactionsPage() {
             </div>
           )}
 
-          {data && (data.totalPages > 1 || (data.totalElements ?? 0) > 10) && (
-            <nav aria-label="Pages" className="flex flex-wrap items-center justify-between gap-3">
-              <Button size="sm" disabled={data.first} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-                <ChevronLeft size={14} aria-hidden="true" />
-                Newer
-              </Button>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <span className="text-sm text-muted">
-                  Page {data.number + 1} of {Math.max(1, data.totalPages)}
-                </span>
-                <PageSizeSelect value={pageSize} defaultSize={PAGE_SIZE} onChange={(n) => { setPageSize(n); setPage(0); }} />
-              </div>
-              <Button size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-                Older
-                <ChevronRight size={14} aria-hidden="true" />
-              </Button>
-            </nav>
-          )}
+          {data && <Pagination {...pager.propsFor(data)} noun="transactions" />}
         </div>
       </div>
 

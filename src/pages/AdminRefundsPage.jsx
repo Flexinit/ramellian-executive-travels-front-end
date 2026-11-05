@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -23,6 +25,7 @@ export default function AdminRefundsPage() {
   const [status, setStatus] = useState('PENDING');
   const { data, isLoading, isError, error, refetch } = useRefunds(status);
   const list = Array.isArray(data) ? data : [];
+  const pager = usePagination(list, 10, status);
 
   return (
     <PageWrapper className="max-w-6xl">
@@ -56,7 +59,7 @@ export default function AdminRefundsPage() {
           />
         ) : (
           <div className="flex flex-col gap-3">
-            {list.map((r) => (
+            {pager.pageItems.map((r) => (
               <Card key={r.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0 flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -77,6 +80,7 @@ export default function AdminRefundsPage() {
                 </div>
               </Card>
             ))}
+            <Pagination {...pager.props} noun="refunds" />
           </div>
         )}
       </div>

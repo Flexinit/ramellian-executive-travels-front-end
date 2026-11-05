@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, ScrollText } from 'lucide-react';
+import { ScrollText } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Badge from '../components/ui/Badge';
-import PageSizeSelect from '../components/ui/PageSizeSelect';
-import Button from '../components/ui/Button';
+import Pagination from '../components/ui/Pagination';
 import Input from '../components/ui/Input';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import AuditLogDetailModal from '../components/admin/AuditLogDetailModal';
 import { useAuditLogs } from '../hooks/useAuditLogs';
+import { useServerPagination } from '../hooks/usePagination';
 import { actionLabel, auditStatusVariant } from '../lib/auditLog';
 import { SEARCH_DEBOUNCE_MS } from '../lib/constants';
 import { formatDateTime } from '../lib/utils';
@@ -35,17 +35,13 @@ export default function AdminAuditLogPage() {
   const [action, setAction] = useState('');
   const [actorEmail, setActorEmail] = useState('');
   const [resourceType, setResourceType] = useState('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [openId, setOpenId] = useState(null);
 
   const filters = { action: useDebounced(action.trim()), actorEmail: useDebounced(actorEmail.trim()), resourceType: useDebounced(resourceType.trim()) };
   // A new filter starts again from the first page.
-  useEffect(() => {
-    setPage(0);
-  }, [filters.action, filters.actorEmail, filters.resourceType]);
+  const pager = useServerPagination(PAGE_SIZE, [filters.action, filters.actorEmail, filters.resourceType].join('|'));
 
-  const { data, isLoading, isError, refetch, isFetching } = useAuditLogs('admin', { ...filters, page, size: pageSize });
+  const { data, isLoading, isError, refetch, isFetching } = useAuditLogs('admin', { ...filters, ...pager.request });
   const entries = Array.isArray(data?.content) ? data.content : [];
 
   return (
@@ -119,24 +115,7 @@ export default function AdminAuditLogPage() {
           </div>
         )}
 
-        {data && (data.totalPages > 1 || (data.totalElements ?? 0) > 10) && (
-          <nav aria-label="Pages" className="flex flex-wrap items-center justify-between gap-3">
-            <Button size="sm" disabled={data.first} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-              <ChevronLeft size={14} aria-hidden="true" />
-              Newer
-            </Button>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="text-sm text-muted">
-                Page {data.number + 1} of {Math.max(1, data.totalPages)}
-              </span>
-              <PageSizeSelect value={pageSize} defaultSize={PAGE_SIZE} onChange={(n) => { setPageSize(n); setPage(0); }} />
-            </div>
-            <Button size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-              Older
-              <ChevronRight size={14} aria-hidden="true" />
-            </Button>
-          </nav>
-        )}
+        {data && <Pagination {...pager.propsFor(data)} noun="entries" />}
       </div>
 
       <AuditLogDetailModal scope="admin" id={openId} onClose={() => setOpenId(null)} />

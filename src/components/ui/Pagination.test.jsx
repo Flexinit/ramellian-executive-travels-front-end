@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Pagination from './Pagination';
-import { usePagination } from '../../hooks/usePagination';
+import { usePagination, useServerPagination } from '../../hooks/usePagination';
 import { pageSizeOptions } from './PageSizeSelect';
 
 const ITEMS = Array.from({ length: 30 }, (_, i) => `Item ${i + 1}`);
@@ -50,5 +50,26 @@ describe('Pagination — how many per page', () => {
   it('shows nothing for a list shorter than the smallest size', () => {
     const { container } = render(<List items={ITEMS.slice(0, 4)} />);
     expect(container.querySelector('nav')).toBeNull();
+  });
+});
+
+describe('useServerPagination — a list the backend pages', () => {
+  function ServerList({ data, onRequest }) {
+    const pager = useServerPagination(20);
+    onRequest(pager.request);
+    return <Pagination {...pager.propsFor(data)} noun="transactions" />;
+  }
+
+  it('asks for page 0 first, and turns a Spring Page into the same controls', async () => {
+    const user = userEvent.setup();
+    const requests = [];
+    render(<ServerList data={{ totalElements: 95, totalPages: 5, number: 0 }} onRequest={(r) => requests.push(r)} />);
+    expect(requests.at(-1)).toEqual({ page: 0, size: 20 });
+    expect(screen.getByText(/showing/i)).toHaveTextContent('Showing 1–20 of 95 transactions');
+    await user.click(screen.getByRole('button', { name: 'Go to page 5' }));
+    expect(requests.at(-1)).toEqual({ page: 4, size: 20 });
+    expect(screen.getByText(/showing/i)).toHaveTextContent('Showing 81–95 of 95 transactions');
+    await user.selectOptions(screen.getByLabelText('Per page'), '50');
+    expect(requests.at(-1)).toEqual({ page: 0, size: 50 });
   });
 });

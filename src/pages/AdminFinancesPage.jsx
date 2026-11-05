@@ -4,6 +4,8 @@ import { Banknote, CircleDollarSign, Clock, HandCoins, Landmark, Scale, Wallet }
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import Skeleton from '../components/ui/Skeleton';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import StatTile from '../components/reports/StatTile';
@@ -23,6 +25,7 @@ export default function AdminFinancesPage() {
   const unsettled = useUnsettledBookings();
   const p = profit.data || {};
   const rows = Array.isArray(unsettled.data) ? unsettled.data : [];
+  const pager = usePagination(rows, 10);
 
   const tiles = [
     { icon: Banknote, label: 'Charged to renters', value: money(p.totalCharged), detail: `${money(p.totalRentalCharged)} rental · ${money(p.totalOverstayCharged)} overstay` },
@@ -78,7 +81,7 @@ export default function AdminFinancesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
-                  {rows.map((b) => (
+                  {pager.pageItems.map((b) => (
                     <tr key={b.bookingId}>
                       <td className="px-4 py-3" data-label="Booking">
                         <Link to={`/admin/bookings/${b.bookingId}`} className="text-ink font-medium hover:text-accent focus-ring rounded">
@@ -102,6 +105,7 @@ export default function AdminFinancesPage() {
               </table>
             </Card>
           )}
+          {rows.length > 0 && <Pagination {...pager.props} noun="bookings" />}
         </section>
       </div>
     </PageWrapper>

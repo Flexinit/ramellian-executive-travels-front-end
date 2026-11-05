@@ -4,6 +4,8 @@ import { Wallet } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Spinner from '../ui/Spinner';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import { PAYOUT_LABEL, PAYOUT_VARIANT, useMyDisbursements } from '../../hooks/useDisbursements';
 import { formatCurrency, formatDate } from '../../lib/utils';
 
@@ -18,6 +20,7 @@ const OWNER_LABEL = { PENDING: 'Being prepared', PROCESSING: 'On its way', COMPL
 export default function OwnerPayoutsCard() {
   const { data, isLoading, isError } = useMyDisbursements();
   const list = (Array.isArray(data) ? data : []).slice().sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const pager = usePagination(list, 5);
   const owed = list.filter((d) => d.status !== 'COMPLETED').reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
   return (
@@ -45,7 +48,7 @@ export default function OwnerPayoutsCard() {
         <p className="text-sm text-muted">No payouts yet. A booking&apos;s payout appears here once the renter has collected the vehicle.</p>
       ) : (
         <ul className="flex flex-col divide-y divide-line">
-          {list.map((d) => (
+          {pager.pageItems.map((d) => (
             <li key={d.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3">
               <div className="min-w-0 flex flex-col">
                 <span className="text-sm font-semibold text-ink">{d.vehicleTitle || 'Booking'}</span>
@@ -68,6 +71,7 @@ export default function OwnerPayoutsCard() {
           ))}
         </ul>
       )}
+      {list.length > 0 && <Pagination {...pager.props} noun="payouts" />}
     </Card>
   );
 }

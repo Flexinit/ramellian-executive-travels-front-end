@@ -1,5 +1,7 @@
 import React from 'react';
 import Skeleton from '../ui/Skeleton';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import { Stars } from './Stars';
 import { DEFAULT_RATING } from '../../lib/ratings';
 
@@ -13,9 +15,10 @@ import { DEFAULT_RATING } from '../../lib/ratings';
  * @param {string} [emptyText]
  */
 export default function ReviewList({ reviews, isLoading, showComplaints = false, emptyText = 'No reviews yet.' }) {
+  const list = Array.isArray(reviews) ? reviews : [];
+  const pager = usePagination(list, 5);
   if (isLoading) return <Skeleton className="h-20 w-full" />;
 
-  const list = Array.isArray(reviews) ? reviews : [];
   if (list.length === 0) {
     // Nobody has reviewed yet, so the rating starts at the top (see lib/ratings.js). Said on one line, so the
     // starting stars don't sit above a big "No reviews yet" block that seems to contradict them.
@@ -39,7 +42,7 @@ export default function ReviewList({ reviews, isLoading, showComplaints = false,
         from {list.length} {list.length === 1 ? 'review' : 'reviews'}
       </p>
       <ul className="flex flex-col gap-3" aria-label="Reviews">
-        {list.map((review) => (
+        {pager.pageItems.map((review) => (
           <li key={review.id} className="rounded-[15px] border border-line bg-surface p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <Stars rating={review.rating} />
@@ -55,6 +58,7 @@ export default function ReviewList({ reviews, isLoading, showComplaints = false,
           </li>
         ))}
       </ul>
+      <Pagination {...pager.props} noun="reviews" />
     </div>
   );
 }

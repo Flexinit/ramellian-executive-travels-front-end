@@ -17,8 +17,12 @@ export function pageWindow(page, totalPages) {
 
 /**
  * Page controls for a list: "Showing 6–10 of 23", **Per page**, Previous / Next, and numbered pages. Renders nothing when
- * the list fits on one page even at the smallest size offered. Pair it with `usePagination` (its `pageSize`,
- * `setPageSize` and `defaultPageSize`); without `onPageSize` there's no Per page choice.
+ * the list fits on one page even at the smallest size offered. The one page control for every list in the app:
+ *  - a list the backend returns whole: `const pager = usePagination(items, 10, resetKey)` → `pager.pageItems`, and
+ *    `<Pagination {...pager.props} noun="refunds" />`;
+ *  - a list the backend pages (a Spring `Page`): `const pager = useServerPagination(20, resetKey)` → send
+ *    `pager.request` (`page`, `size`) with the query, and `<Pagination {...pager.propsFor(data)} noun="transactions" />`.
+ * Without `onPageSize` there's no Per page choice.
  *
  * @param {number} page — the current page, from 1
  * @param {number} totalPages

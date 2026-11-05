@@ -11,6 +11,8 @@ import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import EmptyState from '../components/ui/EmptyState';
 import StatTile from '../components/reports/StatTile';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import { apiGet } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { formatCurrency, formatDate } from '../lib/utils';
@@ -31,7 +33,10 @@ function useOwnerStatement({ vehicleId, from, to }) {
   });
 }
 
-function Table({ caption, head, rows }) {
+/** One part of the statement, a page at a time on screen; printed, every row (rows off the page are only hidden on screen). */
+function Table({ caption, head, rows, noun = 'rows' }) {
+  const pager = usePagination(rows, 10);
+  const start = pager.from - 1;
   return (
     <Card className="p-0 overflow-hidden">
       <h2 className="px-5 pt-4 pb-3 font-heading text-ink text-base font-semibold">{caption}</h2>
@@ -46,7 +51,7 @@ function Table({ caption, head, rows }) {
           </thead>
           <tbody className="divide-y divide-ink/5">
             {rows.map((cells, r) => (
-              <tr key={r}>
+              <tr key={r} className={r >= start && r < pager.to ? '' : 'hidden print:table-row'}>
                 {cells.map((c, i) => (
                   <td key={i} className={`px-5 py-2.5 ${typeof c === 'number' || /^KES/.test(String(c)) ? 'text-right tabular-nums' : ''} ${i === 0 ? 'text-ink' : 'text-muted'}`}>{c}</td>
                 ))}
@@ -54,6 +59,9 @@ function Table({ caption, head, rows }) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="px-5 py-3 print:hidden empty:hidden">
+        <Pagination {...pager.props} noun={noun} />
       </div>
     </Card>
   );
@@ -139,6 +147,7 @@ export default function OwnerStatementsPage() {
                 {s.monthlyBreakdown?.length > 0 && (
                   <Table
                     caption="By month"
+                    noun="months"
                     head={['Month', 'Bookings', 'Gross (KES)', 'Payout (KES)']}
                     rows={s.monthlyBreakdown.map((m) => [m.label || `${m.month}/${m.year}`, m.bookingCount ?? 0, formatCurrency(m.grossRevenue ?? 0), formatCurrency(m.payout ?? 0)])}
                   />
@@ -146,12 +155,14 @@ export default function OwnerStatementsPage() {
                 {!vehicleId && s.vehicleBreakdown?.length > 0 && (
                   <Table
                     caption="By vehicle"
+                    noun="vehicles"
                     head={['Vehicle', 'Bookings', 'Gross (KES)', 'Payout (KES)']}
                     rows={s.vehicleBreakdown.map((v) => [v.vehicleTitle, v.bookingCount ?? 0, formatCurrency(v.grossRevenue ?? 0), formatCurrency(v.payout ?? 0)])}
                   />
                 )}
                 <Table
                   caption="Bookings"
+                  noun="bookings"
                   head={['Vehicle', 'Renter', 'Dates', 'Days', 'Gross (KES)', 'Fees (KES)', 'Payout (KES)', 'Paid', 'Receipt']}
                   rows={s.entries.map((e) => [
                     e.vehicleTitle,

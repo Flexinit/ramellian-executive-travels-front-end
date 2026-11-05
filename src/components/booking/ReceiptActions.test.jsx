@@ -54,6 +54,16 @@ describe('ReceiptActions', () => {
     expect(called).toBe(false);
   });
 
+  it('finds the receipt of a booking paid by M-Pesa, which Pesapal knows nothing of', async () => {
+    server.use(
+      http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () =>
+        HttpResponse.json({ bookingId: 'b1', provider: 'MPESA', status: 'SUCCESSFUL', amount: 84, receipt: 'SGH7XK2' })
+      )
+    );
+    renderActions();
+    expect(await screen.findByRole('button', { name: 'Receipt' })).toBeInTheDocument();
+  });
+
   it('offers Preview and Download once a successful payment is found, and Preview shows the receipt with no fee breakdown', async () => {
     const user = userEvent.setup();
     server.use(

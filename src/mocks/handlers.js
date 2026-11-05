@@ -355,6 +355,9 @@ export const paymentHandlers = [
   http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, () =>
     HttpResponse.json({ status: 404, error: 'Not Found', message: 'Payment not found', fieldErrors: {} }, { status: 404 })
   ),
+  http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () =>
+    HttpResponse.json({ status: 404, error: 'Not Found', message: 'Payment not found', fieldErrors: {} }, { status: 404 })
+  ),
 
   http.get(`${BASE}/payments/contracts/:contractId`, ({ params }) =>
     HttpResponse.json({

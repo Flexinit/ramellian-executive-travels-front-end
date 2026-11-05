@@ -83,6 +83,45 @@ describe('Payment Transactions page (GET /admin/payment-transactions)', () => {
     expect(asked.at(-1)).toMatchObject({ type: 'MPESA_B2C' });
   });
 
+  it('each row has a View action that opens that transaction', async () => {
+    const user = userEvent.setup();
+    let fetched = null;
+    server.use(
+      http.get(`${BASE}/admin/payment-transactions`, () => HttpResponse.json(page([TX()]))),
+      http.get(`${BASE}/admin/payment-transactions/:id`, ({ params }) => {
+        fetched = params.id;
+        return HttpResponse.json(TX());
+      })
+    );
+    renderUi(<AdminPaymentTransactionsPage />);
+
+    await user.click(await screen.findByRole('button', { name: /view m-pesa payment of kes 5,000/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(fetched).toBe('t1');
+  });
+
+  it('pages with the shared controls, and Per page asks the backend for that many', async () => {
+    const user = userEvent.setup();
+    const asked = [];
+    server.use(
+      http.get(`${BASE}/admin/payment-transactions`, ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        const n = Number(params.get('page'));
+        const size = Number(params.get('size'));
+        asked.push({ n, size });
+        return HttpResponse.json({ ...page([TX({ id: `t-${n}` })]), totalElements: 45, totalPages: Math.ceil(45 / size), number: n });
+      })
+    );
+    renderUi(<AdminPaymentTransactionsPage />);
+
+    const pager = await screen.findByRole('navigation', { name: 'Pagination' });
+    expect(within(pager).getByText(/showing/i)).toHaveTextContent('Showing 1–20 of 45 transactions');
+    await user.click(within(pager).getByRole('button', { name: 'Go to page 3' }));
+    await waitFor(() => expect(asked).toContainEqual({ n: 2, size: 20 }));
+    await user.selectOptions(within(screen.getByRole('navigation', { name: 'Pagination' })).getByLabelText('Per page'), '100');
+    await waitFor(() => expect(asked).toContainEqual({ n: 0, size: 100 }));
+  });
+
   it('sends the picked days as the start and end of those days', async () => {
     const user = userEvent.setup();
     const asked = [];

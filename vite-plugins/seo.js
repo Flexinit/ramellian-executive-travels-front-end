@@ -72,7 +72,9 @@ export function renderPage(template, { title, body, ...meta }) {
 
 const nav = `<nav aria-label="Site"><a href="/">${esc(SITE_NAME)}</a> · <a href="/vehicles">Vehicles</a> · <a href="/services">Services</a> · <a href="/fleet">Fleet</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
 const footer = `<footer><p>${esc(SITE_NAME)} — chauffeured and self-drive car hire in Nairobi, Kenya.</p><p><a href="/terms">Terms &amp; Conditions</a> · <a href="/privacy">Privacy Policy</a></p></footer>`;
-const wrap = (inner) => `${nav}<main>${inner}</main>${footer}`;
+// Marked `data-seo-copy` so index.html can keep it off screen: it's for crawlers and screen readers, and visitors would
+// otherwise see it unstyled for the moment before the app replaces it.
+const wrap = (inner) => `<div data-seo-copy>${nav}<main>${inner}</main>${footer}</div>`;
 const faqHtml = (faqs) => faqs.map((f) => `<section><h3>${esc(f.question)}</h3><p>${esc(f.answer)}</p></section>`).join('');
 const servicesHtml = SERVICES.map((s) => `<section id="${s.id}"><h2>${esc(s.title)}</h2><p>${esc(s.summary)}</p><p>${esc(s.details)}</p></section>`).join('');
 const vehicleList = (vehicles) =>

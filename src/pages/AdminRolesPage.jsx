@@ -140,7 +140,7 @@ export default function AdminRolesPage() {
                   </li>
                 ))}
               </ul>
-              <Pagination page={rolePages.page} totalPages={rolePages.totalPages} onPage={rolePages.setPage} from={rolePages.from} to={rolePages.to} total={rolePages.total} pageSize={rolePages.pageSize} onPageSize={rolePages.setPageSize} defaultPageSize={rolePages.defaultPageSize} noun="roles" />
+              <Pagination {...rolePages.props} noun="roles" />
             </div>
           )
         ) : permissionList.length === 0 ? (
@@ -178,7 +178,7 @@ export default function AdminRolesPage() {
                 </tbody>
               </table>
             </div>
-            <Pagination page={pages.page} totalPages={pages.totalPages} onPage={pages.setPage} from={pages.from} to={pages.to} total={pages.total} pageSize={pages.pageSize} onPageSize={pages.setPageSize} defaultPageSize={pages.defaultPageSize} noun="permissions" />
+            <Pagination {...pages.props} noun="permissions" />
           </>
         )}
       </div>

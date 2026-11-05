@@ -11,6 +11,8 @@ import EmptyState from '../components/ui/EmptyState';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import Button from '../components/ui/Button';
 import Checkbox from '../components/ui/Checkbox';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import PayoutActions from '../components/admin/PayoutActions';
 import CreatePayoutModal from '../components/admin/CreatePayoutModal';
 import BatchPayoutModal from '../components/admin/BatchPayoutModal';
@@ -38,6 +40,8 @@ export default function AdminPayoutsPage() {
   const [batchKind, setBatchKind] = useState(null);
   const { data, isLoading, isError, error, refetch } = useDisbursements(status);
   const list = Array.isArray(data) ? data : [];
+  // A page at a time; Select all still means every payout in this status, on every page.
+  const pager = usePagination(list, 10, status);
   const canBatch = BATCH_STATUSES.includes(status);
 
   // A selection belongs to one tab, and only to payouts still listed there.
@@ -121,7 +125,7 @@ export default function AdminPayoutsPage() {
                 )}
               </Card>
             )}
-            {list.map((d) => (
+            {pager.pageItems.map((d) => (
               <Card key={d.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0 flex items-start gap-3">
                 {canBatch && (
@@ -155,6 +159,7 @@ export default function AdminPayoutsPage() {
                 </div>
               </Card>
             ))}
+            <Pagination {...pager.props} noun="payouts" />
           </div>
         )}
       </div>

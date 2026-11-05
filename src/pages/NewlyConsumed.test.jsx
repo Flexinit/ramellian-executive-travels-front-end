@@ -97,22 +97,30 @@ describe('AdminAuditLogPage', () => {
     });
   });
 
-  it('moves between pages', async () => {
+  it('moves between pages, and Per page asks the backend for that many', async () => {
     const user = userEvent.setup();
-    const pages = [];
+    const asked = [];
     server.use(
       http.get(`${BASE}/admin/audit-logs`, ({ request }) => {
-        const n = Number(new URL(request.url).searchParams.get('page'));
-        pages.push(n);
-        return HttpResponse.json(page([{ ...ENTRY, id: `a-${n}` }], { number: n, totalPages: 3, totalElements: 41, first: n === 0, last: n === 2 }));
+        const params = new URL(request.url).searchParams;
+        const n = Number(params.get('page'));
+        const size = Number(params.get('size'));
+        asked.push({ n, size });
+        const totalPages = Math.ceil(41 / size);
+        return HttpResponse.json(page([{ ...ENTRY, id: `a-${n}` }], { number: n, size, totalPages, totalElements: 41, first: n === 0, last: n === totalPages - 1 }));
       })
     );
     renderUi(<AdminAuditLogPage />);
-    expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /newer/i })).toBeDisabled();
-    await user.click(screen.getByRole('button', { name: /older/i }));
-    expect(await screen.findByText('Page 2 of 3')).toBeInTheDocument();
-    expect(pages).toContain(1);
+    const pager = await screen.findByRole('navigation', { name: 'Pagination' });
+    expect(within(pager).getByText(/showing/i)).toHaveTextContent('Showing 1–20 of 41 entries');
+    expect(within(pager).getByRole('button', { name: 'Previous page' })).toBeDisabled();
+    await user.click(within(pager).getByRole('button', { name: 'Next page' }));
+    expect(await screen.findByText('21–40')).toBeInTheDocument();
+    expect(asked).toContainEqual({ n: 1, size: 20 });
+
+    await user.selectOptions(within(pager).getByLabelText('Per page'), '50');
+    await waitFor(() => expect(asked).toContainEqual({ n: 0, size: 50 }));
+    expect(await screen.findByText('1–41')).toBeInTheDocument();
   });
 
   it('opens an entry, fetched by id from /admin/audit-logs/{id}', async () => {

@@ -21,6 +21,24 @@
       })();
     </script>
 
+    <!-- The public pages' words for search engines (vite-plugins/seo.js puts them in #root): still in the page for
+         crawlers, link previews and screen readers, but not drawn — otherwise visitors see them unstyled, with their ·
+         and — separators, for the moment before the app loads and replaces them. The page's own background shows
+         meanwhile, as it did before. -->
+    <style>
+      [data-seo-copy] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+
     <!-- Google Fonts, from src/theme/fonts.js (filled in by vite.config.js) -->
     <!-- app-fonts -->
 

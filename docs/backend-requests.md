@@ -1591,3 +1591,41 @@ B2C result: the amount, who it was paid to, completion time, conversation IDs an
 
 **Request:** the same for payouts (B2C), e.g. `mpesaTransactionReceipt`, `mpesaReceiverPartyPublicName` and
 `mpesaConversationId`, so the portal doesn't depend on parsing the raw callback for them.
+
+## 61. One payment status for every provider — 2026-11-05
+
+**Portal (workaround).** Re-checked the live spec (`/v3/api-docs`, dev, 2026-11-05): there is still no
+provider-agnostic status endpoint (item 55). The portal now asks **both** `GET /payments/pesapal/bookings/{id}/status`
+and `GET /payments/mpesa/bookings/{id}/status` for receipts and the "already paid?" check, and uses the most useful
+answer (SUCCESSFUL, then PENDING, then anything else). That's two requests where one would do.
+
+**Ask.** A single `GET /payments/bookings/{bookingId}/status` returning the booking's latest `PaymentStatusResponse`,
+whatever the provider (Pesapal, M-Pesa prompt, or a completed split's master payment).
+
+**Please confirm:**
+- Does `GET /payments/mpesa/bookings/{id}/status` report a completed **split** (its `masterPaymentId`) as SUCCESSFUL?
+  The portal relies on that for a split's receipt.
+- Is `PaymentStatusResponse.amount` the whole charge (rental + delivery + driver + processing fee), with
+  `baseRentalAmount` the rental alone? The receipt now shows `amount` as **Amount Paid** whenever `baseRentalAmount` is
+  present.
+- The production backend (`102.68.87.231:8090`) didn't answer `/v3/api-docs` from here (timed out), so only the
+  dev spec was checked.
+
+## 62. Payment retries and edge cases — 2026-11-05
+
+**Portal (done).** Every new payment or retry (M-Pesa prompt, split, Pesapal, group) first re-reads the booking's
+payment status and starts nothing if it's already SUCCESSFUL. A part-paid group is no longer re-charged as a group: each
+unpaid booking is paid on its own through the single-booking checkouts. A split still collecting is resumed, not
+started again. This only narrows the window, so please guard the backend too.
+
+**Asks:**
+- **Refuse a new charge for a paid booking.** `POST .../pesapal/bookings/{id}/checkout`, `.../mpesa/bookings/{id}/checkout`
+  and `.../mpesa/bookings/{id}/split` should return 409 when the booking already has a SUCCESSFUL payment, and the
+  group checkout should leave out (or refuse) bookings in the group that are already paid.
+- **One STK prompt at a time.** A new `.../mpesa/bookings/{id}/checkout` while the last prompt is still PENDING could be
+  paid twice. Either refuse it (409, with the pending prompt's details) or cancel the earlier one.
+- **Overstay payment status.** There's no status for an overstay payment and nothing on `BookingResponse` saying it's
+  paid, so the portal can only remember, in that browser, that the renter finished paying. Please add either
+  `overstayPaid` (or `overstayPaymentStatus`) to `BookingResponse`, or `GET /payments/pesapal/bookings/{id}/overstay-status`.
+  Also: does a paid overstay set `overstayAmount` back to 0?
+- **An M-Pesa option for groups and overstays** (still Pesapal only, item 55).

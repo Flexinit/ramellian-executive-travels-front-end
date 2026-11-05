@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, CreditCard, Repeat } from 'lucide-react';
+import { MessageSquare, Mail, KeyRound, FlagOff, CalendarClock, Repeat } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import BackLink from '../components/ui/BackLink';
@@ -11,7 +11,7 @@ import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
 import CancelBookingModal from '../components/booking/CancelBookingModal';
 import PostponeBookingModal from '../components/booking/PostponeBookingModal';
-import { useOverstayCheckout } from '../hooks/usePayment';
+import OverstayPayButton from '../components/payment/OverstayPayButton';
 import ReviewForm from '../components/reviews/ReviewForm';
 import BookingUnavailableNotice from '../components/booking/BookingUnavailableNotice';
 import ContractPdfActions from '../components/booking/ContractPdfActions';
@@ -38,7 +38,6 @@ export default function BookingDetailPage() {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [movingDates, setMovingDates] = useState(false);
   const [changingVehicle, setChangingVehicle] = useState(false);
-  const overstay = useOverstayCheckout();
   // Which handover modal is open, if either — 'pickup' once the booking's confirmed and waiting to be
   // collected, 'return' once it's out (ACTIVE) and due back. Never both: a booking is only ever in one of
   // those states at a time. The backend only accepts handover details from the renter (a 403 "Only the
@@ -165,9 +164,7 @@ export default function BookingDetailPage() {
               Returned late{booking.overstayDays ? ` by ${booking.overstayDays} day${booking.overstayDays === 1 ? '' : 's'}` : ''}: an
               overstay charge of <span className="font-semibold">{formatCurrency(booking.overstayAmount)}</span> is due.
             </p>
-            <Button className="shrink-0" loading={overstay.isPending} onClick={() => overstay.mutate(booking.id)}>
-              {!overstay.isPending && <CreditCard size={15} aria-hidden="true" />} Pay overstay
-            </Button>
+            <OverstayPayButton booking={booking} size="md" className="shrink-0" />
           </div>
         )}
 

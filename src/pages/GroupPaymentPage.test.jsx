@@ -188,3 +188,46 @@ describe('GroupPaymentPage — resuming a payment the local "checkout started" f
     expect(await screen.findByRole('button', { name: /proceed to payment/i })).toBeInTheDocument();
   });
 });
+
+describe('GroupPaymentPage — part paid', () => {
+  it('some bookings paid and the rest failed: no second group charge — each unpaid booking is paid on its own', async () => {
+    const user = userEvent.setup();
+    let groupCharges = 0;
+    seedGroup([line('v1', 'Prado', 9000, 'b1'), line('v2', 'Vitz', 3000, 'b2')]);
+    serveBooking('b1');
+    serveBooking('b2');
+    server.use(
+      http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, ({ params }) =>
+        HttpResponse.json({ status: params.bookingId === 'b1' ? 'SUCCESSFUL' : 'FAILED' })
+      ),
+      http.post(`${BASE}/payments/pesapal/booking-groups/:groupId/checkout`, () => {
+        groupCharges += 1;
+        return HttpResponse.json({ iframeUrl: 'https://pay.example/x' });
+      })
+    );
+    renderAt();
+
+    expect(await screen.findByText(/1 of 2 bookings are paid/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^try again$/i })).not.toBeInTheDocument();
+    const payButtons = screen.getAllByRole('button', { name: /pay this booking/i });
+    expect(payButtons).toHaveLength(1);
+    await user.click(payButtons[0]);
+
+    expect(screen.getByTestId('where')).toHaveTextContent('/book/v2/payment');
+    expect(screen.getByTestId('where')).toHaveAttribute('data-booking', 'b2');
+    expect(groupCharges).toBe(0);
+  });
+
+  it('a group whose remaining booking was then paid by M-Pesa shows as paid', async () => {
+    seedGroup([line('v1', 'Prado', 9000, 'b1'), line('v2', 'Vitz', 3000, 'b2')]);
+    server.use(
+      http.get(`${BASE}/payments/pesapal/bookings/:bookingId/status`, ({ params }) =>
+        HttpResponse.json({ status: params.bookingId === 'b1' ? 'SUCCESSFUL' : 'FAILED' })
+      ),
+      http.get(`${BASE}/payments/mpesa/bookings/b2/status`, () => HttpResponse.json({ provider: 'MPESA', status: 'SUCCESSFUL' }))
+    );
+    renderAt();
+
+    expect(await screen.findByRole('button', { name: /continue to sign contracts/i })).toBeInTheDocument();
+  });
+});
