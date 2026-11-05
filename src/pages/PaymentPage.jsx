@@ -26,7 +26,7 @@ import { splitIsClosed, splitIsPaid, splitTotal, useRetryContribution, useSplitP
 import { usePlatformSettings } from '../hooks/usePlatformSettings';
 import { apiErrorMessage } from '../lib/apiError';
 import { normalizePhone } from '../lib/phone';
-import { MPESA_PROMPT_SECONDS, PAYMENT_STATUSES } from '../lib/constants';
+import { MPESA_CONFIRM_SECONDS, MPESA_PROMPT_SECONDS, PAYMENT_STATUSES } from '../lib/constants';
 import { calculateTotalPrice, isBookingUnfulfilled } from '../lib/utils';
 import { amountToPay } from '../lib/paymentTotal';
 
@@ -167,32 +167,36 @@ export default function PaymentPage() {
     : byMpesa
     ? checkoutStarted
     : checkoutStarted && !payingInFrame && (resuming || continuedToPesapal || !!existingPayment.status);
-  // The renter gets the prompt's whole minute. A just-sent (or re-sent) prompt can still read as the last attempt's FAILED
-  // before it has even reached the phone — `/retry` reuses that payment — so while the minute runs, FAILED only counts
-  // once this prompt has been seen PENDING (then it's this prompt's own result: cancelled, wrong PIN, no balance).
-  // Paid ends the wait at once; otherwise the result shows when the minute is up.
+  // The renter gets the prompt's whole minute (product owner, 2026-11-05): the status is checked every few seconds and
+  // only a successful payment ends the countdown early — a FAILED during the minute (the last attempt's, which `/retry`
+  // reuses, or Safaricom answering before the renter has seen the prompt) doesn't. When the minute is up, the result
+  // shows, with **I've completed the payment** (`confirmPaid`) for a confirmation that lands late: it checks again
+  // every few seconds for `MPESA_CONFIRM_SECONDS` more, under the same rule.
   const promptEndsAt = promptedAt ? promptedAt + MPESA_PROMPT_SECONDS * 1000 : 0;
-  const [promptOverFor, setPromptOverFor] = useState(null);
+  const [confirmingUntil, setConfirmingUntil] = useState(0);
+  const waitUntil = byMpesa ? Math.max(promptEndsAt, confirmingUntil) : 0;
+  // Re-render when the wait ends, so the result shows then (nothing else changes at that moment).
+  const [, setWaitOver] = useState(0);
   useEffect(() => {
-    if (!byMpesa || !promptedAt) return undefined;
-    const left = promptEndsAt - Date.now();
-    if (left <= 0) {
-      setPromptOverFor(promptedAt);
-      return undefined;
-    }
-    const timer = setTimeout(() => setPromptOverFor(promptedAt), left);
+    const left = waitUntil - Date.now();
+    if (left <= 0) return undefined;
+    const timer = setTimeout(() => setWaitOver(waitUntil), left + 50);
     return () => clearTimeout(timer);
-  }, [byMpesa, promptedAt, promptEndsAt]);
-  const [sawPendingFor, setSawPendingFor] = useState(null);
-  const holdFailed = byMpesa && !!promptedAt && promptOverFor !== promptedAt && sawPendingFor !== promptedAt;
-  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled, provider, { holdFailedUntil: holdFailed ? promptEndsAt : 0 });
+  }, [waitUntil]);
+  const waiting = Date.now() < waitUntil;
+  const confirming = byMpesa && Date.now() < confirmingUntil;
+  const paymentStatus = usePaymentStatus(bookingId, pollingEnabled, provider, waiting ? { holdFailedUntil: waitUntil, pollUntil: waitUntil } : undefined);
   const rawStatus = paymentStatus.data?.status;
-  useEffect(() => {
-    if (byMpesa && promptedAt && rawStatus === PAYMENT_STATUSES.PENDING) setSawPendingFor(promptedAt);
-  }, [byMpesa, promptedAt, rawStatus]);
-  const shownStatus = holdFailed && (rawStatus === PAYMENT_STATUSES.FAILED || rawStatus === PAYMENT_STATUSES.INVALID) ? PAYMENT_STATUSES.PENDING : rawStatus;
+  const shownStatus = waiting && (rawStatus === PAYMENT_STATUSES.FAILED || rawStatus === PAYMENT_STATUSES.INVALID) ? PAYMENT_STATUSES.PENDING : rawStatus;
+  // Set once a confirmation check has run its course without the payment showing up.
+  const [confirmedNothingFor, setConfirmedNothingFor] = useState(null);
+  function confirmPaid() {
+    const until = Date.now() + MPESA_CONFIRM_SECONDS * 1000;
+    setConfirmingUntil(until);
+    setConfirmedNothingFor(until);
+    paymentStatus.refetch();
+  }
   const unfulfilled = isBookingUnfulfilled(booking?.status);
-  const settled = [PAYMENT_STATUSES.SUCCESSFUL, PAYMENT_STATUSES.FAILED, PAYMENT_STATUSES.INVALID].includes(shownStatus);
   // Guards the *entire* `handlePay` call, not just `checkout.isPending` — that only covers the mutation
   // itself, not the `await refetchBooking()` pre-check ahead of it. A fast double-click (or a slow network
   // making the first click's effect invisible for a moment) during that window would otherwise still start
@@ -306,6 +310,8 @@ export default function PaymentPage() {
         sessionStorage.setItem(`checkout:${bookingId}`, '1');
         sessionStorage.setItem(`checkout-phone:${bookingId}`, mpesaPhone);
         const sentAt = Date.now();
+        setConfirmingUntil(0);
+        setConfirmedNothingFor(null);
         sessionStorage.setItem(`checkout-prompted-at:${bookingId}`, String(sentAt));
         setPromptedAt(sentAt);
         setPromptedPhone(mpesaPhone);
@@ -442,8 +448,11 @@ export default function PaymentPage() {
               onRetry={() => handlePay()}
               retrying={isSubmitting}
               redirectUrl={byMpesa ? undefined : checkout.data?.redirectUrl || sessionStorage.getItem(`checkout-url:${bookingId}`)}
-              mpesaPhone={byMpesa && !settled ? promptedPhone : undefined}
+              mpesaPhone={byMpesa ? promptedPhone : undefined}
               mpesaPromptedAt={promptedAt}
+              mpesaConfirming={confirming}
+              mpesaConfirmedNothing={byMpesa && !!confirmedNothingFor && !confirming}
+              onConfirmPaid={byMpesa ? confirmPaid : undefined}
               provider={byMpesa ? 'mpesa' : 'pesapal'}
               onChangeNumber={byMpesa ? () => payAnotherWay('mpesa') : undefined}
               paying={payingInFrame}

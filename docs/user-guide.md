@@ -443,14 +443,15 @@ verifying your email (which signs you in), and picks up where you left off.
    you've been asked to pay. If you started a payment for this booking earlier that hasn't been confirmed, a note
    above the choice offers **Check its status**, in case it went through. Choose how to pay. **M-Pesa** (the default): check the phone number (it starts as your account's) and
    press **Send M-Pesa prompt**. A prompt appears on that phone; enter your M-Pesa PIN there and the page moves on by
-   itself. A one-minute countdown shows how long the prompt stays open, and you get that whole minute: the page only
-   says the payment failed once this prompt has actually failed (cancelled, wrong PIN, not enough balance) or the
-   minute is up — never because of an earlier attempt. If it runs out before the payment arrives, the
-   page checks once more, then waits for you: **Try again** sends a fresh prompt with a new minute (or **Check again** if you've just paid), and **Pay another way** (if it fails or goes unanswered) takes you
-   back to the choice. **Use a different number** (once the prompt has failed or timed out) goes back to the number,
-   for a prompt sent to the wrong phone. **Try again** and a changed number both re-send the prompt for the same
-   M-Pesa payment, rather than starting a second one. A failed prompt says what can go wrong (cancelled, timed out, wrong PIN, not
-   enough balance) and that nothing was taken. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
+   itself. A one-minute countdown shows how long the prompt stays open, and you get that whole minute: the page checks
+   every 3 seconds and moves on the moment your payment is in, but nothing else cuts the minute short. When it's up,
+   the page shows the result — **We haven't received your payment yet**, or **Payment failed** (with what can go
+   wrong: cancelled, timed out, wrong PIN, not enough balance; nothing was taken) — and offers **Try again** (a fresh
+   prompt with a new minute), **I've completed the payment** (if you paid but the page hasn't caught up: it checks
+   again every few seconds for half a minute and moves on as soon as M-Pesa confirms; if it still can't see it, it says
+   so) and **Use a different number**. **Use a different number** is also there during the countdown, for a prompt
+   sent to the wrong phone. **Try again** and a changed number both re-send the prompt for the same M-Pesa payment,
+   rather than starting a second one. **Choose another way to pay** takes you back to the choice. Only Kenyan numbers can get a prompt. **Split the cost**: share the payment with others, each
    paying their part by M-Pesa. You're listed first with your details. **Add a person** for each of the others (name,
    M-Pesa number, email optional for their receipt) and set everyone's share. The total is the whole charge (rental,
    delivery, driver and the M-Pesa fees, shown under the form), and nobody pays extra on top of their share. **Split equally** divides the total

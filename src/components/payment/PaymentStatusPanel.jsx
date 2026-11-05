@@ -27,8 +27,12 @@ import CircularCountdown from '../ui/CircularCountdown';
  *   until that link is reported finished, whatever the (paused) status checks last said. Left out, the frame shows
  *   while there's no status yet and polling hasn't given up.
  * @param {string} [mpesaPhone] — paying by M-Pesa prompt (STK push) sent to this number: a 60-second countdown to
- *   approve it on the phone (`MpesaPromptWait`); once it runs out, **Send the prompt again** (`onRetry`) and **Check again**.
+ *   approve it on the phone (`MpesaPromptWait`); once it runs out, the result with **Try again** (`onRetry`),
+ *   **I've completed the payment** (`onConfirmPaid`) and **Use a different number** (`onChangeNumber`).
  * @param {number} [mpesaPromptedAt] — when that prompt was sent (ms), so the countdown survives a reload
+ * @param {boolean} [mpesaConfirming] — checking again after **I've completed the payment** (see PaymentPage)
+ * @param {boolean} [mpesaConfirmedNothing] — that check ran its course and the payment still isn't in
+ * @param {function} [onConfirmPaid] — **I've completed the payment**, offered once the prompt's minute is up
  * @param {'mpesa'|'pesapal'} [provider] — how it's being paid, for a failure message that says what can go wrong
  * @param {function} [onChangeNumber] — back to the M-Pesa number (a prompt sent to the wrong phone), offered once the
  *   prompt has timed out or failed
@@ -45,11 +49,12 @@ import CircularCountdown from '../ui/CircularCountdown';
  */
 
 /**
- * Waiting for the renter to approve an M-Pesa prompt (product owner, 2026-11-04: no endless spinner): a 60-second
- * countdown while the prompt is open on their phone; when it runs out without the payment coming through, they're told
- * so and can send it again (or check again, in case it went through). A successful payment moves the page on by itself.
+ * Paying by M-Pesa prompt (product owner, 2026-11-04 and 2026-11-05). While the prompt is open on the phone, a 60-second
+ * countdown — the page checks every few seconds and moves on the moment the payment is in; nothing else cuts the minute
+ * short. When it's up, the result: not received, or failed (`failed`), with **Try again**, **I've completed the payment**
+ * (`onConfirmPaid` — checks again for a little while, for a confirmation running late) and **Use a different number**.
  */
-function MpesaPromptWait({ phone, promptedAt, onRetry, onRecheck, onChangeNumber, retrying }) {
+function MpesaPromptWait({ phone, promptedAt, failed, confirming, confirmedNothing, onConfirmPaid, onRetry, onRecheck, onChangeNumber, retrying }) {
   // Not knowing when the prompt went out (one from before this countdown existed) counts as timed out — the countdown
   // never restarts by itself; only **Try again** (a new prompt, a new `promptedAt`) starts another.
   const overAt = promptedAt ? promptedAt + MPESA_PROMPT_SECONDS * 1000 : 0;
@@ -60,45 +65,73 @@ function MpesaPromptWait({ phone, promptedAt, onRetry, onRecheck, onChangeNumber
     setTimedOut(Date.now() >= overAt);
   }
 
+  if (confirming) {
+    return (
+      <div className="flex flex-col items-center gap-3 text-center py-2">
+        <MpesaLogo size={36} />
+        <Spinner size="lg" label="Checking your M-Pesa payment" />
+        <div>
+          <p className="text-ink font-semibold">Checking your payment</p>
+          <p className="text-muted text-sm mt-1">
+            Looking for your M-Pesa payment from <strong className="text-ink">{phone}</strong> — this page moves on as soon as
+            it&apos;s confirmed.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!timedOut) {
+    return (
+      <div className="flex flex-col items-center gap-3 text-center py-2">
+        <MpesaLogo size={36} />
+        <div>
+          <p className="text-ink font-semibold">Check your phone</p>
+          <p className="text-muted text-sm mt-1">
+            We&apos;ve sent an M-Pesa prompt to <strong className="text-ink">{phone}</strong>. Enter your M-Pesa PIN there —
+            this page moves on by itself once it&apos;s paid.
+          </p>
+        </div>
+        {/* One more check as the time runs out, for a PIN entered in the last seconds. */}
+        <CircularCountdown key={promptedAt} startedAt={promptedAt} durationSeconds={MPESA_PROMPT_SECONDS} onExpire={() => { setTimedOut(true); onRecheck?.(); }} label="left to enter your M-Pesa PIN" />
+        {/* Sent to the wrong phone: no need to wait the minute out. */}
+        {onChangeNumber && <ChangeNumberLink onClick={onChangeNumber} />}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center gap-3 text-center py-2">
-      <MpesaLogo size={36} />
-      {timedOut ? (
-        <>
-          <div>
-            <p className="text-ink font-semibold">Didn&apos;t get the prompt, or it timed out?</p>
-            <p className="text-muted text-sm mt-1">
-              We haven&apos;t received your M-Pesa payment from <strong className="text-ink">{phone}</strong>. Try again to get a
-              new prompt, and enter your PIN within a minute — or check again if you&apos;ve just paid.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {onRetry && (
-              <Button variant="mpesa" loading={retrying} disabled={retrying} onClick={onRetry}>
-                {!retrying && <Smartphone size={16} aria-hidden="true" />} Try again
-              </Button>
-            )}
-            {onRecheck && (
-              <Button variant="outline" onClick={onRecheck}>
-                <RotateCcw size={16} aria-hidden="true" /> Check again
-              </Button>
-            )}
-          </div>
-          {onChangeNumber && <ChangeNumberLink onClick={onChangeNumber} />}
-        </>
-      ) : (
-        <>
-          <div>
-            <p className="text-ink font-semibold">Check your phone</p>
-            <p className="text-muted text-sm mt-1">
-              We&apos;ve sent an M-Pesa prompt to <strong className="text-ink">{phone}</strong>. Enter your M-Pesa PIN there —
-              this page moves on by itself once it&apos;s paid.
-            </p>
-          </div>
-          {/* A PIN entered in the last seconds can still be confirming: one more check as the time runs out. */}
-          <CircularCountdown key={promptedAt} startedAt={promptedAt} durationSeconds={MPESA_PROMPT_SECONDS} onExpire={() => { setTimedOut(true); onRecheck?.(); }} label="left to enter your M-Pesa PIN" />
-        </>
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${failed ? 'bg-red-500/10' : 'bg-amber-500/10'}`}>
+        {failed ? <XCircle size={20} className="text-red-600" aria-hidden="true" /> : <Clock size={20} className="text-amber-600" aria-hidden="true" />}
+      </div>
+      <div>
+        <p className="text-ink font-semibold">{failed ? 'Payment failed' : "We haven't received your payment yet"}</p>
+        <p className="text-muted text-sm mt-1">
+          {failed
+            ? "The M-Pesa payment didn't go through — the prompt may have been cancelled or timed out, the PIN was wrong, or the balance was too low. Nothing was taken. You can try again."
+            : <>No payment has come in from <strong className="text-ink">{phone}</strong> yet. Didn&apos;t get the prompt? Try again, and enter your PIN within a minute.</>}
+        </p>
+      </div>
+      {confirmedNothing && (
+        <p role="status" className="rounded-tile bg-amber-500/10 px-3 py-2 text-sm text-ink">
+          We still can&apos;t see your payment. If money left your M-Pesa, it will show here once M-Pesa confirms it — check
+          again in a minute, or contact us with your M-Pesa confirmation message.
+        </p>
       )}
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {onRetry && (
+          <Button variant="mpesa" loading={retrying} disabled={retrying} onClick={onRetry}>
+            {!retrying && <Smartphone size={16} aria-hidden="true" />} Try again
+          </Button>
+        )}
+        {onConfirmPaid && (
+          <Button variant="outline" onClick={onConfirmPaid}>
+            <CheckCircle2 size={16} aria-hidden="true" /> I&apos;ve completed the payment
+          </Button>
+        )}
+      </div>
+      {onChangeNumber && <ChangeNumberLink onClick={onChangeNumber} />}
     </div>
   );
 }
@@ -112,7 +145,7 @@ function ChangeNumberLink({ onClick }) {
   );
 }
 
-export default function PaymentStatusPanel({ status, exhausted, errorMessage, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle, paying, mpesaPhone, mpesaPromptedAt, provider, onChangeNumber }) {
+export default function PaymentStatusPanel({ status, exhausted, errorMessage, onRecheck, onRetry, redirectUrl, onContinue, retrying, booking, vehicle, paying, mpesaPhone, mpesaPromptedAt, mpesaConfirming, mpesaConfirmedNothing, onConfirmPaid, provider, onChangeNumber }) {
   // After a slow confirmation, Continue to Payment opens the frame again (rather than leaving the site).
   const [reopened, setReopened] = useState(false);
   // The frame stays until that payment link is reported finished; then the status checks take over. Kept per link, so
@@ -155,6 +188,24 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
     );
   }
 
+  // Paying by M-Pesa prompt: the countdown, then its result — failed included — with what to do next.
+  if (mpesaPhone) {
+    return (
+      <MpesaPromptWait
+        phone={mpesaPhone}
+        promptedAt={mpesaPromptedAt}
+        failed={status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID}
+        confirming={mpesaConfirming}
+        confirmedNothing={mpesaConfirmedNothing}
+        onConfirmPaid={onConfirmPaid}
+        onRetry={onRetry}
+        onRecheck={onRecheck}
+        onChangeNumber={onChangeNumber}
+        retrying={retrying}
+      />
+    );
+  }
+
   if (status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID) {
     return (
       <div className="flex flex-col items-center gap-3 text-center py-2">
@@ -177,10 +228,6 @@ export default function PaymentStatusPanel({ status, exhausted, errorMessage, on
         {onChangeNumber && <ChangeNumberLink onClick={onChangeNumber} />}
       </div>
     );
-  }
-
-  if (mpesaPhone) {
-    return <MpesaPromptWait phone={mpesaPhone} promptedAt={mpesaPromptedAt} onRetry={onRetry} onRecheck={onRecheck} onChangeNumber={onChangeNumber} retrying={retrying} />;
   }
 
   if (exhausted && reopened && redirectUrl) {

@@ -3,6 +3,15 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-05 (M-Pesa: only success ends the minute; I've completed the payment)
+
+- **Fixed:** **Payment failed** could still show within seconds of sending a prompt. During the prompt's minute the page
+  now checks every 3 seconds and only a successful payment ends the countdown early; any failure shows when the minute
+  is up.
+- **Added:** **I've completed the payment** after the minute, for a payment M-Pesa confirms late: it checks again for
+  half a minute and moves on as soon as it's in, or says it still can't see it.
+- **Changed:** **Use a different number** is available during the countdown too.
+
 ## 2026-11-05 (M-Pesa prompt gets its full minute)
 
 - **Fixed:** right after **Try again** (or a first prompt on a booking with an earlier failed attempt), the page could

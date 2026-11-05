@@ -90,11 +90,12 @@ const maxAttempts = (provider) => (provider === 'mpesa' ? MPESA_POLL_MAX_ATTEMPT
  * @param {'pesapal'|'mpesa'|'any'} [provider] — which status to read: Pesapal's, the M-Pesa prompt's
  *   (`GET /payments/mpesa/bookings/{bookingId}/status`, live spec 2026-10-27), or whichever knows of a payment
  *   (`fetchBookingPayment` — a group whose bookings may end up paid different ways)
- * @param {{ holdFailedUntil?: number }} [options] — until this time (ms), FAILED/INVALID doesn't stop the checks: an M-Pesa
- *   prompt just sent (or re-sent through `/retry`, which reuses the payment) can still read as the last attempt's FAILED
- *   before this one has even reached the phone, so only SUCCESSFUL ends the wait early. See PaymentPage.
+ * @param {{ holdFailedUntil?: number, pollUntil?: number }} [options] — until `holdFailedUntil` (ms), FAILED/INVALID
+ *   doesn't stop the checks: an M-Pesa prompt just sent (or re-sent through `/retry`, which reuses the payment) can still
+ *   read as the last attempt's FAILED, so only SUCCESSFUL ends the wait early. Until `pollUntil` (ms) the checks carry on
+ *   every `PAYMENT_POLL_INTERVAL_MS` whatever the attempt count. See PaymentPage.
  */
-export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal', { holdFailedUntil = 0 } = {}) {
+export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapal', { holdFailedUntil = 0, pollUntil = 0 } = {}) {
   return {
     queryKey: paymentStatusKey(bookingId, provider),
     queryFn: () =>
@@ -111,7 +112,11 @@ export function paymentStatusQuery(bookingId, enabled = true, provider = 'pesapa
       // A failure isn't final while it may still be the last attempt's (see `holdFailedUntil`): keep checking.
       const failed = status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
       const settled = status === PAYMENT_STATUSES.SUCCESSFUL || (failed && Date.now() >= holdFailedUntil);
-      if (settled || attempts >= maxAttempts(provider)) return false;
+      if (settled) return false;
+      // Waiting on the renter (an M-Pesa prompt's minute, or "I've completed the payment"): every few seconds until then,
+      // however many checks that takes.
+      if (Date.now() < pollUntil) return PAYMENT_POLL_INTERVAL_MS;
+      if (attempts >= maxAttempts(provider)) return false;
       return PAYMENT_POLL_INTERVAL_MS;
     },
   };
