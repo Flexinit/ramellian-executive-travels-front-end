@@ -1,6 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { apiGet, apiPost } from '../lib/api';
+import { apiGet, apiPatch, apiPost } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { PAYMENT_POLL_INTERVAL_MS, PAYMENT_POLL_MAX_ATTEMPTS, PAYMENT_STATUSES } from '../lib/constants';
 
@@ -349,5 +349,45 @@ export function useOverstayStatus(bookingId, { enabled = true, pollUntil = 0, ho
       if (failed && Date.now() >= holdFailedUntil) return false;
       return Date.now() < pollUntil ? PAYMENT_POLL_INTERVAL_MS : false;
     },
+  });
+}
+
+/** After an admin changes an M-Pesa payment: everything that shows a payment's status reads it again. */
+function refreshPayments(queryClient) {
+  for (const queryKey of [['admin'], ['payment-status'], ['overstay-status'], ['bookings']]) queryClient.invalidateQueries({ queryKey });
+}
+
+/**
+ * Asks Safaricom for an M-Pesa payment's result and records it (admin only) —
+ * `POST /payments/mpesa/admin/payments/{paymentId}/sync` → `PaymentStatusResponse` (local spec 2026-11-10). For a payment
+ * stuck as PENDING because the callback never arrived. Pass the `paymentId`.
+ */
+export function useSyncMpesaPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentId) => apiPost(`/payments/mpesa/admin/payments/${paymentId}/sync`),
+    onSuccess: () => refreshPayments(queryClient),
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check this payment with Safaricom.")),
+  });
+}
+
+/**
+ * Sets an M-Pesa payment's status by hand (admin only), for when Safaricom can't be reached —
+ * `PATCH /payments/mpesa/admin/payments/{paymentId}/status?status=&receipt=` → `PaymentStatusResponse` (local spec
+ * 2026-11-10). `receipt` (optional) is the M-Pesa confirmation code, for a payment set as SUCCESSFUL.
+ */
+export function useOverrideMpesaPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ paymentId, status, receipt }) => {
+      const query = new URLSearchParams({ status });
+      if (receipt) query.set('receipt', receipt);
+      return apiPatch(`/payments/mpesa/admin/payments/${paymentId}/status?${query}`);
+    },
+    onSuccess: () => {
+      refreshPayments(queryClient);
+      toast.success('Payment status updated.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't update this payment's status.")),
   });
 }

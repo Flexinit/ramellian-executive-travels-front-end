@@ -368,6 +368,12 @@ export const paymentHandlers = [
   http.post(`${BASE}/payments/mpesa/bookings/:bookingId/overstay/checkout`, () =>
     HttpResponse.json({ paymentId: 'mock-overstay-payment', provider: 'MPESA', status: 'PENDING' })
   ),
+  http.post(`${BASE}/payments/mpesa/admin/payments/:paymentId/sync`, ({ params }) =>
+    HttpResponse.json({ paymentId: params.paymentId, provider: 'MPESA', status: 'SUCCESSFUL', receipt: 'SGH7XK2ABC' })
+  ),
+  http.patch(`${BASE}/payments/mpesa/admin/payments/:paymentId/status`, ({ params, request }) =>
+    HttpResponse.json({ paymentId: params.paymentId, provider: 'MPESA', status: new URL(request.url).searchParams.get('status') })
+  ),
   http.post(`${BASE}/payments/mpesa/c2b/register`, () =>
     HttpResponse.json({ ResponseCode: '0', ResponseDescription: 'Success' })
   ),

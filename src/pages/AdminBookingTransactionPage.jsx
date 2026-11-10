@@ -10,6 +10,7 @@ import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import EmptyState from '../components/ui/EmptyState';
+import MpesaPaymentActions from '../components/admin/MpesaPaymentActions';
 import { CHARGE_LABEL, useBookingFinancials } from '../hooks/useFinancials';
 import { useBooking } from '../hooks/useBookings';
 import { useVehicle } from '../hooks/useVehicles';
@@ -135,6 +136,11 @@ function ChargeCard({ charge, index, booking, vehicle, settings }) {
         </div>
         <Badge label={charge.charged ? 'Paid by renter' : charge.paymentStatus || 'Not paid'} variant={charge.charged ? 'success' : 'warning'} />
       </div>
+      {String(charge.paymentMethod || '').toUpperCase() === 'MPESA' && charge.paymentId && (
+        <div className="print:hidden">
+          <MpesaPaymentActions paymentId={charge.paymentId} status={charge.paymentStatus} />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-semibold text-ink">1. What the renter was charged</h4>

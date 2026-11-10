@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Badge from '../ui/Badge';
 import Modal from '../ui/Modal';
 import Spinner from '../ui/Spinner';
+import MpesaPaymentActions from './MpesaPaymentActions';
 import { DetailList, DetailRow } from '../ui/DetailList';
 import {
   TRANSACTION_TYPE_LABEL,
@@ -78,6 +79,8 @@ export default function PaymentTransactionDetailModal({ id, onClose }) {
       {t && (
         <div className="flex flex-col gap-4">
           <Badge label={transactionStatusLabel(t.status)} variant={transactionStatusVariant(t.status)} className="self-start" />
+          {/* An M-Pesa payment (not a payout or a split share) whose result can be fetched from Safaricom or set by hand. */}
+          {t.type === 'MPESA_STK' && t.paymentId && <MpesaPaymentActions paymentId={t.paymentId} status={String(t.status || '').toUpperCase()} />}
           <DetailList>
             {rows(t, isMpesa && payload?.ref).map(([label, value]) => (
               <DetailRow key={label} label={label}>{value}</DetailRow>

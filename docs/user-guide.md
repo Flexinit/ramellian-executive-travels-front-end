@@ -955,6 +955,12 @@ your permissions" above): an item is only shown if your account holds the permis
   result code and message. For a payout it's the amount, who it was paid to, completion time, conversation IDs,
   whether they're a registered M-Pesa customer, and the account balances. The provider's raw reply stays at the
   bottom, for support.
+  **Fixing a stuck M-Pesa payment.** An M-Pesa payment's details (and each M-Pesa charge on a booking's **Transaction
+  breakdown**) have two buttons. **Check with Safaricom** asks Safaricom for the payment's result, records it and says
+  what it found; use it for a payment stuck on pending. **Set status** opens a small form below the buttons, for when
+  Safaricom can't be reached: choose **Paid (successful)**, **Failed** or **Pending** and, for a paid one, optionally
+  enter the M-Pesa confirmation code from the M-Pesa message or statement, then **Save status**. Only do this once
+  you've confirmed the payment yourself. Split-payment shares and payouts don't have these buttons.
 - **Quotations** (`/admin/quotations`, super admins only) — draw up a quotation: who it's for, the items
   (quantity × rate), the VAT rate (16% to start; tick **The rates already include VAT** if they do) and an optional
   discount. It's numbered `QUO-…` and is valid for 30 days (change **Valid until** if needed). The quotation beside

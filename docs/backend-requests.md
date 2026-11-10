@@ -1682,3 +1682,28 @@ Checked the live production spec (`carrentalsapi.ramellianexecutivetravels.co.ke
 - After an overstay is paid, does `overstayAmount` go back to 0? If a later, bigger overstay can follow a SUCCESSFUL
   one, the status needs to tell them apart (e.g. its `amount`), or the portal will keep showing **Overstay paid**.
 - Does the overstay checkout return 409 when the overstay is already paid, or while a prompt is still PENDING?
+
+## 65. Admin M-Pesa sync and status override — consumed 2026-11-10
+
+Checked the local backend's spec (`http://192.168.8.9:8090/v3/api-docs`, 2026-11-10). The backend has moved from
+192.168.8.31, so `.env.development` now points at 192.168.8.9:8090. Two new endpoints since item 64:
+- **`POST /payments/mpesa/admin/payments/{paymentId}/sync`**: **consumed** as **Check with Safaricom**.
+- **`PATCH /payments/mpesa/admin/payments/{paymentId}/status?status=&receipt=`**: **consumed** as **Set status**.
+  The portal sends `SUCCESSFUL`, `FAILED` or `PENDING`, plus `receipt` (upper-cased) only for SUCCESSFUL.
+
+Both are offered on Payment Transactions (type `MPESA_STK` with a `paymentId`) and on each M-Pesa charge of a
+booking's Transaction breakdown (`paymentMethod` MPESA with a `paymentId`).
+
+Every other endpoint in that spec is already used, apart from:
+- the Safaricom and Pesapal callbacks, which the portal never calls;
+- `POST /auth/verify-code`, which duplicates `verify-email` / `verify-whatsapp` (item 60);
+- `GET /vehicles/admin/pending` and `GET /rental-terms/category/{category}`, both covered by endpoints the portal
+  already uses.
+
+**Please confirm:**
+- `status` is a plain string in the spec. Are `SUCCESSFUL` / `FAILED` / `PENDING` the values you accept? An enum in
+  the spec would settle it.
+- Do these work on a **split** payment's master payment, and on an **overstay** payment? The portal offers them only
+  on ordinary M-Pesa payments for now.
+- Is the override recorded in the ledger (who changed it, when, from what), and does it trigger what a real callback
+  would (contract step, owner payout)?

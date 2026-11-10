@@ -3,6 +3,11 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-10 (Fixing a stuck M-Pesa payment)
+
+- **Added (administrators):** **Check with Safaricom** and **Set status** on an M-Pesa payment's details in Payment
+  Transactions, and on each M-Pesa charge on a booking's Transaction breakdown.
+
 ## 2026-11-10 (Overstay by M-Pesa; register M-Pesa URLs)
 
 - **Added:** **Pay overstay** now offers **M-Pesa** (a prompt to your phone, with the same one-minute countdown as a
