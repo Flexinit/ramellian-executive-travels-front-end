@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { AtSign, BellRing, Bot, CalendarClock, Percent, Save } from 'lucide-react';
+import { AtSign, BellRing, Bot, CalendarClock, CheckCircle2, Link2, Percent, Save, Smartphone } from 'lucide-react';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
 import Card from '../components/ui/Card';
@@ -15,7 +15,7 @@ import ErrorBanner from '../components/ui/ErrorBanner';
 import SegmentedControl from '../components/ui/SegmentedControl';
 import BookingPolicyForm from '../components/booking/BookingPolicyForm';
 import { usePlatformPolicy, useSavePlatformPolicy } from '../hooks/useBookingPolicies';
-import { usePlatformSettings, useSavePlatformSettings, useToggleBotAssistant } from '../hooks/usePlatformSettings';
+import { usePlatformSettings, useRegisterMpesaUrls, useSavePlatformSettings, useToggleBotAssistant } from '../hooks/usePlatformSettings';
 
 /** The page's tabs — so each part is one short screen instead of one long scroll (product owner, 2026-10-26). */
 const TABS = [
@@ -24,6 +24,7 @@ const TABS = [
   { value: 'reminders', label: 'Pickup reminders', icon: BellRing },
   { value: 'contact', label: 'Contact & social', icon: AtSign },
   { value: 'assistant', label: 'Assistant', icon: Bot },
+  { value: 'mpesa', label: 'M-Pesa', icon: Smartphone },
 ];
 
 /**
@@ -311,6 +312,8 @@ export default function AdminPlatformSettingsPage() {
             ) : (
               <div className="flex justify-center py-6"><Spinner label="Loading the platform settings" /></div>
             ))}
+
+          {tab === 'mpesa' && <MpesaCard />}
         </div>
       </div>
     </PageWrapper>
@@ -507,6 +510,73 @@ function PlatformPolicyCard() {
         <ErrorBanner message="Could not load the booking policy." onRetry={policy.refetch} />
       ) : (
         <BookingPolicyForm policy={policy.data} onSave={(p) => save.mutate(p)} saving={save.isPending} />
+      )}
+    </Card>
+  );
+}
+
+/**
+ * Registers the M-Pesa Paybill (C2B) callback addresses with Safaricom — `POST /payments/mpesa/c2b/register`. Needed
+ * once when the Paybill is set up, and again if the backend's address changes; until then Safaricom doesn't tell the
+ * backend about payments made straight to the Paybill. Asks first, then shows Safaricom's reply as it came.
+ */
+function MpesaCard() {
+  const register = useRegisterMpesaUrls();
+  const [asking, setAsking] = useState(false);
+  const reply = register.data && typeof register.data === 'object' ? Object.entries(register.data) : [];
+
+  return (
+    <Card className="p-5 flex flex-col gap-4">
+      <div>
+        <h2 className="font-heading text-ink text-base font-semibold inline-flex items-center gap-2">
+          <Smartphone size={16} className="text-mpesa-deep" aria-hidden="true" />
+          M-Pesa Paybill URLs
+        </h2>
+        <p className="text-muted text-sm mt-1">
+          Tells Safaricom where to send payments made straight to the Paybill. Do this once when the Paybill is set up,
+          and again if the backend&apos;s web address changes. Payments by M-Pesa prompt work without it.
+        </p>
+      </div>
+
+      {asking ? (
+        <div role="group" aria-label="Confirm registering the M-Pesa URLs" className="rounded-tile bg-amber-500/10 px-4 py-3 flex flex-col gap-3">
+          <p className="text-sm text-ink">Register the backend&apos;s Paybill URLs with Safaricom now? This replaces any URLs registered before.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              loading={register.isPending}
+              disabled={register.isPending}
+              onClick={() => register.mutate(undefined, { onSettled: () => setAsking(false) })}
+            >
+              Register now
+            </Button>
+            <Button size="sm" variant="outline" disabled={register.isPending} onClick={() => setAsking(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button className="self-start" onClick={() => { register.reset(); setAsking(true); }}>
+          <Link2 size={15} aria-hidden="true" /> Register M-Pesa URLs
+        </Button>
+      )}
+
+      {register.isSuccess && (
+        <div role="status" className="rounded-tile bg-emerald-500/10 px-4 py-3 text-sm text-ink flex flex-col gap-2">
+          <p className="font-semibold inline-flex items-center gap-2">
+            <CheckCircle2 size={15} className="text-emerald-600" aria-hidden="true" /> Sent to Safaricom
+          </p>
+          {reply.length > 0 && (
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 break-words">
+              {reply.map(([key, value]) => (
+                <React.Fragment key={key}>
+                  <dt className="text-muted">{key}</dt>
+                  <dd className="min-w-0">{String(value)}</dd>
+                </React.Fragment>
+              ))}
+            </dl>
+          )}
+        </div>
       )}
     </Card>
   );

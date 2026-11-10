@@ -4,8 +4,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../mocks/server';
 import OverstayPaymentModal from './OverstayPaymentModal';
 import { isPaymentDoneMessage, notifyPaymentDone, PESAPAL_DONE } from '../../lib/pesapalFrame';
+
+const BASE = `${import.meta.env.VITE_API_BASE_URL}/api/v1`;
 
 beforeEach(() => {
   window.matchMedia = window.matchMedia || (() => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
@@ -13,15 +18,21 @@ beforeEach(() => {
 
 describe('paying an overstay in a dialog', () => {
   it("shows Pesapal's page in the dialog, and closes with a thank-you once the frame says it's finished", async () => {
+    const user = userEvent.setup();
     const onClose = vi.fn();
+    server.use(http.post(`${BASE}/payments/pesapal/bookings/b1/overstay-checkout`, () => HttpResponse.json({ iframeUrl: 'https://pay.pesapal.com/overstay?b=b1' })));
     render(
       <QueryClientProvider client={new QueryClient()}>
         <Toaster />
-        <OverstayPaymentModal url="https://pay.pesapal.com/overstay?b=b1" booking={{ id: 'b1', overstayAmount: 3000 }} onClose={onClose} />
+        <OverstayPaymentModal isOpen booking={{ id: 'b1', overstayAmount: 3000 }} onClose={onClose} />
       </QueryClientProvider>
     );
     expect(screen.getByRole('dialog', { name: 'Pay overstay KES 3,000' })).toBeInTheDocument();
-    expect(screen.getByTitle('Pesapal secure payment')).toHaveAttribute('src', 'https://pay.pesapal.com/overstay?b=b1');
+    // M-Pesa is offered first.
+    expect(screen.getByRole('radio', { name: /m-pesa/i })).toHaveAttribute('aria-checked', 'true');
+    await user.click(screen.getByRole('radio', { name: /card & other/i }));
+    await user.click(screen.getByRole('button', { name: /continue to pesapal/i }));
+    expect(await screen.findByTitle('Pesapal secure payment')).toHaveAttribute('src', 'https://pay.pesapal.com/overstay?b=b1');
 
     act(() => { window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data: { type: PESAPAL_DONE } })); });
     expect(onClose).toHaveBeenCalledTimes(1);

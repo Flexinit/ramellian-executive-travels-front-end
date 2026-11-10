@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { apiGet, apiPut } from '../lib/api';
+import { apiGet, apiPost, apiPut } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
 import { useAuthStore } from '../store/authStore';
 import { socialLink, whatsappLink } from '../seo/seoConfig';
@@ -78,6 +78,19 @@ export function useToggleBotAssistant() {
       toast.success(enabled ? 'The assistant is on.' : 'The assistant is off.');
     },
     onError: (error) => toast.error(apiErrorMessage(error, "Couldn't change the assistant setting.")),
+  });
+}
+
+/**
+ * Registers the M-Pesa Paybill (C2B) callback addresses with Safaricom (admin only) —
+ * `POST /payments/mpesa/c2b/register` (live spec 2026-11-10). Takes nothing; the backend sends its own validation and
+ * confirmation URLs and answers with Safaricom's reply as text fields (e.g. `ResponseDescription`), shown as they come.
+ * No toast on success: the page shows the reply.
+ */
+export function useRegisterMpesaUrls() {
+  return useMutation({
+    mutationFn: () => apiPost('/payments/mpesa/c2b/register'),
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't register the M-Pesa URLs with Safaricom.")),
   });
 }
 

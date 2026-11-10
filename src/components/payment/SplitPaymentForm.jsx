@@ -5,7 +5,7 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import { splitEqually } from '../../hooks/useSplitPayment';
 import MpesaLogo from './MpesaLogo';
-import { normalizePhone } from '../../lib/phone';
+import { mpesaNumber } from '../../lib/phone';
 import { formatCurrency } from '../../lib/utils';
 
 const MAX_PAYERS = 10;
@@ -19,12 +19,6 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 let nextId = 1;
 const blank = (over = {}) => ({ id: nextId++, name: '', phone: '', email: '', amount: '', ...over });
-
-/** A Kenyan number as Safaricom writes it (+2547…), or null — only a Kenyan line can get an M-Pesa prompt. */
-function mpesaNumber(input) {
-  const n = normalizePhone(input);
-  return n && n.startsWith('+254') ? n : null;
-}
 
 /**
  * Who pays what, for a split payment (useSplitPayment.js): the renter first (their own details filled in), then each

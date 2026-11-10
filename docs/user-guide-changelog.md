@@ -3,6 +3,14 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-10 (Overstay by M-Pesa; register M-Pesa URLs)
+
+- **Added:** **Pay overstay** now offers **M-Pesa** (a prompt to your phone, with the same one-minute countdown as a
+  booking payment) as well as **Card & other** (Pesapal).
+- **Added:** a paid overstay shows **Overstay paid** on the booking, read from the backend's new overstay payment status.
+- **Added (administrators):** **Platform Settings → M-Pesa → Register M-Pesa URLs**, which registers the Paybill
+  payment URLs with Safaricom and shows the reply.
+
 ## 2026-11-05 (M-Pesa: only success ends the minute; I've completed the payment)
 
 - **Fixed:** **Payment failed** could still show within seconds of sending a prompt. During the prompt's minute the page

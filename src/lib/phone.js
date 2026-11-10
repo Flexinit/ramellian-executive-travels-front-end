@@ -36,6 +36,12 @@ export function isValidPhone(input) {
   return normalizePhone(input) !== null;
 }
 
+/** A Kenyan number as Safaricom writes it (+2547…), or null — only a Kenyan line can get an M-Pesa prompt. */
+export function mpesaNumber(input) {
+  const n = normalizePhone(input);
+  return n && n.startsWith('+254') ? n : null;
+}
+
 /**
  * The form field for a required phone number: checked with `normalizePhone`, and handed to the form's submit
  * already in the standard `+254…` form.

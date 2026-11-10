@@ -54,7 +54,7 @@ import CircularCountdown from '../ui/CircularCountdown';
  * short. When it's up, the result: not received, or failed (`failed`), with **Try again**, **I've completed the payment**
  * (`onConfirmPaid` — checks again for a little while, for a confirmation running late) and **Use a different number**.
  */
-function MpesaPromptWait({ phone, promptedAt, failed, confirming, confirmedNothing, onConfirmPaid, onRetry, onRecheck, onChangeNumber, retrying }) {
+export function MpesaPromptWait({ phone, promptedAt, failed, confirming, confirmedNothing, onConfirmPaid, onRetry, onRecheck, onChangeNumber, retrying }) {
   // Not knowing when the prompt went out (one from before this countdown existed) counts as timed out — the countdown
   // never restarts by itself; only **Try again** (a new prompt, a new `promptedAt`) starts another.
   const overAt = promptedAt ? promptedAt + MPESA_PROMPT_SECONDS * 1000 : 0;

@@ -533,9 +533,12 @@ verifying your email (which signs you in), and picks up where you left off.
    places stay the same, and the price follows the new car's daily rate. The car's owner can do the same from Fleet
    Bookings (choosing from their own cars), and administrators from All Bookings (any approved car).
    **Late return:** if a car came back late, the booking shows the overstay charge with **Pay overstay** (in its row on
-   My Bookings and on its own page), which opens Pesapal's payment page in a box on the same page. Once you've finished
-   paying, the button becomes **Overstay payment being confirmed**, so a second click doesn't charge you twice; **Didn't
-   go through? Pay again** is there if it failed. The file icon next to **Receipt** downloads the official receipt as a PDF.
+   My Bookings and on its own page). It opens a box with two ways to pay: **M-Pesa** (enter your M-Pesa number, press
+   **Send M-Pesa prompt** and enter your PIN on your phone within the minute; the box says **Overstay paid** as soon as
+   it's in, or offers **Try again**, **I've completed the payment** and **Use a different number**) or **Card & other**
+   (**Continue to Pesapal** opens Pesapal's payment page in the same box). Once it's paid, the booking shows **Overstay
+   paid**. While a payment is still being confirmed it shows **Overstay payment being confirmed** instead, so a second
+   click doesn't charge you twice; **Didn't go through? Pay again** is there if it failed. The file icon next to **Receipt** downloads the official receipt as a PDF.
 11. **Cancel or review** — a booking that is still Pending or Confirmed has a **Cancel booking** button, both in
    its expanded row on My Bookings and on its own page. The confirmation checks the owner's cancellation
    policy first and tells you what to expect before you confirm: a full refund with enough notice, a reduced
@@ -966,10 +969,10 @@ your permissions" above): an item is only shown if your account holds the permis
   document handed in to staff; it's reviewed like any other.
 - **The assistant switch** hides the green chat button for everyone, visitors included, as soon as it's off (the
   button only appears once the setting has loaded, so it never flashes up).
-- **Platform Settings** (`/admin/settings`) — five tabs: **Fees & commission**, **Booking policy**, **Pickup
+- **Platform Settings** (`/admin/settings`) — six tabs: **Fees & commission**, **Booking policy**, **Pickup
   reminders** (the reminders the system sends before a pickup: on/off, to the renter, to the owner, and how many minutes
   before), **Contact & social** (phone, WhatsApp, email, website, address, Facebook, Instagram, X, TikTok — shown on the
-  Contact page and in the footer and given to search engines; an empty field is simply not shown) and **Assistant** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
+  Contact page and in the footer and given to search engines; an empty field is simply not shown) **Assistant** and **M-Pesa** (the tab you're on is kept in the address, e.g. `/admin/settings?tab=policy`). The commission rate (as a percentage) added on top of a vehicle's
   own daily rate on every booking. This is the same rate shown to renters as the platform fee on their price
   quote and baked into every booking going forward; changing it here does not change the amount already
   charged on a booking that already exists. Next to it, **Fees and charges** (it opens and closes from its heading, which says how many are on): each charge
@@ -987,6 +990,9 @@ your permissions" above): an item is only shown if your account holds the permis
   doesn't change. **Save settings** saves all of them together.
   The **Assistant** card turns the in-app chat assistant on or off for everyone — **Turn the assistant off** /
   **Turn the assistant on**; its badge shows which it is now.
+  The **M-Pesa** tab has **Register M-Pesa URLs**: it tells Safaricom where to send payments made straight to the
+  Paybill. Do it once when the Paybill is set up, and again if the backend's web address changes (payments by M-Pesa
+  prompt work without it). It asks first (**Register now** / **Cancel**), then shows Safaricom's reply.
   It also holds the **Standard booking policy**: the cancellation and date-moving rules for owners who haven't set their own.
 - **Insurance and vehicle papers.** **All Vehicles** has an **Insurance** column — *No insurance*, *Insured · no
   sticker* or *Insured · sticker* — and **View sticker** opens the sticker photo with an automatic **QR code

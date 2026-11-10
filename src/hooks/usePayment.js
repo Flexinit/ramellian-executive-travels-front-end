@@ -313,3 +313,41 @@ export function useOverstayCheckout() {
     onError: (error) => toast.error(error?.response?.data?.message || 'Could not start the overstay payment. Please try again.'),
   });
 }
+
+/**
+ * Pays a booking's overstay charge by M-Pesa prompt (STK push) — `POST /payments/mpesa/bookings/{bookingId}/overstay/checkout?phone=`
+ * → `PaymentCheckoutResponse` (live spec 2026-11-10). The result is read from the overstay status (`useOverstayStatus`).
+ * There's no overstay retry endpoint: **Try again** sends a new prompt through this same checkout.
+ */
+export function useMpesaOverstayCheckout() {
+  return useMutation({
+    mutationFn: ({ bookingId, phone }) =>
+      apiPost(`/payments/mpesa/bookings/${bookingId}/overstay/checkout?phone=${encodeURIComponent(String(phone).replace(/^\+/, ''))}`),
+    onError: (error) => toast.error(error?.response?.data?.message || 'Could not send the M-Pesa prompt. Please try again.'),
+  });
+}
+
+export const overstayStatusKey = (bookingId) => ['overstay-status', bookingId];
+
+/**
+ * A booking's overstay payment — `GET /payments/mpesa/bookings/{bookingId}/overstay/status` → `PaymentStatusResponse`
+ * (live spec 2026-11-10). A 404 means no overstay payment has been started; it isn't retried. While `pollUntil` (ms) is
+ * ahead — an M-Pesa prompt is open on the renter's phone — it's checked every `PAYMENT_POLL_INTERVAL_MS` until it's
+ * SUCCESSFUL (or FAILED/INVALID, once `holdFailedUntil` has passed: a new prompt can still read as the last one's FAILED).
+ */
+export function useOverstayStatus(bookingId, { enabled = true, pollUntil = 0, holdFailedUntil = 0 } = {}) {
+  return useQuery({
+    queryKey: overstayStatusKey(bookingId),
+    queryFn: () => apiGet(`/payments/mpesa/bookings/${bookingId}/overstay/status`),
+    enabled: enabled && !!bookingId,
+    retry: false,
+    refetchOnWindowFocus: pollUntil > 0 ? 'always' : false,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === PAYMENT_STATUSES.SUCCESSFUL) return false;
+      const failed = status === PAYMENT_STATUSES.FAILED || status === PAYMENT_STATUSES.INVALID;
+      if (failed && Date.now() >= holdFailedUntil) return false;
+      return Date.now() < pollUntil ? PAYMENT_POLL_INTERVAL_MS : false;
+    },
+  });
+}

@@ -1662,3 +1662,23 @@ otherwise the portal keeps the countdown and keeps checking until the minute is 
 
 **Ask.** Set the payment back to `PENDING` when `/retry` (or a new `/checkout`) sends a prompt, and ideally add the
 attempt's `CheckoutRequestID` or an `updatedAt` to `PaymentStatusResponse`, so a result can be matched to its prompt.
+
+## 64. Overstay by M-Pesa, overstay status, C2B URL registration — consumed 2026-11-10
+
+Checked the live production spec (`carrentalsapi.ramellianexecutivetravels.co.ke/v3/api-docs`, 2026-11-10):
+- **`POST /payments/mpesa/bookings/{bookingId}/overstay/checkout?phone=`**: **consumed.** **Pay overstay** offers
+  M-Pesa (first) and Pesapal. `phone` is sent as `2547XXXXXXXX`. There's no overstay retry endpoint, so **Try again**
+  calls this checkout again.
+- **`GET /payments/mpesa/bookings/{bookingId}/overstay/status`**: **consumed.** It's polled while an overstay prompt
+  is open, and read once on each booking with an overstay charge: SUCCESSFUL shows **Overstay paid**, PENDING shows "being
+  confirmed". This answers the overstay-status ask in items 62 and 61/62.
+- **`POST /payments/mpesa/c2b/register`**: **consumed** as **Platform Settings → M-Pesa → Register M-Pesa URLs**
+  (admin only). The response (a map of strings) is shown as returned.
+- The C2B validation/confirmation and B2C result/timeout endpoints are called by Safaricom, not the portal.
+
+**Please confirm:**
+- Does the overstay status also report an overstay paid through **Pesapal** (`.../pesapal/.../overstay-checkout`), or
+  only M-Pesa? The portal treats it as the overstay payment whichever way it was paid.
+- After an overstay is paid, does `overstayAmount` go back to 0? If a later, bigger overstay can follow a SUCCESSFUL
+  one, the status needs to tell them apart (e.g. its `amount`), or the portal will keep showing **Overstay paid**.
+- Does the overstay checkout return 409 when the overstay is already paid, or while a prompt is still PENDING?

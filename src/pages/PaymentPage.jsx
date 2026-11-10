@@ -25,7 +25,7 @@ import { useAuthStore } from '../store/authStore';
 import { splitIsClosed, splitIsPaid, splitTotal, useRetryContribution, useSplitPayment, useStartSplit } from '../hooks/useSplitPayment';
 import { usePlatformSettings } from '../hooks/usePlatformSettings';
 import { apiErrorMessage } from '../lib/apiError';
-import { normalizePhone } from '../lib/phone';
+import { mpesaNumber } from '../lib/phone';
 import { MPESA_CONFIRM_SECONDS, MPESA_PROMPT_SECONDS, PAYMENT_STATUSES } from '../lib/constants';
 import { calculateTotalPrice, isBookingUnfulfilled } from '../lib/utils';
 import { amountToPay } from '../lib/paymentTotal';
@@ -56,12 +56,6 @@ const METHODS = [
   { value: 'split', label: 'Split the cost', icon: SplitIcon },
   { value: 'pesapal', label: 'Card & other', icon: CreditCard },
 ];
-
-/** A Kenyan number as Safaricom writes it (+2547…), or null — an M-Pesa prompt can only go to a Kenyan line. */
-function mpesaNumber(input) {
-  const n = normalizePhone(input);
-  return n && n.startsWith('+254') ? n : null;
-}
 
 export default function PaymentPage() {
   const location = useLocation();

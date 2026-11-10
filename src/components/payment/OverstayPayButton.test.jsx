@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
@@ -38,6 +38,8 @@ describe('Pay overstay', () => {
     renderButton();
 
     await user.click(screen.getByRole('button', { name: /pay overstay kes 3,000/i }));
+    await user.click(screen.getByRole('radio', { name: /card & other/i }));
+    await user.click(screen.getByRole('button', { name: /continue to pesapal/i }));
     expect(await screen.findByTitle('Pesapal secure payment')).toHaveAttribute('src', 'https://pay.pesapal.com/overstay?b=b1');
     finishInFrame();
 
@@ -45,6 +47,8 @@ describe('Pay overstay', () => {
     expect(screen.queryByRole('button', { name: /pay overstay/i })).not.toBeInTheDocument();
     // A payment that didn't go through can still be paid again — on purpose, not by a stray click.
     await user.click(screen.getByRole('button', { name: /didn.t go through\? pay again/i }));
+    await user.click(screen.getByRole('radio', { name: /card & other/i }));
+    await user.click(screen.getByRole('button', { name: /continue to pesapal/i }));
     expect(await screen.findByTitle('Pesapal secure payment')).toBeInTheDocument();
     expect(charges).toBe(2);
   });
@@ -53,5 +57,48 @@ describe('Pay overstay', () => {
     sessionStorage.setItem('overstay-paid:b1', '3000');
     renderButton({ id: 'b1', overstayAmount: 4500 });
     expect(screen.getByRole('button', { name: /pay overstay kes 4,500/i })).toBeInTheDocument();
+  });
+
+  it('pays by M-Pesa prompt to the number given, and says so once the overstay status is SUCCESSFUL', async () => {
+    const user = userEvent.setup();
+    let phone;
+    let checkedOut = false;
+    server.use(
+      http.post(`${BASE}/payments/mpesa/bookings/b1/overstay/checkout`, ({ request }) => {
+        phone = new URL(request.url).searchParams.get('phone');
+        checkedOut = true;
+        return HttpResponse.json({ status: 'PENDING' });
+      }),
+      http.get(`${BASE}/payments/mpesa/bookings/b1/overstay/status`, () =>
+        checkedOut
+          ? HttpResponse.json({ bookingId: 'b1', chargeType: 'OVERSTAY', provider: 'MPESA', status: 'SUCCESSFUL' })
+          : HttpResponse.json({ message: 'Payment not found' }, { status: 404 })
+      )
+    );
+    renderButton();
+
+    await user.click(screen.getByRole('button', { name: /pay overstay kes 3,000/i }));
+    await user.type(screen.getByLabelText(/m-pesa phone number/i), '0712 345 678');
+    await user.click(screen.getByRole('button', { name: /send m-pesa prompt/i }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText('Overstay paid')).toBeInTheDocument();
+    expect(phone).toBe('254712345678');
+  });
+
+  it('refuses a number M-Pesa cannot prompt', async () => {
+    const user = userEvent.setup();
+    renderButton();
+    await user.click(screen.getByRole('button', { name: /pay overstay kes 3,000/i }));
+    await user.type(screen.getByLabelText(/m-pesa phone number/i), '12345');
+    await user.click(screen.getByRole('button', { name: /send m-pesa prompt/i }));
+    expect(await screen.findByText(/enter a kenyan m-pesa number/i)).toBeInTheDocument();
+  });
+
+  it('shows "Overstay paid" when the overstay status says it is, with no Pay button', async () => {
+    server.use(http.get(`${BASE}/payments/mpesa/bookings/b1/overstay/status`, () => HttpResponse.json({ status: 'SUCCESSFUL' })));
+    renderButton();
+    expect(await screen.findByText('Overstay paid')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /pay overstay/i })).not.toBeInTheDocument();
   });
 });

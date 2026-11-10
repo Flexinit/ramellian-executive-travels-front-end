@@ -369,4 +369,27 @@ describe('AdminPlatformSettingsPage', () => {
       pickupReminderEnabled: true, pickupReminderRenterEnabled: false, pickupReminderOwnerEnabled: true, pickupReminderLeadMinutes: 120, commissionRatePct: 2,
     }));
   });
+
+  it('registers the M-Pesa Paybill URLs with Safaricom only after asking, and shows the reply', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/platform-settings`, () => HttpResponse.json({ id: 's1', commissionRatePct: 1 })));
+    let calls = 0;
+    server.use(http.post(`${BASE}/payments/mpesa/c2b/register`, () => {
+      calls += 1;
+      return HttpResponse.json({ ResponseCode: '0', ResponseDescription: 'Success' });
+    }));
+    renderUi();
+
+    await user.click(screen.getByRole('tab', { name: /m-pesa/i }));
+    await user.click(screen.getByRole('button', { name: /register m-pesa urls/i }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(calls).toBe(0);
+
+    await user.click(screen.getByRole('button', { name: /register m-pesa urls/i }));
+    await user.click(screen.getByRole('button', { name: /register now/i }));
+    expect(await screen.findByText(/sent to safaricom/i)).toBeInTheDocument();
+    expect(screen.getByText('ResponseDescription')).toBeInTheDocument();
+    expect(screen.getByText('Success')).toBeInTheDocument();
+    expect(calls).toBe(1);
+  });
 });

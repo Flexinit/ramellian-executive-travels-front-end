@@ -361,6 +361,16 @@ export const paymentHandlers = [
   http.get(`${BASE}/payments/mpesa/bookings/:bookingId/status`, () =>
     HttpResponse.json({ status: 404, error: 'Not Found', message: 'Payment not found', fieldErrors: {} }, { status: 404 })
   ),
+  // No overstay payment started yet.
+  http.get(`${BASE}/payments/mpesa/bookings/:bookingId/overstay/status`, () =>
+    HttpResponse.json({ status: 404, error: 'Not Found', message: 'Payment not found', fieldErrors: {} }, { status: 404 })
+  ),
+  http.post(`${BASE}/payments/mpesa/bookings/:bookingId/overstay/checkout`, () =>
+    HttpResponse.json({ paymentId: 'mock-overstay-payment', provider: 'MPESA', status: 'PENDING' })
+  ),
+  http.post(`${BASE}/payments/mpesa/c2b/register`, () =>
+    HttpResponse.json({ ResponseCode: '0', ResponseDescription: 'Success' })
+  ),
 
   http.get(`${BASE}/payments/contracts/:contractId`, ({ params }) =>
     HttpResponse.json({
