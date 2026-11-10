@@ -39,22 +39,40 @@ export async function downloadContract(contractId, signed) {
   }
 }
 
-/** Stashes a freshly-drafted contract's id against its booking — see `sessionContractId` below. */
+/**
+ * Remembers a contract's id against its booking — see `sessionContractId` below. Kept in `localStorage` (and this
+ * tab's `sessionStorage`), so it survives a new tab, a pasted link or a closed tab on the same device; it used to be
+ * this tab only, and the signing page then couldn't find the contract anywhere else.
+ */
 export function stashContractId(bookingId, contractId) {
-  if (bookingId && contractId) sessionStorage.setItem(`contract:${bookingId}`, contractId);
+  if (!bookingId || !contractId) return;
+  for (const store of [sessionStorage, localStorage]) {
+    try {
+      store.setItem(`contract:${bookingId}`, contractId);
+    } catch {
+      // Storage full or blocked: the other one may still hold it.
+    }
+  }
 }
 
 /**
- * A contract's id for a booking, if this browser session has one — `BookingResponse` has no `contractId`
- * field (see docs/backend-requests.md item 13), so the only source is the `sessionStorage` stash
- * `useContractDraft` writes the moment a contract is first drafted. Only ever populated for a booking
- * whose contract was drafted in this same tab's session (closing the tab loses it — there's no backend
- * lookup by booking id to fall back on).
+ * A contract's id for a booking, if this browser has one — `BookingResponse` has no `contractId` field and there's
+ * no lookup by booking (docs/backend-requests.md item 13), so the only source is what `stashContractId` remembered
+ * when the contract was drafted, accepted, or opened from its notification (`/contracts/{id}/sign`) on this device.
  * @param {string} bookingId
  * @returns {string|null}
  */
 export function sessionContractId(bookingId) {
-  return (bookingId && sessionStorage.getItem(`contract:${bookingId}`)) || null;
+  if (!bookingId) return null;
+  for (const store of [sessionStorage, localStorage]) {
+    try {
+      const id = store.getItem(`contract:${bookingId}`);
+      if (id) return id;
+    } catch {
+      // Blocked storage: try the other.
+    }
+  }
+  return null;
 }
 
 /**

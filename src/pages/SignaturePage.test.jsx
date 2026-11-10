@@ -50,12 +50,12 @@ function LocationProbe() {
   return <p data-testid="where">{pathname}</p>;
 }
 
-function renderAt(bookingId = 'b1', vehicleId = 'v1') {
+function renderAt(bookingId = 'b1', vehicleId = 'v1', { withState = true } = {}) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: `/book/${vehicleId}/sign`, state: { bookingId } }]}>
+      <MemoryRouter initialEntries={[{ pathname: `/book/${vehicleId}/sign`, state: withState ? { bookingId } : null }]}>
         <LocationProbe />
         <Routes>
           <Route path="/book/:vehicleId/sign" element={<SignaturePage />} />
@@ -75,7 +75,10 @@ function serveBooking(overrides = {}) {
   server.use(http.get(`${BASE}/bookings/:id`, ({ params }) => HttpResponse.json({ id: params.id, status: 'CONFIRMED', ...overrides })));
 }
 
-afterEach(() => sessionStorage.clear());
+afterEach(() => {
+  sessionStorage.clear();
+  localStorage.clear();
+});
 
 describe('SignaturePage — a booking that no longer holds', () => {
   it('shows the contract and signature pad for a bookable booking', async () => {
@@ -96,12 +99,30 @@ describe('SignaturePage — a booking that no longer holds', () => {
     expect(screen.queryByRole('button', { name: /submit signature/i })).not.toBeInTheDocument();
   });
 
-  it("can't be reached at all if the contract id was never stashed (e.g. a stale link, or reading `booking.contractId`, which the real backend never sends)", async () => {
+  it("says where to open it when this device doesn't know the contract (never reads `booking.contractId`, which the real backend never sends)", async () => {
     serveBooking();
     renderAt();
 
-    expect(await screen.findByText(/could not load your contract/i)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /open this contract from where it started/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /submit signature/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('SignaturePage — opened from a pasted link or a new tab (production, 2026-11-10)', () => {
+  it('reads a booking id in the address as the booking, and finds the contract this device remembered in another tab', async () => {
+    serveBooking();
+    stashContractId('b-pasted', 'c-pasted');
+    sessionStorage.clear(); // a new tab: only localStorage still has it
+    renderAt('ignored', 'b-pasted', { withState: false });
+
+    expect(await submitSignatureButton()).toBeInTheDocument();
+  });
+
+  it("says it can't find the booking when the address is neither a known vehicle nor a booking", async () => {
+    server.use(http.get(`${BASE}/bookings/:id`, () => HttpResponse.json({ message: 'Booking not found' }, { status: 404 })));
+    renderAt('ignored', 'nope', { withState: false });
+
+    expect(await screen.findByText(/couldn't find which booking this contract is for/i)).toBeInTheDocument();
   });
 });
 

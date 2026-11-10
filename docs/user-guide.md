@@ -506,7 +506,7 @@ verifying your email (which signs you in), and picks up where you left off.
    (vehicle, dates, status, cost and so on, each labelled) instead of a table row; the admin **Users**, **All
    Vehicles** and **Audit Log** lists do the same. A booking whose contract you left
    unsigned also gets a **Sign contract** button
-   here, back to the signature pad, as long as this is the same browser session that drafted it. Each row has a
+   here, back to the signature pad, on the same device the contract was drafted, accepted or opened from its notification (any tab). On another device, the signing page says to open the contract from its notification instead. Each row has a
    **View Details** button (the
    row itself is also clickable) that expands it in place — no separate page — with a booking reference, the
    vehicle's pickup location and registration number, the owner's email, exact pickup and drop-off times,

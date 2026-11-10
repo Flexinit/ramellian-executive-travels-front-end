@@ -1719,3 +1719,17 @@ lists (there's no other admin endpoint that lists every booking), so the other 6
 **Request:** an admin list of every booking, whatever its status, e.g. `GET /admin/bookings?status=&page=&size=&sort=`
 returning a Spring page of `BookingResponse`, like `/admin/payment-transactions`. Until then, please put every
 booking in one of the report's lists, or add a list for the rest (e.g. `other`). Which statuses are the 6 missing ones?
+
+## 67. Still needed: a booking's contract id (item 13) — seen on production 2026-11-10
+
+**Seen.** `/book/cd1a9ac5-…/sign` (a CONFIRMED booking) opened in a new tab couldn't find the booking or its contract:
+the booking's `GET /bookings/{id}` answers 200, but the portal can't get from the booking to its contract. `BookingResponse`
+still has no `contractId`, and there's still no lookup by booking (item 13), so only the browser that drafted, accepted
+or opened the contract from its notification knows the id.
+
+**Portal (done).** The signing page reads a booking id in the address. The booking→contract link is now kept in
+`localStorage`, so it survives new tabs on the same device. On any other device the page says where to open the contract.
+
+**Ask (again).** Add `contractId` to `BookingResponse`, or `GET /payments/bookings/{bookingId}/contract` returning the
+`ContractResponse`. That's the only way a renter or owner can sign from a second device, and it would also show the
+contract downloads on every booking page. Also, is the draft endpoint idempotent yet (item 19)?

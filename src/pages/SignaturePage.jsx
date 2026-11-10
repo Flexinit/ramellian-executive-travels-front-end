@@ -21,19 +21,21 @@ import { sessionContractId } from '../lib/contracts';
 import { isBookingUnfulfilled } from '../lib/utils';
 
 /**
- * Renders the (now-paid) contract plus a signature pad. `contractId` comes from sessionStorage
- * (`contract:${bookingId}`, stashed by `useContractDraft` when the contract was first drafted) — the
- * live backend's `BookingResponse` has no `contractId` field (confirmed against the swagger spec; the
- * `booking?.contractId` this used to read was always `undefined`, which made this page permanently
- * unreachable — see docs/backend-requests.md item 13), so the booking record itself can't supply it.
+ * Renders the (now-paid) contract plus a signature pad. `contractId` comes from what this browser remembered
+ * (`sessionContractId`: stashed when the contract was drafted, accepted or opened from its notification) — the
+ * live backend's `BookingResponse` has no `contractId` field and there's no lookup by booking
+ * (docs/backend-requests.md item 13), so the booking record itself can't supply it.
  */
 const SIGNATURES_ID = 'contract-signatures';
 
 export default function SignaturePage() {
-  const { vehicleId } = useParams();
+  // The address holds a vehicle (the booking flow, My Bookings) or a booking (a contract notification, a group's next
+  // contract, a pasted link). The booking is the one the link brought, the one this tab booked for that vehicle, or
+  // else the address itself, read as a booking — so the page also opens in a new tab or on another device.
+  const { vehicleId: idInAddress } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const bookingId = location.state?.bookingId || sessionStorage.getItem(`booking:${vehicleId}`);
+  const bookingId = location.state?.bookingId || sessionStorage.getItem(`booking:${idInAddress}`) || idInAddress;
   // "I have read and understood this agreement" comes first; only then does the signature pad appear, in the
   // renter's place in the contract's Signatures section, and "Sign" takes them straight there.
   const [confirmedRead, setConfirmedRead] = useState(false);
@@ -50,8 +52,9 @@ export default function SignaturePage() {
     section?.querySelector('canvas')?.focus?.();
   }
 
-  const { data: booking, isLoading: bookingLoading, isError: bookingError } = useBooking(bookingId, { staleTime: 0 });
+  const { data: booking, isLoading: bookingLoading, isError: bookingError } = useBooking(bookingId, { staleTime: 0, retry: false });
   const contractId = sessionContractId(bookingId) || booking?.contractId;
+  const vehicleId = booking?.vehicleId || idInAddress;
   const { data: contract, isLoading: contractLoading, isError: contractError } = useContract(contractId);
   // The template's {{fields}} filled in with this booking's details — the same as on the review page.
   const contractText = useFilledContract(bookingId, contract?.contractText, contract?.acceptedAt);
@@ -75,7 +78,31 @@ export default function SignaturePage() {
     );
   }
 
-  if (bookingError || contractError || !contract) {
+  if (bookingError) {
+    return (
+      <PageWrapper className="max-w-lg mx-auto min-h-[60vh] flex items-center justify-center">
+        <ErrorBanner message="We couldn't find which booking this contract is for." />
+      </PageWrapper>
+    );
+  }
+
+  // The booking has no contract id and there's no lookup by booking (docs/backend-requests.md item 13): only a device
+  // that drafted, accepted or opened this contract knows it. Say where it can be opened rather than "could not load".
+  if (!contractId) {
+    return (
+      <PageWrapper className="max-w-lg mx-auto min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center">
+        <PageTitle title="Sign Contract" />
+        <h1 className="font-heading text-ink text-xl font-bold">Open this contract from where it started</h1>
+        <p className="text-muted text-sm">
+          This device doesn&apos;t know this booking&apos;s contract yet. Open it from the contract notification, or on
+          the device where you made the booking, and it will open here too from then on.
+        </p>
+        <BackLink to="/dashboard/bookings" label="My Bookings" />
+      </PageWrapper>
+    );
+  }
+
+  if (contractError || !contract) {
     return (
       <PageWrapper>
         <ErrorBanner message="Could not load your contract." />

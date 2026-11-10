@@ -3,6 +3,14 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-10 (Signing a contract from a link or a new tab)
+
+- **Fixed:** opening a contract's signing page from a pasted link or in a new tab
+  (`/book/{booking}/sign`) said "We couldn't find which booking this contract is for". It now finds the booking, and
+  the contract too on any tab of the device where it was drafted, accepted or opened from its notification.
+- **Changed:** on a device that has never seen the contract, the page says to open it from the contract notification
+  or the device where the booking was made, instead of "Could not load your contract".
+
 ## 2026-11-10 (All Bookings after a new release)
 
 - **Fixed:** opening a page (e.g. All Bookings) in a tab left open from before a new release showed **Something went
