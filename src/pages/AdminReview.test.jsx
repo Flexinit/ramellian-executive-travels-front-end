@@ -257,6 +257,23 @@ describe('All Bookings and Reports (built from the admin report)', () => {
     expect(within(screen.getAllByRole('row')[1]).getByText('Cancelled')).toBeInTheDocument();
   });
 
+  it('says how many bookings the report counts but does not list (production: 14 counted, 8 listed)', async () => {
+    server.use(
+      http.get(`${BASE}/bookings/reports/admin`, () =>
+        HttpResponse.json({ ...emptyReport, totalBookings: 5, upcoming: [BOOKING('b-1', 'CONFIRMED', '2026-10-01T09:00:00Z')] })
+      )
+    );
+    renderPage(<AdminBookingsPage />);
+    expect(await screen.findByText(/showing 1 of 5 bookings/i)).toBeInTheDocument();
+  });
+
+  it('says the bookings could not be loaded, with Try again, instead of an empty page', async () => {
+    server.use(http.get(`${BASE}/bookings/reports/admin`, () => HttpResponse.json({ message: 'boom' }, { status: 500 })));
+    renderPage(<AdminBookingsPage />);
+    expect(await screen.findByText(/could not load the bookings/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+  });
+
   it('shows the booking cost from estimatedAmount', async () => {
     renderPage(<AdminBookingsPage />);
     const rows = await screen.findAllByRole('row');

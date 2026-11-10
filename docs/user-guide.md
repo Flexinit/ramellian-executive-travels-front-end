@@ -800,7 +800,10 @@ your permissions" above): an item is only shown if your account holds the permis
   listed in its spec — Administrator hasn't been confirmed on a live account yet, and whether saving a role adds
   it or replaces the old one isn't documented either — so after saving, the list shows the roles the backend
   reports, and if the backend refuses a role its message is shown.
-- **All Bookings** (`/admin/bookings`, needs `BOOKING_MANAGE`) — every booking on the platform, newest first,
+- **All Bookings** (`/admin/bookings`, needs `BOOKING_MANAGE`) — every upcoming, active, completed, cancelled and
+  rejected booking on the platform, newest first. If the system counts more bookings than that (bookings in any other
+  state), a note says **Showing N of M bookings**. If the bookings can't be loaded, it says so with **Try again**.
+  Each booking comes
   with the same read-only **Vehicle Handover** record as Fleet Bookings (recording one is for the renter
   only — see renter step 10), and the same **Receipt** column as My/Fleet Bookings once a booking's been paid
   for. Status is the same

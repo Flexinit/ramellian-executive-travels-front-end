@@ -1,6 +1,7 @@
 import React from 'react';
 import { RefreshCcw } from 'lucide-react';
 import Button from '../ui/Button';
+import { isChunkLoadError, reloadForNewBuild } from '../../lib/staleBuild';
 
 /**
  * Catches render/lifecycle errors in its subtree so one broken page can't
@@ -15,16 +16,23 @@ export default class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, staleBuild: isChunkLoadError(error) };
   }
 
   componentDidCatch(error, info) {
     // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught an error:', error, info);
+    // The page's file is from before a deploy (lib/staleBuild.js): load the new build instead.
+    if (isChunkLoadError(error)) reloadForNewBuild();
   }
 
   handleReset = () => {
+    // A page file that failed to load stays failed until the page is loaded afresh (React.lazy keeps the failure).
+    if (this.state.staleBuild) {
+      window.location.reload();
+      return;
+    }
     this.setState({ hasError: false });
   };
 

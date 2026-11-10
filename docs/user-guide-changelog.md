@@ -3,6 +3,14 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-10 (All Bookings after a new release)
+
+- **Fixed:** opening a page (e.g. All Bookings) in a tab left open from before a new release showed **Something went
+  wrong**, and **Try Again** couldn't fix it. The portal now reloads itself once to pick up the new release, and Try
+  Again reloads the page.
+- **Added (administrators):** All Bookings says when it couldn't load the bookings (with **Try again**) instead of
+  showing an empty page, and notes **Showing N of M bookings** when some aren't listed.
+
 ## 2026-11-10 (Fixing a stuck M-Pesa payment)
 
 - **Added (administrators):** **Check with Safaricom** and **Set status** on an M-Pesa payment's details in Payment

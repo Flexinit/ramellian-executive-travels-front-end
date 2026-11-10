@@ -80,14 +80,15 @@ export function useOwnerBookings(options = {}) {
 }
 
 /**
- * Every booking on the platform (admin only), newest first, optionally only those with `status`.
+ * Every booking on the platform (admin only), newest first, optionally only those with `status`. Read from the admin
+ * report, which lists only its five outcome groups; `report` is the report itself, for its `totalBookings`.
  * @param {{ status?: string }} [filters]
  */
 export function useAllBookings({ status } = {}) {
   const query = useReports('admin');
   if (!query.data) return query;
   const all = reportBookings(query.data);
-  return { ...query, data: status ? all.filter((b) => b.status === status) : all };
+  return { ...query, report: query.data, data: status ? all.filter((b) => b.status === status) : all };
 }
 
 /** Assigns a chauffeur to a booking; refreshes the owner bookings list on success. */

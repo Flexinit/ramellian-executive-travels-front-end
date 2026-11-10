@@ -10,7 +10,10 @@ import PageLoader from './components/layout/PageLoader';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 import { queryClient } from './lib/queryClient';
 import { isInsideFrame, notifyPaymentDone } from './lib/pesapalFrame';
+import { listenForStaleBuild } from './lib/staleBuild';
 import './index.css';
+
+listenForStaleBuild();
 
 // Pesapal's callback landing inside the payment iframe (lib/pesapalFrame.js): tell the page around it the payment is
 // finished, and show only a line here — never a second copy of the whole portal inside the frame.

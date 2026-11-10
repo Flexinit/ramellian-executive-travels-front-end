@@ -1707,3 +1707,15 @@ Every other endpoint in that spec is already used, apart from:
   on ordinary M-Pesa payments for now.
 - Is the override recorded in the ledger (who changed it, when, from what), and does it trigger what a real callback
   would (contract step, owner payout)?
+
+## 66. A list of every booking for administrators — 2026-11-10
+
+**Seen on production** (2026-11-10, as the super admin): `GET /bookings/reports/admin` reports `totalBookings: 14`, but its
+five lists (`upcoming`, `active`, `completed`, `cancelled`, `rejected`) hold only 8. All Bookings is built from those
+lists (there's no other admin endpoint that lists every booking), so the other 6 never show.
+
+**Portal (done).** All Bookings says "Showing 8 of 14 bookings" and why.
+
+**Request:** an admin list of every booking, whatever its status, e.g. `GET /admin/bookings?status=&page=&size=&sort=`
+returning a Spring page of `BookingResponse`, like `/admin/payment-transactions`. Until then, please put every
+booking in one of the report's lists, or add a list for the rest (e.g. `other`). Which statuses are the 6 missing ones?
