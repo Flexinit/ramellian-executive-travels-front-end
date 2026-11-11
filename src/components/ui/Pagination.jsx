@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from './Button';
-import PageSizeSelect, { pageSizeOptions } from './PageSizeSelect';
+import PageSizeSelect from './PageSizeSelect';
 
 /** The page numbers to show: first, last, the current one and its neighbours, with `null` where numbers were skipped. */
 export function pageWindow(page, totalPages) {
@@ -16,8 +16,9 @@ export function pageWindow(page, totalPages) {
 }
 
 /**
- * Page controls for a list: "Showing 6–10 of 23", **Per page**, Previous / Next, and numbered pages. Renders nothing when
- * the list fits on one page even at the smallest size offered. The one page control for every list in the app:
+ * Page controls for a list: "Showing 6–10 of 23", **Per page**, Previous / Next, and numbered pages. Shown for every list
+ * that has anything in it, even one that fits on a single page (Previous / Next are then disabled), so every list
+ * visibly pages the same way; an empty list renders nothing. The one page control for every list in the app:
  *  - a list the backend returns whole: `const pager = usePagination(items, 10, resetKey)` → `pager.pageItems`, and
  *    `<Pagination {...pager.props} noun="refunds" />`;
  *  - a list the backend pages (a Spring `Page`): `const pager = useServerPagination(20, resetKey)` → send
@@ -34,8 +35,7 @@ export function pageWindow(page, totalPages) {
  * @param {number} [pageSize] @param {(size: number) => void} [onPageSize] @param {number} [defaultPageSize]
  */
 export default function Pagination({ page, totalPages, onPage, from, to, total, noun = 'items', pageSize, onPageSize, defaultPageSize }) {
-  const sizes = onPageSize ? pageSizeOptions(defaultPageSize ?? pageSize) : [];
-  if (totalPages <= 1 && !(sizes.length && total > sizes[0])) return null;
+  if (!total) return null;
 
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3">
@@ -44,42 +44,38 @@ export default function Pagination({ page, totalPages, onPage, from, to, total, 
       </p>
       <div className="flex flex-wrap items-center gap-2">
         {onPageSize && <PageSizeSelect value={pageSize} onChange={onPageSize} defaultSize={defaultPageSize} />}
-        {totalPages > 1 && (
-          <>
-            <Button size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
-              <ChevronLeft size={14} aria-hidden="true" />
-              Previous
-            </Button>
-            <ul className="hidden sm:flex items-center gap-1" aria-label="Pages">
-              {pageWindow(page, totalPages).map((n, i) =>
-                n === null ? (
-                  <li key={`gap-${i}`} aria-hidden="true" className="px-1 text-muted">
-                    …
-                  </li>
-                ) : n === page ? (
-                  <li key={n}>
-                    <span aria-current="page" aria-label={`Page ${n}, current page`} className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-accent px-2 text-sm font-semibold text-on-accent">
-                      {n}
-                    </span>
-                  </li>
-                ) : (
-                  <li key={n}>
-                    <Button size="sm" onClick={() => onPage(n)} aria-label={`Go to page ${n}`} className="!px-3">
-                      {n}
-                    </Button>
-                  </li>
-                )
-              )}
-            </ul>
-            <span className="text-sm text-muted sm:hidden">
-              Page {page} of {totalPages}
-            </span>
-            <Button size="sm" disabled={page >= totalPages} onClick={() => onPage(page + 1)} aria-label="Next page">
-              Next
-              <ChevronRight size={14} aria-hidden="true" />
-            </Button>
-          </>
-        )}
+        <Button size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)} aria-label="Previous page">
+          <ChevronLeft size={14} aria-hidden="true" />
+          <span className="hidden sm:inline">Previous</span>
+        </Button>
+        <ul className="hidden sm:flex items-center gap-1" aria-label="Pages">
+          {pageWindow(page, totalPages).map((n, i) =>
+            n === null ? (
+              <li key={`gap-${i}`} aria-hidden="true" className="px-1 text-muted">
+                …
+              </li>
+            ) : n === page ? (
+              <li key={n}>
+                <span aria-current="page" aria-label={`Page ${n}, current page`} className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-accent px-2 text-sm font-semibold text-on-accent">
+                  {n}
+                </span>
+              </li>
+            ) : (
+              <li key={n}>
+                <Button size="sm" onClick={() => onPage(n)} aria-label={`Go to page ${n}`} className="!px-3">
+                  {n}
+                </Button>
+              </li>
+            )
+          )}
+        </ul>
+        <span className="text-sm text-muted sm:hidden">
+          Page {page} of {totalPages}
+        </span>
+        <Button size="sm" disabled={page >= totalPages} onClick={() => onPage(page + 1)} aria-label="Next page">
+          <span className="hidden sm:inline">Next</span>
+          <ChevronRight size={14} aria-hidden="true" />
+        </Button>
       </div>
     </nav>
   );

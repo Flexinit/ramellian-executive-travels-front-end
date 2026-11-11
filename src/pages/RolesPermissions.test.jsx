@@ -345,9 +345,11 @@ describe('roles in the user editor and on the user page', () => {
 describe('Pagination', () => {
   const setup = (props) => renderUi(<Pagination page={1} totalPages={5} onPage={() => {}} from={1} to={10} total={48} noun="things" {...props} />, '/');
 
-  it('renders nothing when there is one page', () => {
+  it('still shows the controls when there is one page, with Previous and Next disabled', () => {
     setup({ totalPages: 1 });
-    expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Pagination' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
   });
 
   it('says where you are and marks the current page', () => {

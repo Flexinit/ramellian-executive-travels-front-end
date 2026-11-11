@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Outlet, Navigate, useLocation, useParams } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText, Undo2, Landmark, Banknote, ArrowRightLeft } from 'lucide-react';
+import { LayoutDashboard, ListChecks, IdCard, UserCircle, Search, Car, BarChart3, FileText, Home, Plus, Bell, MessageSquare, ArrowLeftRight, Users, FileCheck2, ShieldCheck, Files, CarFront, KeyRound, CheckCircle2, XCircle, ScrollText, Megaphone, Warehouse, Percent, CalendarDays, Bot, CalendarClock, Wallet, ReceiptText, Undo2, Landmark, Banknote, ArrowRightLeft, ClipboardCheck } from 'lucide-react';
 import { applyTheme } from './lib/theme';
 
 import Navbar from './components/layout/Navbar';
@@ -62,6 +62,7 @@ const MyBookingsPage = lazy(() => import('./pages/MyBookingsPage'));
 const BookingDetailPage = lazy(() => import('./pages/BookingDetailPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const OwnerBookingsPage = lazy(() => import('./pages/OwnerBookingsPage'));
+const HandoversPage = lazy(() => import('./pages/HandoversPage'));
 const OwnerCalendarPage = lazy(() => import('./pages/OwnerCalendarPage'));
 const OwnerBookingDetailPage = lazy(() => import('./pages/OwnerBookingDetailPage'));
 const OwnerReportsPage = lazy(() => import('./pages/OwnerReportsPage'));
@@ -187,6 +188,7 @@ const RENTER_SIDEBAR_ITEMS = [
   { label: 'Overview', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Profile', to: '/dashboard/profile', icon: UserCircle },
   { label: 'My Bookings', to: '/dashboard/bookings', icon: ListChecks, permissions: [P.BOOKING_READ] },
+  { label: 'Handovers', to: '/dashboard/handovers', icon: ClipboardCheck, permissions: [P.BOOKING_READ] },
   { label: 'Messages', to: '/messages', icon: MessageSquare, badge: 'messages' },
   { label: 'Inbox', to: '/inbox', icon: Bell, badge: 'notifications' },
   { label: 'Assistant', to: '/assistant', icon: Bot },
@@ -198,6 +200,7 @@ const OWNER_SIDEBAR_ITEMS = [
   { label: 'Profile', to: '/dashboard/profile', icon: UserCircle },
   { label: 'My Vehicles', to: '/owner/vehicles', icon: Car, permissions: OWN_VEHICLES },
   { label: 'Fleet Bookings', to: '/owner/bookings', icon: ListChecks, permissions: FLEET_BOOKINGS },
+  { label: 'Handovers', to: '/owner/handovers', icon: ClipboardCheck, permissions: FLEET_BOOKINGS },
   { label: 'Booking Calendar', to: '/owner/calendar', icon: CalendarDays, permissions: FLEET_BOOKINGS },
   { label: 'Messages', to: '/messages', icon: MessageSquare, badge: 'messages' },
   { label: 'Inbox', to: '/inbox', icon: Bell, badge: 'notifications' },
@@ -260,9 +263,11 @@ const inGroup = (group, groupIcon, items) => items.map((item) => ({ ...item, gro
 
 /** A renter who is also an owner still needs their own bookings, which the owner menu doesn't otherwise list. */
 const MY_BOOKINGS_ITEM = { label: 'My Bookings', to: '/dashboard/bookings', icon: ListChecks, permissions: [P.BOOKING_READ] };
+const RENTER_HANDOVERS_ITEM = { label: 'My Handovers', to: '/dashboard/handovers', icon: ClipboardCheck, permissions: [P.BOOKING_READ] };
 /** An administrator who also owns vehicles still gets to their own fleet. */
 const MY_VEHICLES_ITEM = { label: 'My Vehicles', to: '/owner/vehicles', icon: Car, permissions: OWN_VEHICLES };
 const FLEET_BOOKINGS_ITEM = { label: 'Fleet Bookings', to: '/owner/bookings', icon: ListChecks, permissions: FLEET_BOOKINGS };
+const FLEET_HANDOVERS_ITEM = { label: 'Handovers', to: '/owner/handovers', icon: ClipboardCheck, permissions: FLEET_BOOKINGS };
 const CALENDAR_ITEM = { label: 'Booking Calendar', to: '/owner/calendar', icon: CalendarDays, permissions: FLEET_BOOKINGS };
 /** For an account that can be both: switch how the portal is being used, without logging in again. */
 const SWITCH_TO_OWNER = { label: 'Switch to Car Owner', to: '/owner', icon: ArrowLeftRight, switchTo: 'owner' };
@@ -306,7 +311,7 @@ function menuForRoles(roles, mode) {
       ...inGroup('Finances', Banknote, FINANCE_TOOLS),
       ...inGroup('Vehicles', Warehouse, VEHICLE_TOOLS),
       ...inGroup('Documents', Files, DOCUMENT_TOOLS),
-      ...(ownsVehicles ? inGroup('My Fleet', CarFront, [MY_VEHICLES_ITEM, FLEET_BOOKINGS_ITEM, CALENDAR_ITEM]) : []),
+      ...(ownsVehicles ? inGroup('My Fleet', CarFront, [MY_VEHICLES_ITEM, FLEET_BOOKINGS_ITEM, FLEET_HANDOVERS_ITEM, CALENDAR_ITEM]) : []),
       HOME_ITEM,
     ];
     return { items, heading: 'Admin Panel' };
@@ -333,8 +338,8 @@ function menuForRoles(roles, mode) {
       INBOX_ITEM,
       ASSISTANT_ITEM,
       byTo('/dashboard/documents'),
-      ...inGroup('My Fleet', CarFront, [byTo('/owner/vehicles'), byTo('/owner/bookings'), byTo('/owner/vehicles/new'), byTo('/owner/reports'), byTo('/owner/statements'), byTo('/owner/contracts'), byTo('/owner/policy')]),
-      ...inGroup('My Rentals', KeyRound, [MY_BOOKINGS_ITEM, byTo('/vehicles')]),
+      ...inGroup('My Fleet', CarFront, [byTo('/owner/vehicles'), byTo('/owner/bookings'), byTo('/owner/handovers'), byTo('/owner/vehicles/new'), byTo('/owner/reports'), byTo('/owner/statements'), byTo('/owner/contracts'), byTo('/owner/policy')]),
+      ...inGroup('My Rentals', KeyRound, [MY_BOOKINGS_ITEM, RENTER_HANDOVERS_ITEM, byTo('/vehicles')]),
       SWITCH_TO_RENTER,
       HOME_ITEM,
     ];
@@ -453,6 +458,7 @@ export default function App() {
               <Route path="/dashboard" element={page(<DashboardPage />)} />
               <Route path="/dashboard/bookings" element={page(<MyBookingsPage />)} />
               <Route path="/dashboard/bookings/:bookingId" element={page(<BookingDetailPage />)} />
+              <Route path="/dashboard/handovers" element={page(<HandoversPage side="renter" />)} />
               <Route path="/dashboard/documents" element={page(<DocumentsPage />)} />
               <Route path="/dashboard/profile" element={page(<ProfilePage />)} />
             </Route>
@@ -482,6 +488,7 @@ export default function App() {
             <Route element={<AccountLayout />}>
               <Route path="/owner/vehicles" element={page(<OwnerVehiclesPage />)} />
               <Route path="/owner/bookings" element={page(<OwnerBookingsPage />)} />
+              <Route path="/owner/handovers" element={page(<HandoversPage side="owner" />)} />
               <Route path="/owner/calendar" element={page(<OwnerCalendarPage />)} />
               <Route path="/owner/bookings/:bookingId" element={page(<OwnerBookingDetailPage />)} />
               <Route path="/owner/vehicles/new" element={page(<AddVehiclePage />)} />

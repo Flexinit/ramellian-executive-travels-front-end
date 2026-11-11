@@ -99,12 +99,24 @@ describe('SignaturePage — a booking that no longer holds', () => {
     expect(screen.queryByRole('button', { name: /submit signature/i })).not.toBeInTheDocument();
   });
 
-  it("says where to open it when this device doesn't know the contract (never reads `booking.contractId`, which the real backend never sends)", async () => {
+  it('says there is no contract to sign yet when the booking has none', async () => {
     serveBooking();
     renderAt();
 
-    expect(await screen.findByRole('heading', { name: /open this contract from where it started/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /no contract to sign yet/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /submit signature/i })).not.toBeInTheDocument();
+  });
+
+  it('finds the contract by booking on a device that never saw it (GET /payments/bookings/{id}/contract)', async () => {
+    serveBooking();
+    server.use(
+      http.get(`${BASE}/payments/bookings/:bookingId/contract`, ({ params }) =>
+        HttpResponse.json({ id: 'c-looked-up', bookingId: params.bookingId, contractText: 'Terms', signed: false })
+      )
+    );
+    renderAt();
+
+    expect(await submitSignatureButton()).toBeInTheDocument();
   });
 });
 

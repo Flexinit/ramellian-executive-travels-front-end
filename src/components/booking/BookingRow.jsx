@@ -12,7 +12,7 @@ import OverstayPayButton from '../payment/OverstayPayButton';
 import VehicleHandoverModal from './VehicleHandoverModal';
 import HandoverHistory from './HandoverHistory';
 import { useVehicle } from '../../hooks/useVehicles';
-import { sessionContractId } from '../../lib/contracts';
+import { useBookingContract, renterSignedAt } from '../../hooks/useContract';
 import { stripPhoneNumbers } from '../../lib/contactGuard';
 import { BOOKING_MODES, BOOKING_STATUSES } from '../../lib/constants';
 import { formatDateRange, formatDateTime, formatTime, formatDate, formatCurrency, calculateTotalPrice, canRecordPickup as pickupDateReached } from '../../lib/utils';
@@ -56,13 +56,10 @@ const RENTER_BASE_PATH = '/dashboard/bookings';
  * every booking that didn't happen to arrive with a `vehicleModel` already attached). `useVehicle` caches
  * by id, so a table where several rows share the same vehicle only fetches it once regardless.
  *
- * @param {boolean} [showContract] — adds a trailing Contract column with Download links, same
- *   session/`sessionContractId` limitation as the expanded detail panel's own copy of this — only for My
- *   Bookings, where it's actually useful (a renter checking they have their copy); not offered on the
- *   owner's or admin's table, who never drafted the contract in this browser to begin with.
- * @param {boolean} [showReceipt] — adds a trailing Receipt column (Preview/Download, see ReceiptActions) —
- *   unlike Contract, this has no same-session limitation (it's looked up from the backend's own payment
- *   status, not something only this browser happened to stash), so it's offered on every bookings table.
+ * @param {boolean} [showContract] — adds a trailing Contract column with Download links (the contract looked up by
+ *   booking) — only for My Bookings, where it's actually useful (a renter checking they have their copy).
+ * @param {boolean} [showReceipt] — adds a trailing Receipt column (Preview/Download, see ReceiptActions), offered on
+ *   every bookings table.
  */
 export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actionLabel, onAction, showContract = false, showReceipt = false }) {
   const [expanded, setExpanded] = useState(false);
@@ -91,15 +88,16 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
   // (rather than a doomed-to-404 request per row) for Pending/Cancelled/Rejected/Expired.
   const everPaid = [BOOKING_STATUSES.CONFIRMED, BOOKING_STATUSES.ACTIVE, BOOKING_STATUSES.COMPLETED].includes(booking.status);
   const detailColSpan = 4 + (onAction ? 1 : 0) + (showContract ? 1 : 0) + (showReceipt ? 1 : 0) + 1;
-  const contractId = sessionContractId(booking.id);
+  // Looked up by booking for the renter's own rows that can have one (Pending, once drafted at checkout, onwards); one
+  // request per row on the page shown, cached. Not on the owner's or admin's tables, which don't show it.
+  const { contractId, contract } = useBookingContract(booking.id, {
+    enabled: isRenterView && (booking.status === BOOKING_STATUSES.PENDING || everPaid),
+  });
   const photo = vehicle?.photos?.[0];
   const photoUrl = typeof photo === 'string' ? photo : photo?.url;
-  // A renter who left the flow after paying but before signing (closed the tab, switched device) has no
-  // other way back to the signature pad — `BookingResponse` doesn't expose whether it's been signed, or its
-  // contract's id, outside this same browser session (see docs/backend-requests.md item 13), so this can
-  // only ever work for the session that drafted it, same limitation the PDF download links above already
-  // have. Gated the same way `canCancel` is: no point offering it once the booking is done or gone.
-  const canResumeSigning = isRenterView && !!contractId && ['PENDING', 'CONFIRMED'].includes(booking.status);
+  // A renter who left the flow after paying but before signing (closed the tab, switched device) gets back to the
+  // signature pad from here — unless the contract shows they have signed. Gated the same way `canCancel` is.
+  const canResumeSigning = isRenterView && !!contractId && !(contract && renterSignedAt(contract)) && ['PENDING', 'CONFIRMED'].includes(booking.status);
 
   function toggle() {
     setExpanded((v) => !v);
@@ -261,7 +259,7 @@ export default function BookingRow({ booking, basePath = RENTER_BASE_PATH, actio
               {canResumeSigning && (
                 <Button
                   size="sm"
-                  to={`/book/${booking.vehicleId}/sign`}
+                  to={`/book/${booking.id}/sign`}
                   state={{ bookingId: booking.id }}
                   onClick={(e) => e.stopPropagation()}
                 >

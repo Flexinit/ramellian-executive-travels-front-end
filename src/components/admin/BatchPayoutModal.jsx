@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import Pagination from '../ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import Modal from '../ui/Modal';
 import Input from '../ui/Input';
 import Textarea from '../ui/Textarea';
@@ -39,6 +41,8 @@ export default function BatchPayoutModal({ kind, payouts: selected, onClose, onF
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
+  const selectedPages = usePagination(payouts, 10);
+  const failedPages = usePagination(result?.failed || [], 10);
   const count = payouts.length;
   const total = formatCurrency(payouts.reduce((sum, p) => sum + (Number(p.amount) || 0), 0));
   const noun = count === 1 ? 'payout' : 'payouts';
@@ -80,13 +84,14 @@ export default function BatchPayoutModal({ kind, payouts: selected, onClose, onF
                 {result.failed.length} didn&apos;t go through and {result.failed.length === 1 ? 'is' : 'are'} unchanged — fix and retry:
               </p>
               <ul className="flex flex-col gap-1 text-sm">
-                {result.failed.map(({ payout, message }) => (
+                {failedPages.pageItems.map(({ payout, message }) => (
                   <li key={payout.id} className="rounded-tile border border-line px-3 py-2">
                     <span className="text-ink font-medium">{payout.ownerName || payout.ownerEmail || 'Owner'}</span>
                     <span className="text-muted"> · {formatCurrency(payout.amount ?? 0)} · {message}</span>
                   </li>
                 ))}
               </ul>
+              <Pagination {...failedPages.props} noun="payouts" />
             </div>
           )}
           <div className="flex justify-end">
@@ -102,14 +107,15 @@ export default function BatchPayoutModal({ kind, payouts: selected, onClose, onF
               <>Send <strong>{count} {noun}</strong> totalling <strong>{total}</strong> through the payment provider now? Each shows as <strong>{PAYOUT_LABEL.PROCESSING}</strong> until the provider confirms it.</>
             )}
           </p>
-          <ul className="flex flex-col divide-y divide-line rounded-tile border border-line max-h-48 overflow-y-auto text-sm" aria-label="Selected payouts">
-            {payouts.map((p) => (
+          <ul className="flex flex-col divide-y divide-line rounded-tile border border-line text-sm" aria-label="Selected payouts">
+            {selectedPages.pageItems.map((p) => (
               <li key={p.id} className="flex justify-between gap-3 px-3 py-2">
                 <span className="text-ink truncate">{p.ownerName || p.ownerEmail || 'Owner'}{p.vehicleTitle ? <span className="text-muted"> · {p.vehicleTitle}</span> : null}</span>
                 <span className="text-ink font-medium tabular-nums shrink-0">{formatCurrency(p.amount ?? 0)}</span>
               </li>
             ))}
           </ul>
+          <Pagination {...selectedPages.props} noun="payouts" />
           {kind === 'manual' && (
             <Input
               label="Payment reference"

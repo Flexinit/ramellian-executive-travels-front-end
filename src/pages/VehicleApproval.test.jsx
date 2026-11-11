@@ -286,14 +286,15 @@ describe('AdminVehicleApprovalsPage', () => {
       await user.type(screen.getByLabelText('Search'), 'Car 1');
       // Car 10, 11, 12 match: a single page, from the start
       expect(await screen.findByRole('heading', { name: 'Car 10' })).toBeInTheDocument();
-      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toHaveTextContent('Showing 1–3 of 3');
     });
 
-    it('shows no page controls when everything fits on one page', async () => {
+    it('still shows the page controls when everything fits on one page, with Next disabled', async () => {
       server.use(http.get(`${BASE}/vehicles/admin/all`, () => HttpResponse.json(many.slice(0, 3))));
       renderUi(<AdminVehicleApprovalsPage />);
       await screen.findByRole('heading', { name: 'Car 01' });
-      expect(screen.queryByRole('navigation', { name: 'Pagination' })).not.toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: 'Pagination' })).toHaveTextContent('Showing 1–3 of 3');
+      expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
     });
   });
 

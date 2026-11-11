@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Clock, ShieldCheck, ArrowLeft, ArrowRight } from 'lucide-react';
 import Button from '../ui/Button';
+import { useAuthStore } from '../../store/authStore';
+import { useUiStore } from '../../store/uiStore';
 import { parseContract, inlineRuns, contractStages, onlyAvailable } from '../../lib/contractDocument';
 import { formatDateTime } from '../../lib/utils';
 
@@ -96,6 +99,53 @@ function SignatureBox({ role, name, signedAt, children }) {
   );
 }
 
+const NARROW = '(max-width: 1023px)';
+
+/** Whether the screen is a phone or tablet (below `lg`), following rotation and resizing. */
+function useNarrowScreen() {
+  const query = () => typeof window.matchMedia === 'function' && window.matchMedia(NARROW).matches;
+  const [narrow, setNarrow] = useState(query);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+    const list = window.matchMedia(NARROW);
+    const onChange = () => setNarrow(list.matches);
+    list.addEventListener?.('change', onChange);
+    return () => list.removeEventListener?.('change', onChange);
+  }, []);
+  return !!narrow;
+}
+
+/**
+ * The contract's Back / Next. `floating`: a bar floating along the bottom of the screen, above the phone tab bar, in
+ * the same place and look as the app's `FloatingActionBar` (and the chat button moves up out of its way); otherwise
+ * inline under the part, `sticky` at the bottom of the screen while reading it.
+ */
+function PartNav({ floating, sticky, children }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const setActionBarVisible = useUiStore((s) => s.setActionBarVisible);
+  useEffect(() => {
+    setActionBarVisible(floating);
+    return () => setActionBarVisible(false);
+  }, [floating, setActionBarVisible]);
+
+  if (floating) {
+    // On the page (not inside the contract), so a scrolling container or a modal around it can't pin it in place.
+    return createPortal(
+      <div role="region" aria-label="Contract parts" className={`fixed inset-x-0 z-[60] px-4 print:hidden ${isAuthenticated ? 'bottom-[5.5rem] md:bottom-4' : 'bottom-4'}`}>
+        <div className="mx-auto max-w-xl flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md px-4 py-3 shadow-lift">
+          {children}
+        </div>
+      </div>,
+      document.body
+    );
+  }
+  return (
+    <div className={`mt-4 -mx-6 sm:-mx-10 px-6 sm:px-10 py-3 flex items-center justify-between gap-3 bg-white border-t border-slate-200 print:hidden ${sticky ? 'sticky bottom-0 z-10 rounded-b-xl shadow-[0_-8px_16px_-12px_rgba(0,0,0,0.25)]' : ''}`}>
+      {children}
+    </div>
+  );
+}
+
 /**
  * A rental contract laid out as a document: the company's letterhead, the agreement's reference and date, its
  * sections and clauses, and a signature section where **both** the renter and the owner sign, each dated. It reads
@@ -136,6 +186,7 @@ export default function ContractDocument({ contractText, reference, agreementDat
   const at = Math.min(part, stages.length - 1);
   const atEnd = at === stages.length - 1;
   const topRef = useRef(null);
+  const narrow = useNarrowScreen();
   const onProgressRef = useRef(onProgress);
   onProgressRef.current = onProgress;
   useEffect(() => {
@@ -229,8 +280,10 @@ export default function ContractDocument({ contractText, reference, agreementDat
         ))}
 
         {staged && (
-          // Kept at the bottom of the screen while reading a part, so Next never needs scrolling to.
-          <div className={`mt-4 -mx-6 sm:-mx-10 px-6 sm:px-10 py-3 flex items-center justify-between gap-3 bg-white border-t border-slate-200 print:hidden ${atEnd ? '' : 'sticky bottom-0 z-10 rounded-b-xl shadow-[0_-8px_16px_-12px_rgba(0,0,0,0.25)]'}`}>
+          // Kept at the bottom of the screen while reading a part, so Next never needs scrolling to: floating above the
+          // tab bar on phones and tablets (PartNav), sticky under the part on a computer. The last part's Back sits inline,
+          // out of the way of the confirmation and signature below it.
+          <PartNav floating={narrow && !atEnd} sticky={!atEnd}>
             {at > 0 ? (
               <Button variant="dark" onClick={() => go(at - 1)}>
                 <ArrowLeft size={14} aria-hidden="true" /> Back
@@ -244,8 +297,10 @@ export default function ContractDocument({ contractText, reference, agreementDat
                 </Button>
               </div>
             )}
-          </div>
+          </PartNav>
         )}
+        {/* Room for the floating bar, so it never covers the end of the part. */}
+        {staged && narrow && !atEnd && <div aria-hidden="true" className="h-20" />}
       </div>
 
       <footer className="px-6 sm:px-10 py-2.5 border-t border-slate-100 text-[11.5px] text-slate-400 flex flex-wrap justify-between gap-2">

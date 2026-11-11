@@ -42,7 +42,8 @@ describe('BookingRow — resuming a signature left mid-session', () => {
     await user.click(screen.getByRole('button', { name: /view details/i }));
 
     const link = await screen.findByRole('link', { name: /sign contract/i });
-    expect(link).toHaveAttribute('href', '/book/v1/sign');
+    // The booking's own id, so the link also works opened in a new tab.
+    expect(link).toHaveAttribute('href', '/book/b1/sign');
   });
 
   it('does not offer it when this session never drafted a contract for the booking', async () => {

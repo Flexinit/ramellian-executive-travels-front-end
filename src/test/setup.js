@@ -18,6 +18,10 @@ expect.extend(matchers);
 // Extend vitest's expect with jest-axe matchers
 expect.extend(toHaveNoViolations);
 
+// jsdom has no object URLs; photo pickers (ShotPicker) preview a chosen file with one. A test that cares sets its own.
+if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test';
+if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
+
 // Recharts' <ResponsiveContainer> (BookingsChart) measures its container with a ResizeObserver and reads
 // its pixel size — neither exists in jsdom (no real layout engine), so every chart would otherwise render
 // at 0×0 and show nothing. A fixed nonzero size is enough for charts to actually render their content in

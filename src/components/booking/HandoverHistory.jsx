@@ -4,6 +4,7 @@ import { useHandovers } from '../../hooks/useVehicleHandover';
 import { FUEL_LEVEL_LABELS } from '../../lib/constants';
 import { formatDateTime } from '../../lib/utils';
 import { DetailList, DetailRow } from '../ui/DetailList';
+import AuthImage from '../vehicles/AuthImage';
 
 const TYPE_META = {
   PICKUP: { label: 'Pickup', icon: KeyRound },
@@ -11,7 +12,7 @@ const TYPE_META = {
 };
 
 /** One recorded handover (pickup or return) — everything the renter entered, read-only. */
-function HandoverRecord({ handover }) {
+export function HandoverRecord({ handover }) {
   const meta = TYPE_META[handover.type] || TYPE_META.PICKUP;
   const Icon = meta.icon;
 
@@ -34,6 +35,16 @@ function HandoverRecord({ handover }) {
           {handover.location}
         </DetailRow>
       </DetailList>
+
+      {/* The photo of the odometer taken at the handover — GET /handovers/{id}/odometer-photo, fetched with the token. */}
+      {handover.odometerPhotoFileName && (
+        <AuthImage
+          src={`/api/v1/handovers/${handover.id}/odometer-photo`}
+          alt={`Odometer at ${meta.label.toLowerCase()}`}
+          className="w-full max-w-xs h-40 rounded-xl object-cover border border-ink/10"
+          fallback={<p className="text-xs text-muted">The odometer photo couldn&apos;t be loaded.</p>}
+        />
+      )}
 
       {handover.conditionNotes && (
         <p className="text-sm text-muted">

@@ -42,4 +42,19 @@ describe('contract notifications (the owner is asked to sign)', () => {
     expect(notificationLink(n, { isOwner: true })).toBe('/contracts/c-1/sign');
     expect(notificationActionLabel(n, { isOwner: true })).toBe('Sign Contract');
   });
+
+  it('open it too when the sign request refers to the booking, by its type or its words', () => {
+    const both = { isOwner: true, isRenter: true };
+    const byType = { type: 'RENTER_SIGNED_CONTRACT', referenceType: 'BOOKING', referenceId: 'b1' };
+    const byWords = { type: 'BOOKING_UPDATE', title: 'Contract', message: 'The renter has signed. Please sign the contract too.', referenceType: 'BOOKING', referenceId: 'b1' };
+    for (const n of [byType, byWords]) {
+      expect(notificationLink(n, both)).toBe('/contracts/b1/sign');
+      expect(notificationActionLabel(n, both)).toBe('Sign Contract');
+    }
+  });
+
+  it('leave a booking notification that only says something was signed as a booking one', () => {
+    const n = { type: 'BOOKING_CONFIRMED', message: 'Your contract was signed.', referenceType: 'BOOKING', referenceId: 'b1' };
+    expect(notificationLink(n, { isRenter: true })).toBe('/dashboard/bookings/b1');
+  });
 });

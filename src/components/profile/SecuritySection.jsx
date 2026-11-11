@@ -12,6 +12,8 @@ import AuditLogDetailModal from '../admin/AuditLogDetailModal';
 import { useCurrentUser } from '../../hooks/useProfile';
 import { useChangePassword, useSetTwoFactor } from '../../hooks/useSecurity';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
+import { useServerPagination } from '../../hooks/usePagination';
+import Pagination from '../ui/Pagination';
 import { actionLabel, auditStatusVariant } from '../../lib/auditLog';
 import { isWhatsAppVerificationEnabled } from '../../lib/features';
 import { apiErrorMessage } from '../../lib/apiError';
@@ -120,7 +122,8 @@ function TwoFactor() {
  * its own, so when there's nothing to show (or it can't be read) it says so rather than leaving the tab blank.
  */
 function RecentActivity() {
-  const { data, isLoading, isError } = useAuditLogs('mine', { size: 5 });
+  const pager = useServerPagination(5);
+  const { data, isLoading, isError } = useAuditLogs('mine', pager.request);
   const [openId, setOpenId] = useState(null);
   const entries = Array.isArray(data?.content) ? data.content : [];
 
@@ -151,6 +154,7 @@ function RecentActivity() {
           ))}
         </ul>
       )}
+      {data && entries.length > 0 && <Pagination {...pager.propsFor(data)} noun="entries" />}
       <AuditLogDetailModal scope="mine" id={openId} onClose={() => setOpenId(null)} />
     </Card>
   );

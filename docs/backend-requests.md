@@ -291,6 +291,11 @@ than adding new API surface.
 
 ## 13. `BookingResponse` has no `contractId` — signing a contract was completely broken until worked around
 
+**Resolved 2026-11-11 (local spec):** `GET /payments/bookings/{bookingId}/contract` → `ContractResponse` is consumed
+(`useBookingContract`) on the renter and owner booking pages, My Bookings, the signing page and the owner's sign page.
+It answers 403 "You cannot access this contract" to an administrator (checked with the super admin); **ask:** allow
+administrators too, so All Bookings can show the contract downloads.
+
 **Why.** `SignaturePage.jsx` fetches the contract to sign via `GET /payments/contracts/{contractId}`, and
 previously read that id from `booking.contractId`. Confirmed against the live swagger spec: `BookingResponse` has
 no such field (its properties are `id`, `vehicleId`, `renterEmail`, `startTime`, `endTime`, `status`,
@@ -1013,6 +1018,10 @@ wanted, that needs a new backend endpoint — there's nothing to build against y
 
 ## 33. No way to attach a photo to a vehicle handover — confirmed against the live spec 2026-10-06
 
+**Resolved 2026-11-11 (local spec):** both handover endpoints accept an `odometerPhoto` part (the portal sends it,
+required in the form), `HandoverResponse` has `odometerPhotoFileName`, and `GET /handovers/{handoverId}/odometer-photo`
+serves it (shown in the handover history). The part is optional in the spec; **ask:** make it required on pickup.
+
 **Why.** Asked to let a renter upload photos alongside a pickup/return entry (real evidence of the vehicle's
 condition, next to the odometer/fuel/condition-notes/signature already captured). Re-checked both
 `POST /handovers/bookings/{bookingId}/pickup` and `.../dropoff` against the live spec: the `multipart/form-data`
@@ -1043,6 +1052,12 @@ dashboard photo showing the mileage and fuel level; it can't be recorded without
 
 The frontend will then require the photo in `VehicleHandoverForm` (camera capture on a phone, as the guided
 vehicle photos already do) and show it in `HandoverHistory`.
+
+**Update 2026-11-11 — portal side done, backend still missing.** `VehicleHandoverForm` now requires a photo of the
+odometer at pickup and return, and both requests already send it as the multipart part **`dashboardPhoto`** (beside
+`signature`). The live and local specs (checked 2026-11-10) still take only `signature`, so **the photo is dropped by the
+server today**. **Ask:** accept `dashboardPhoto` on both endpoints (required on pickup), store it, and return
+`dashboardPhotoUrl` on `HandoverResponse`; then the portal will show it in the handover history.
 
 ## 34. `BookingResponse` gained a `warnings` field — checkout no longer has to block on unapproved documents — confirmed against the live spec 2026-10-06
 
@@ -1722,6 +1737,8 @@ booking in one of the report's lists, or add a list for the rest (e.g. `other`).
 
 ## 67. Still needed: a booking's contract id (item 13) — seen on production 2026-11-10
 
+**Resolved 2026-11-11 (local spec):** see item 13. Still deploy it to production.
+
 **Seen.** `/book/cd1a9ac5-…/sign` (a CONFIRMED booking) opened in a new tab couldn't find the booking or its contract:
 the booking's `GET /bookings/{id}` answers 200, but the portal can't get from the booking to its contract. `BookingResponse`
 still has no `contractId`, and there's still no lookup by booking (item 13), so only the browser that drafted, accepted
@@ -1733,3 +1750,26 @@ or opened the contract from its notification knows the id.
 **Ask (again).** Add `contractId` to `BookingResponse`, or `GET /payments/bookings/{bookingId}/contract` returning the
 `ContractResponse`. That's the only way a renter or owner can sign from a second device, and it would also show the
 contract downloads on every booking page. Also, is the draft endpoint idempotent yet (item 19)?
+
+**Also (2026-11-11): the owner's "please sign" notification.** Owners report that its link doesn't open the signing
+page. The portal opens `/contracts/{referenceId}/sign` for a notification with `referenceType: "CONTRACT"`, and now
+also for a BOOKING notification whose type contains `CONTRACT`/`SIGN` or whose text says "sign". That page reads the
+id as a contract, or else as a booking. A booking id still can't reach the contract on the owner's device (no
+`contractId`, see above). **Ask:** send that notification with `referenceType: "CONTRACT"` and `referenceId` = the
+**contract id**, and if it also goes out by email, link to `https://<site>/contracts/{contractId}/sign`.
+
+## 68. A list of handovers across bookings — 2026-11-11
+
+**Built.** Renters and owners now have a **Handovers** page. The backend only lists handovers per booking
+(`GET /handovers/bookings/{bookingId}`), so the portal loads the person's bookings and then one request per
+Active/Completed booking. Fine for now, but it grows with every trip. **Ask:** `GET /handovers/mine` (renter) and
+`GET /handovers/owner` (owner), paged (`page`, `size`), newest first, returning `HandoverResponse` with `bookingId`.
+Also confirm an owner may read `GET /handovers/bookings/{bookingId}` for bookings on their own vehicles: not checked
+live, no owner test account.
+
+## 69. A renter can't read their own activity — `GET /audit-logs/mine` answers 403 — 2026-11-11
+
+**Seen (local backend, renter washioyafelix@gmail.com).** Profile → Security → **Recent activity** calls
+`GET /audit-logs/mine?page=0&size=5&sort=createdAt,desc` and gets 403, so the tab says "Your activity isn't
+available right now". **Ask:** let every signed-in person read their own entries (it is "mine"), without needing
+the admin audit permission.

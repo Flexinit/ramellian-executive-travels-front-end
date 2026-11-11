@@ -8,6 +8,8 @@ import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import EmptyState from '../components/ui/EmptyState';
 import Modal from '../components/ui/Modal';
@@ -92,6 +94,8 @@ export default function AdminRentalTermsPage() {
   const remove = useDeleteRentalTerm();
   const [editing, setEditing] = useState(null); // null | 'new' | term
   const [deleting, setDeleting] = useState(null);
+  // Paged in category order; each page shows its terms under their category headings.
+  const pages = usePagination(groupRentalTerms(terms).flatMap((g) => g.terms), 10);
 
   return (
     <PageWrapper className="max-w-4xl">
@@ -116,7 +120,8 @@ export default function AdminRentalTermsPage() {
         ) : terms.length === 0 ? (
           <EmptyState title="No rental terms yet" description="Add the first one — e.g. the minimum driver age, or what happens if the car is returned late." action={{ label: 'Add a term', onClick: () => setEditing('new') }} />
         ) : (
-          groupRentalTerms(terms).map(({ category, terms: list }) => (
+          <>
+          {groupRentalTerms(pages.pageItems).map(({ category, terms: list }) => (
             <section key={category} className="flex flex-col gap-3">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-brand-gold-deep">{category}</h2>
               {list.map((t) => (
@@ -139,7 +144,9 @@ export default function AdminRentalTermsPage() {
                 </Card>
               ))}
             </section>
-          ))
+          ))}
+          <Pagination {...pages.props} noun="terms" />
+          </>
         )}
       </div>
 

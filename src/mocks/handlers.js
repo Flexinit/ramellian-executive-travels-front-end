@@ -244,6 +244,9 @@ export const bookingHandlers = [
 
   // vehicle-handover-controller — confirmed against the live OpenAPI spec 2026-10-02 (docs/backend-requests.md item 22).
   http.get(`${BASE}/handovers/bookings/:bookingId`, () => HttpResponse.json([])),
+  http.get(`${BASE}/handovers/:handoverId/odometer-photo`, () =>
+    new HttpResponse(new Blob(['odo'], { type: 'image/jpeg' }), { headers: { 'Content-Type': 'image/jpeg' } })
+  ),
   http.post(`${BASE}/handovers/bookings/:bookingId/pickup`, ({ params }) =>
     HttpResponse.json({ id: 'ho-1', bookingId: params.bookingId, type: 'PICKUP', bookingStatus: 'ACTIVE' })
   ),
@@ -376,6 +379,11 @@ export const paymentHandlers = [
   ),
   http.post(`${BASE}/payments/mpesa/c2b/register`, () =>
     HttpResponse.json({ ResponseCode: '0', ResponseDescription: 'Success' })
+  ),
+
+  // A booking's contract (local spec 2026-11-11). By default none — a test that needs one serves it.
+  http.get(`${BASE}/payments/bookings/:bookingId/contract`, () =>
+    HttpResponse.json({ status: 404, message: 'Contract not found for booking' }, { status: 404 })
   ),
 
   http.get(`${BASE}/payments/contracts/:contractId`, ({ params }) =>

@@ -16,10 +16,10 @@ import ReviewForm from '../components/reviews/ReviewForm';
 import OwnerContractSigning from '../components/contract/OwnerContractSigning';
 import Card from '../components/ui/Card';
 import { useBooking } from '../hooks/useBookings';
+import { useBookingContract } from '../hooks/useContract';
 import { useVehicle } from '../hooks/useVehicles';
 import { formatDateRange, formatCurrency, calculateTotalPrice } from '../lib/utils';
 import { stripPhoneNumbers } from '../lib/contactGuard';
-import { sessionContractId } from '../lib/contracts';
 import { DetailList, DetailRow } from '../components/ui/DetailList';
 import ChangeVehicleModal, { canChangeVehicle } from '../components/booking/ChangeVehicleModal';
 import BookingPayoutCard from '../components/admin/BookingPayoutCard';
@@ -36,12 +36,9 @@ export default function OwnerBookingDetailPage() {
   const vehicleScope = useLocation().pathname.startsWith('/admin') ? 'admin' : 'owner';
   // Rating the renter, once the trip is over (POST /reviews/bookings/{id}/renter). Hidden once sent.
   const [renterReviewed, setRenterReviewed] = useState(false);
-  // `BookingResponse` has no `contractId` field (docs/backend-requests.md item 13) — this is only ever found
-  // for a contract drafted earlier in this same browser session (an owner/admin who just stepped through
-  // ContractPage themselves, or a renter's session on a shared device), same limitation BookingDetailPage's
-  // own copy of this has. An owner/admin opening a booking they didn't personally just draft has no way to
-  // find its contract id here until the backend adds one of the lookups that item asks for.
-  const contractId = sessionContractId(bookingId) || booking?.contractId;
+  // The booking's contract, looked up by booking: the owner can Read & sign and download it from any device. An
+  // administrator is refused that lookup, so only sees it when this device remembers the contract.
+  const { contractId } = useBookingContract(bookingId, { enabled: !!booking });
 
   if (isLoading) {
     return (

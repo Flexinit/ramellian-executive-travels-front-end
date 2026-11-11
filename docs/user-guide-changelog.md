@@ -3,6 +3,49 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-11 (Handovers list for renters and owners)
+
+- **Added:** a **Handovers** page in the left menu for renters and for owners (and owners who are administrators),
+  listing every booking with a recorded pickup or return: odometer and photo, fuel, condition, damage, who signed,
+  kilometres driven, and **View booking**. Paged like every other list.
+- **Fixed:** **Sign contract** on a booking in My Bookings now opens by the booking itself, so it also works in a
+  new tab.
+- **Changed:** on a phone the page controls show **Previous** / **Next** as arrows, so they fit on one line.
+
+## 2026-11-11 (Page controls on the remaining lists; contract Back / Next float on phones)
+
+- **Changed:** the shared page controls now also cover the admin **Rental Terms**, **Signed in recently** (it used
+  to stop at 10 and say "and N more"), Profile → Security **Recent activity** (it used to show only the latest 5),
+  the payouts in a batch payout and any that failed, and the messages an announcement couldn't send.
+- **Changed:** reading a contract on a phone or tablet, **Back** and **Next** now float along the bottom of the
+  screen, above the bottom menu, until the last part.
+
+## 2026-11-11 (Contracts found from the booking; odometer photo shown)
+
+- **Fixed:** a booking's contract is now found from the booking itself, so signing and the contract downloads work
+  on any device: the renter's **Sign contract** and signing page, the owner's **Read & sign** on their booking page,
+  and the owner's **Sign Contract** notification. **Sign contract** in My Bookings disappears once you have signed.
+- **Changed:** a booking with no contract yet now says **No contract to sign yet** instead of asking you to open it
+  from another device.
+- **Added:** the odometer photo taken at pickup and return is now saved and shows in the booking's **Vehicle
+  Handover** record.
+
+## 2026-11-11 (Odometer photo at pickup and return)
+
+- **Added:** **Record Pickup** and **Record Return** now require a **photo of the odometer** (the dashboard showing
+  the reading, and the fuel gauge if possible). On a phone, **Take photo** opens the back camera. The confirm button
+  stays disabled until the photo is attached.
+
+## 2026-11-11 (Page controls on every list; owner's Sign Contract notification)
+
+- **Changed:** the page controls ("Showing 1–9 of 9", **Per page**, Previous / Next) now show under every list that
+  has anything in it, including bookings, even when it fits on one page. They used to be hidden until a list was
+  longer than one page, so short lists looked unpaginated.
+- **Fixed:** the owner's "the renter has signed, please sign too" notification opened the booking page, which had no
+  way to sign. Its **Sign Contract** button now opens the contract's signing page even when the notification refers
+  to the booking rather than the contract. If that device has never opened the contract, the page says so and links
+  to the booking.
+
 ## 2026-11-10 (Signing a contract from a link or a new tab)
 
 - **Fixed:** opening a contract's signing page from a pasted link or in a new tab

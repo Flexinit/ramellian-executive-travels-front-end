@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiGet, apiPost, apiUpload } from '../lib/api';
-import { stashContractId } from '../lib/contracts';
+import { sessionContractId, stashContractId } from '../lib/contracts';
 import { useCartStore } from '../store/cartStore';
 import { signRequest } from './useSignature';
 import { apiErrorMessage } from '../lib/apiError';
@@ -97,12 +97,44 @@ export function useAcceptContract() {
   });
 }
 
+/**
+ * A booking's contract — `GET /payments/bookings/{bookingId}/contract` → `ContractResponse` (local spec 2026-11-11,
+ * closing docs/backend-requests.md items 13/67). Allowed for the booking's renter and owner only (an administrator
+ * gets a 403 "You cannot access this contract"), and nothing until the contract has been drafted, so a refusal just
+ * means "no contract here": `contractId` then falls back to the id this device remembered (`sessionContractId`), if any.
+ * The found contract also seeds `useContract`'s cache, and the pair is remembered for the pages that still read it.
+ *
+ * @param {string} bookingId
+ * @param {{ enabled?: boolean }} [options]
+ * @returns {{ contractId: string|null, contract: object|undefined, isLoading: boolean }}
+ */
+export function useBookingContract(bookingId, { enabled = true } = {}) {
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ['contracts', 'by-booking', bookingId],
+    queryFn: async () => {
+      const contract = await apiGet(`/payments/bookings/${bookingId}/contract`);
+      if (contract?.id) {
+        queryClient.setQueryData(['contracts', contract.id], contract);
+        stashContractId(bookingId, contract.id);
+      }
+      return contract;
+    },
+    enabled: !!bookingId && enabled,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const contract = query.data?.id ? query.data : undefined;
+  return { contractId: contract?.id || sessionContractId(bookingId), contract, isLoading: query.isLoading };
+}
+
 /** Fetches a contract's full detail by id (used on the signature page). */
-export function useContract(contractId) {
+export function useContract(contractId, options = {}) {
   return useQuery({
     queryKey: ['contracts', contractId],
     queryFn: () => apiGet(`/payments/contracts/${contractId}`),
     enabled: !!contractId,
+    ...options,
   });
 }
 

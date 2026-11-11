@@ -86,4 +86,26 @@ describe('ContractDocument', () => {
     await user.click(screen.getByRole('button', { name: /back/i }));
     expect(screen.getByText(/part 2 of 3/i)).toBeInTheDocument();
   });
+
+  it('on a phone, floats Back / Next along the bottom of the screen until the last part', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = (query) => ({ matches: query.includes('max-width'), media: query, addEventListener() {}, removeEventListener() {} });
+    try {
+      const user = userEvent.setup();
+      const rows = Array.from({ length: 30 }, (_, i) => `- Row ${i}: value ${i}`).join('\n');
+      const { container } = render(<ContractDocument contractText={`${TEXT}\n\n## 2. More\n\n${rows}`} staged />);
+
+      const bar = screen.getByRole('region', { name: /contract parts/i });
+      expect(container.contains(bar)).toBe(false); // on the page itself, not inside the contract
+      expect(bar.className).toMatch(/fixed/);
+      await user.click(within(bar).getByRole('button', { name: /^next/i }));
+      await user.click(within(screen.getByRole('region', { name: /contract parts/i })).getByRole('button', { name: /^next/i }));
+
+      // The last part: Back goes back inline, out of the way of the confirmation and signature.
+      expect(screen.queryByRole('region', { name: /contract parts/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+    } finally {
+      window.matchMedia = original;
+    }
+  });
 });

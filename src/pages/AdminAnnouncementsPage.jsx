@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Copy, Mail, Megaphone, Send } from 'lucide-react';
+import Pagination from '../components/ui/Pagination';
+import { usePagination } from '../hooks/usePagination';
 import toast from 'react-hot-toast';
 import PageWrapper from '../components/layout/PageWrapper';
 import PageTitle from '../components/layout/PageTitle';
@@ -40,6 +42,7 @@ export default function AdminAnnouncementsPage() {
   const audienceLabel = AUDIENCES.find((a) => a.value === audience)?.label.toLowerCase();
   const sending = progress.phase === 'sending';
   const finished = progress.phase === 'done';
+  const failedPages = usePagination(progress.failed || [], 10);
 
   const addresses = emailAddresses(recipients);
   const mail = buildMailtoLinks({ addresses, subject: subject.trim(), body: clean.text });
@@ -185,12 +188,13 @@ export default function AdminAnnouncementsPage() {
                   <div className="flex flex-col gap-2">
                     <p className="text-sm text-red-700">{plural(progress.failed.length, 'message', 'messages')} could not be sent:</p>
                     <ul className="text-xs text-muted flex flex-col gap-1" aria-label="Messages that could not be sent">
-                      {progress.failed.map(({ user, reason }) => (
+                      {failedPages.pageItems.map(({ user, reason }) => (
                         <li key={user.id}>
                           <span className="text-ink break-all">{userDisplayName(user)}</span> — {reason}
                         </li>
                       ))}
                     </ul>
+                    <Pagination {...failedPages.props} noun="messages" />
                   </div>
                 )}
                 <div className="flex flex-wrap gap-3">

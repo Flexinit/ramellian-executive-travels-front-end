@@ -15,16 +15,13 @@ import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
-import { useContract, useSignContract, renterSignedAt, ownerSignedAt } from '../hooks/useContract';
+import { useContract, useSignContract, useBookingContract, renterSignedAt, ownerSignedAt } from '../hooks/useContract';
 import { useFilledContract } from '../hooks/useFilledContract';
-import { sessionContractId } from '../lib/contracts';
 import { isBookingUnfulfilled } from '../lib/utils';
 
 /**
- * Renders the (now-paid) contract plus a signature pad. `contractId` comes from what this browser remembered
- * (`sessionContractId`: stashed when the contract was drafted, accepted or opened from its notification) — the
- * live backend's `BookingResponse` has no `contractId` field and there's no lookup by booking
- * (docs/backend-requests.md item 13), so the booking record itself can't supply it.
+ * Renders the (now-paid) contract plus a signature pad. The contract is looked up by booking
+ * (`useBookingContract`), falling back to the id this browser remembered, so the page opens on any device.
  */
 const SIGNATURES_ID = 'contract-signatures';
 
@@ -53,7 +50,7 @@ export default function SignaturePage() {
   }
 
   const { data: booking, isLoading: bookingLoading, isError: bookingError } = useBooking(bookingId, { staleTime: 0, retry: false });
-  const contractId = sessionContractId(bookingId) || booking?.contractId;
+  const { contractId, isLoading: contractLookupLoading } = useBookingContract(bookingId, { enabled: !!booking });
   const vehicleId = booking?.vehicleId || idInAddress;
   const { data: contract, isLoading: contractLoading, isError: contractError } = useContract(contractId);
   // The template's {{fields}} filled in with this booking's details — the same as on the review page.
@@ -70,7 +67,7 @@ export default function SignaturePage() {
     );
   }
 
-  if (bookingLoading || (contractId && contractLoading)) {
+  if (bookingLoading || contractLookupLoading || (contractId && contractLoading)) {
     return (
       <PageWrapper className="flex items-center justify-center min-h-[50vh]">
         <Spinner size="lg" label="Loading contract" />
@@ -86,16 +83,15 @@ export default function SignaturePage() {
     );
   }
 
-  // The booking has no contract id and there's no lookup by booking (docs/backend-requests.md item 13): only a device
-  // that drafted, accepted or opened this contract knows it. Say where it can be opened rather than "could not load".
+  // The backend has no contract for this booking (not drafted yet), or won't show it to this account.
   if (!contractId) {
     return (
       <PageWrapper className="max-w-lg mx-auto min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center">
         <PageTitle title="Sign Contract" />
-        <h1 className="font-heading text-ink text-xl font-bold">Open this contract from where it started</h1>
+        <h1 className="font-heading text-ink text-xl font-bold">No contract to sign yet</h1>
         <p className="text-muted text-sm">
-          This device doesn&apos;t know this booking&apos;s contract yet. Open it from the contract notification, or on
-          the device where you made the booking, and it will open here too from then on.
+          This booking doesn&apos;t have a contract you can sign yet. Its contract is made when the booking is checked out
+          and accepted; you can follow the booking from My Bookings.
         </p>
         <BackLink to="/dashboard/bookings" label="My Bookings" />
       </PageWrapper>

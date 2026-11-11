@@ -43,12 +43,20 @@ describe('Pagination — how many per page', () => {
     const user = userEvent.setup();
     render(<List />);
     await user.selectOptions(screen.getByLabelText('Per page'), '50');
-    expect(screen.queryByRole('button', { name: /next page/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
     expect(screen.getByLabelText('Per page')).toHaveValue('50');
   });
 
-  it('shows nothing for a list shorter than the smallest size', () => {
-    const { container } = render(<List items={ITEMS.slice(0, 4)} />);
+  it('still shows the controls for a list that fits on one page, with Previous and Next disabled', () => {
+    render(<List items={ITEMS.slice(0, 4)} />);
+    expect(screen.getByText(/showing/i)).toHaveTextContent('Showing 1–4 of 4');
+    expect(screen.getByLabelText('Per page')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+  });
+
+  it('shows nothing for an empty list', () => {
+    const { container } = render(<List items={[]} />);
     expect(container.querySelector('nav')).toBeNull();
   });
 });

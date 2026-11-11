@@ -15,7 +15,7 @@ vi.mock('../payment/SignaturePad', () => ({
 }));
 
 describe('VehicleHandoverForm', () => {
-  it('keeps submit disabled until odometer, fuel level and a signature are all given', async () => {
+  it('keeps submit disabled until odometer, its photo, fuel level and a signature are all given', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<VehicleHandoverForm type="pickup" onSubmit={onSubmit} />);
@@ -24,10 +24,11 @@ describe('VehicleHandoverForm', () => {
     expect(submit).toBeDisabled();
 
     await user.type(screen.getByLabelText(/odometer reading/i), '12000');
+    await user.selectOptions(screen.getByLabelText(/fuel level/i), 'HALF');
+    // The stubbed pad reports a signature as soon as it mounts: only the odometer photo is missing now.
     expect(submit).toBeDisabled();
 
-    await user.selectOptions(screen.getByLabelText(/fuel level/i), 'HALF');
-    // The stubbed pad reports a signature as soon as it mounts, so by now every field is set.
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     expect(submit).toBeEnabled();
   });
 
@@ -37,6 +38,7 @@ describe('VehicleHandoverForm', () => {
     render(<VehicleHandoverForm type="return" onSubmit={onSubmit} />);
 
     await user.type(screen.getByLabelText(/odometer reading/i), '12500');
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     await user.selectOptions(screen.getByLabelText(/fuel level/i), 'FULL');
     await user.type(screen.getByLabelText(/condition notes/i), 'Returned clean.');
     await user.click(screen.getByRole('button', { name: /confirm return/i }));
@@ -49,7 +51,9 @@ describe('VehicleHandoverForm', () => {
       damageDescription: '',
       location: '',
       signature: 'data:image/png;base64,aGk=',
+      odometerPhoto: expect.any(File),
     });
+    expect(onSubmit.mock.calls[0][0].odometerPhoto.name).toBe('odometer.jpg');
   });
 
   it('labels the action for the type it was given', () => {

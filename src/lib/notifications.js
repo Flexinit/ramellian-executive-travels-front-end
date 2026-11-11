@@ -23,6 +23,14 @@ function isOwnerSide(notification, { isOwner = false, isRenter = true } = {}) {
   return isOwner && (!isRenter || OWNER_EVENT.test(String(notification?.type || '')));
 }
 
+/** Whether a notification asks its reader to sign a contract — by its type (`CONTRACT_*`, `*_SIGN*`) or its words
+ * ("please sign", "countersign"), whatever its `referenceType` says: the owner's "the renter has signed, please sign
+ * too" may come as a BOOKING notification rather than a CONTRACT one. */
+function isSignRequest(notification) {
+  if (/CONTRACT|SIGN/i.test(String(notification?.type || ''))) return true;
+  return /\b(counter)?sign\b/i.test(`${notification?.title || ''} ${notification?.message || ''}`);
+}
+
 /**
  * Where opening a notification should go, from what it refers to; null when it points at nothing we
  * have a page for. A booking notification goes to the owner's booking page for someone who only
@@ -38,8 +46,11 @@ export function notificationLink(notification, who = {}) {
   const id = notification?.referenceId;
 
   // "Please sign the contract" (sent to the owner, referenceId = the contract): the contract's signing page, which
-  // works out the booking and whose side the reader is on (ContractSignPage).
-  if (refType.includes('CONTRACT') && id) return `/contracts/${id}/sign`;
+  // works out the booking and whose side the reader is on (ContractSignPage). A sign request that refers to a booking
+  // goes there too: that page reads the id as a booking when it isn't a contract.
+  if ((refType.includes('CONTRACT') || (refType.includes('BOOKING') && isSignRequest(notification))) && id) {
+    return `/contracts/${id}/sign`;
+  }
   if (refType.includes('BOOKING') && id) {
     return isOwnerSide(notification, who) ? `/owner/bookings/${id}` : `/dashboard/bookings/${id}`;
   }
@@ -60,7 +71,7 @@ export function notificationLink(notification, who = {}) {
  */
 export function notificationActionLabel(notification, who = {}) {
   const refType = String(notification?.referenceType || '').toUpperCase();
-  if (refType.includes('CONTRACT')) return 'Sign Contract';
+  if (refType.includes('CONTRACT') || (refType.includes('BOOKING') && isSignRequest(notification))) return 'Sign Contract';
   if (refType.includes('BOOKING')) return isOwnerSide(notification, who) ? 'Review Booking' : 'View Booking';
   if (/CHAT|MESSAGE/.test(refType)) return 'Reply';
   return null;

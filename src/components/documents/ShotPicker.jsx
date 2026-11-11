@@ -7,6 +7,7 @@ const ACCEPTED_TYPES = 'image/jpeg,image/png';
 /**
  * One photo's picker: a thumbnail once chosen, or a small dropzone. With `selfie`, a phone opens its front
  * camera straight away; a computer opens the camera window (`WebcamCapture`), with uploading a photo as the fallback.
+ * With `rearCamera` (a photo of something, e.g. the odometer), a phone opens its back camera; a computer picks a file.
  *
  * @param {string} label
  * @param {File} [file]
@@ -14,8 +15,9 @@ const ACCEPTED_TYPES = 'image/jpeg,image/png';
  * @param {function} onClear
  * @param {boolean} [disabled]
  * @param {boolean} [selfie]
+ * @param {boolean} [rearCamera]
  */
-export default function ShotPicker({ label, file, onPick, onClear, disabled = false, selfie = false }) {
+export default function ShotPicker({ label, file, onPick, onClear, disabled = false, selfie = false, rearCamera = false }) {
   const [dragOver, setDragOver] = useState(false);
   const [url, setUrl] = useState(null);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function ShotPicker({ label, file, onPick, onClear, disabled = fa
     return () => URL.revokeObjectURL(objectUrl);
   }, [file]);
 
-  const Icon = selfie ? Camera : Upload;
+  const Icon = selfie || rearCamera ? Camera : Upload;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -78,11 +80,11 @@ export default function ShotPicker({ label, file, onPick, onClear, disabled = fa
             </button>
           )}
           <label className={`${webcam ? 'text-[11px] font-medium text-muted hover:text-ink' : 'text-xs font-semibold text-accent hover:text-accent-hover'} cursor-pointer focus-within:ring-2 focus-within:ring-accent rounded-md px-1`}>
-            {webcam ? 'or upload a photo' : selfie ? 'Take selfie' : 'Choose photo'}
+            {webcam ? 'or upload a photo' : selfie ? 'Take selfie' : rearCamera ? 'Take photo' : 'Choose photo'}
             <input
               type="file"
               accept={ACCEPTED_TYPES}
-              capture={selfie && !webcam ? 'user' : undefined}
+              capture={selfie && !webcam ? 'user' : rearCamera ? 'environment' : undefined}
               aria-label={label}
               className="sr-only"
               disabled={disabled}

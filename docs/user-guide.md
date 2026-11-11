@@ -67,12 +67,20 @@ Vehicles), the
 document tools under a **Documents** heading (Review Documents, Approved Documents, Rejected Documents), plus
 **My Vehicles** and **Fleet Bookings** under a **My Fleet** heading if they also own vehicles.
 
+**Handovers** (left menu; **My Handovers** under My Rentals for an account that also owns cars). The renter
+(`/dashboard/handovers`) and the owner (`/owner/handovers`, under My Fleet) each see every booking with a recorded
+pickup or return, newest trip first: the vehicle and its plate, the dates, the pickup and return records side by
+side (odometer and its photo, fuel, condition, damage, who signed), the kilometres driven between them, and **View
+booking**. A collected booking with nothing recorded is left out.
+
 **Long lists come a page at a time, everywhere.** Every list that grows has the same controls under it: "Showing
 21–40 of 95", **Per page** (10, 25, 50 or 100, plus the list's own default), **Previous** / **Next** and numbered pages.
 They apply to bookings, vehicles, documents, users, roles, templates, messages, notifications, reviews, the audit
 log, payment transactions, payouts (yours and the admin's), refunds, unsettled bookings, the owner's statement
-tables, the Reports **Daily earnings** table, the cars offered in **Change vehicle** and the people in **New message**. A new search or filter goes back to the first page. A printed statement still lists every row. The controls
-only appear once a list is longer than the smallest page size.
+tables, the Reports **Daily earnings** table, the cars offered in **Change vehicle**, the people in **New message**, the admin **Rental Terms**, the people
+**Signed in recently**, the **Handovers** lists, your **Recent activity** (Profile → Security), the payouts in a batch payout and any that
+failed, and the messages an announcement couldn't send. A new search or filter goes back to the first page. A printed statement still lists every row. The controls
+show under every list that has anything in it, even one that fits on a single page (Previous / Next are then greyed out).
 
 **Menus for people with two roles are grouped.** Instead of one long list, related items sit under a heading
 you can click to fold or open (**Administration**, **Finances**, **Vehicles**, **Documents**, **My Fleet**, and for an owner who also rents
@@ -417,7 +425,8 @@ verifying your email (which signs you in), and picks up where you left off.
 7. **Review and accept the owner's contract** — the contract is the one for that vehicle's owner, so it can only be
    shown once the booking exists; it is read, and accepted, just before you pay. There is no contract to read before
    you sign up, because the portal can't fetch an owner's terms without a booking (see `docs/backend-requests.md`).
-   You read it **part by part** with **Next** (it stays at the bottom of the screen) and **Back**; on the last
+   You read it **part by part** with **Next** (it stays at the bottom of the screen; on a phone or tablet
+   **Back** and **Next** float above the bottom menu) and **Back**; on the last
    part, tick **I have read and understood this agreement**, then **Accept & Continue**. Signing works the same
    way, after payment: read to the end, tick the box, then **Sign** takes you to your place in the Signatures
    section to sign and **Submit signature**.
@@ -487,7 +496,9 @@ verifying your email (which signs you in), and picks up where you left off.
    **Your saved signature:** under Profile → **Signature** tab, draw or upload your signature once (agreeing it can be
    used to sign your contracts). When you sign a contract you can then choose **Sign with my saved signature**, or
    **Draw a new one**; when drawing, you can tick **Save this signature for my next contracts**. The owner signs the
-   same contract from their side, and the Signatures section shows each signature's date.
+   same contract from their side, and the Signatures section shows each signature's date. Once you have signed, the owner's
+   notification asking them to sign has a **Sign Contract** button that opens the contract for signing, on any device.
+   The owner's booking page also has **Read & sign** and the contract downloads, found from the booking itself.
    Every step from here on has a back button at the top: the contract goes **Back to checkout**, payment goes
    **Back to contract** (or **View booking** once paid), and signing goes **Back to payment**.
 9. **More than one vehicle** — each vehicle is its own booking (each has its own owner and contract), but they're
@@ -506,7 +517,7 @@ verifying your email (which signs you in), and picks up where you left off.
    (vehicle, dates, status, cost and so on, each labelled) instead of a table row; the admin **Users**, **All
    Vehicles** and **Audit Log** lists do the same. A booking whose contract you left
    unsigned also gets a **Sign contract** button
-   here, back to the signature pad, on the same device the contract was drafted, accepted or opened from its notification (any tab). On another device, the signing page says to open the contract from its notification instead. Each row has a
+   here, back to the signature pad, on any device (it disappears once you have signed). Each row has a
    **View Details** button (the
    row itself is also clickable) that expands it in place — no separate page — with a booking reference, the
    vehicle's pickup location and registration number, the owner's email, exact pickup and drop-off times,
@@ -515,7 +526,9 @@ verifying your email (which signs you in), and picks up where you left off.
    (Confirmed, Active or Completed), its own **Receipt** column offers the same Preview/Download pair the
    payment page itself shows. A notification about a booking still links to its own full page, with the same
    information plus reviews. The same expanded row (and the booking's own page) also has **Record Pickup**
-   once it's Confirmed, or **Record Return** once it's Active: odometer reading, fuel level, condition notes,
+   once it's Confirmed, or **Record Return** once it's Active: odometer reading, a **photo of the odometer**
+   (required; on a phone **Take photo** opens the back camera; it then shows in the booking's **Vehicle Handover**
+   record for you, the owner and administrators, and in the **Handovers** list), fuel level, condition notes,
    whether any damage was noted (with a description), where it happened, and a signature from the owner or
    their dispatcher confirming it's accurate — the backend only accepts this from you, the renter, since
    you're the one actually there with the vehicle at pickup and return. **Record Pickup** stays disabled

@@ -222,7 +222,7 @@ describe('App routing', () => {
       renderWithProviders(<App />, { route });
       const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
       await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
-        'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Add Vehicle', 'Reports', 'Contract Templates',
+        'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Handovers', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Add Vehicle', 'Reports', 'Contract Templates',
         'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles', 'Switch to Renter', 'Back to Main Site',
       ]));
       expect(screen.getAllByRole('navigation', { name: 'Dashboard' })).toHaveLength(1);
@@ -235,7 +235,7 @@ describe('App routing', () => {
         renderWithProviders(<App />, { route });
         const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
         await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
-          'Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles',
+          'Overview', 'Profile', 'My Bookings', 'Handovers', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles',
         ]));
         expect(screen.queryByRole('link', { name: /list your car|rent a car/i })).not.toBeInTheDocument();
       }
@@ -429,7 +429,7 @@ describe('App routing', () => {
           renderWithProviders(<App />, { route });
           const menu = await screen.findByRole('navigation', { name: 'Dashboard' });
           await waitFor(() => expect(within(menu).getAllByRole('link').map((l) => l.textContent)).toEqual([
-            'Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Switch to Car Owner', 'Browse Vehicles',
+            'Overview', 'Profile', 'My Bookings', 'Handovers', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Switch to Car Owner', 'Browse Vehicles',
           ]));
         }
       );
@@ -496,7 +496,7 @@ describe('App routing', () => {
           expect(labels).toEqual([
             'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
             'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Quotations', 'Finances', 'Owner Payouts', 'Refunds', 'Payment Transactions', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
-            'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
+            'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Handovers', 'Booking Calendar',
             'Back to Main Site',
           ]);
         }
@@ -542,7 +542,7 @@ describe('App routing', () => {
         expect(await menuLabels('/admin')).toEqual([
           'Overview', 'Profile', 'Messages', 'Inbox', 'Assistant', 'Users', 'Roles & Permissions', 'All Bookings', 'Reports',
           'Contract Templates', 'Audit Log', 'Announcements', 'Platform Settings', 'Rental Terms', 'Quotations', 'Finances', 'Owner Payouts', 'Refunds', 'Payment Transactions', 'All Vehicles', 'Add Vehicle', 'Vehicle Approvals', 'Approved Vehicles', 'Rejected Vehicles',
-            'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar',
+            'Review Documents', 'Approved Documents', 'Rejected Documents', 'My Vehicles', 'Fleet Bookings', 'Handovers', 'Booking Calendar',
           'Back to Main Site',
         ]);
       });
@@ -565,7 +565,7 @@ describe('App routing', () => {
       it('hides Add Vehicle from an owner who can update vehicles but not create them', async () => {
         signInWith(['CAR_OWNER'], ['BOOKING_READ', 'VEHICLE_UPDATE', 'DOCUMENT_UPLOAD', 'PROFILE_READ']);
         expect(await menuLabels('/owner')).toEqual([
-          'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Reports', 'Contract Templates', 'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles',
+          'Overview', 'Profile', 'My Vehicles', 'Fleet Bookings', 'Handovers', 'Booking Calendar', 'Messages', 'Inbox', 'Assistant', 'Reports', 'Contract Templates', 'Booking Policy', 'Statements', 'Documents', 'Browse Vehicles',
           'Switch to Renter', 'Back to Main Site',
         ]);
       });
@@ -584,12 +584,12 @@ describe('App routing', () => {
 
       it('shows a renter with those permissions My Bookings and Documents', async () => {
         signInWith(['CAR_RENTER'], ['BOOKING_READ', 'DOCUMENT_UPLOAD']);
-        expect(await menuLabels('/dashboard')).toEqual(['Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles']);
+        expect(await menuLabels('/dashboard')).toEqual(['Overview', 'Profile', 'My Bookings', 'Handovers', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles']);
       });
 
       it('judges by role alone when the token carries no permission list, rather than showing an empty menu', async () => {
         signInWith(['CAR_RENTER'], []);
-        expect(await menuLabels('/dashboard')).toEqual(['Overview', 'Profile', 'My Bookings', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles']);
+        expect(await menuLabels('/dashboard')).toEqual(['Overview', 'Profile', 'My Bookings', 'Handovers', 'Messages', 'Inbox', 'Assistant', 'Documents', 'Browse Vehicles']);
       });
     });
 

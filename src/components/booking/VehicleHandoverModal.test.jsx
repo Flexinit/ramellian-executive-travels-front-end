@@ -78,6 +78,7 @@ describe('VehicleHandoverModal — a car cannot be collected until it has been p
     const onClose = vi.fn();
     servePaymentStatus('SUCCESSFUL');
     let pickupRequested = false;
+    const append = vi.spyOn(FormData.prototype, 'append');
     server.use(
       http.post(`${BASE}/handovers/bookings/:bookingId/pickup`, () => {
         pickupRequested = true;
@@ -87,11 +88,15 @@ describe('VehicleHandoverModal — a car cannot be collected until it has been p
     renderModal({ type: 'pickup', onClose });
 
     await user.type(await screen.findByLabelText(/odometer reading/i), '500');
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     await user.selectOptions(screen.getByLabelText(/fuel level/i), 'FULL');
     await user.click(screen.getByRole('button', { name: /confirm pickup/i }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(pickupRequested).toBe(true);
+    // The signature and the odometer photo go up together.
+    expect(append.mock.calls.map(([name]) => name)).toEqual(expect.arrayContaining(['signature', 'odometerPhoto']));
+    append.mockRestore();
   });
 
   it('calls onRecorded, after onClose, once a return is actually saved', async () => {
@@ -106,6 +111,7 @@ describe('VehicleHandoverModal — a car cannot be collected until it has been p
     renderModal({ type: 'return', onClose, onRecorded });
 
     await user.type(await screen.findByLabelText(/odometer reading/i), '900');
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     await user.selectOptions(screen.getByLabelText(/fuel level/i), 'FULL');
     await user.click(screen.getByRole('button', { name: /confirm return/i }));
 

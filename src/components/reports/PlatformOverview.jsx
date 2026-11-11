@@ -6,6 +6,8 @@ import ErrorBanner from '../ui/ErrorBanner';
 import { useAdminUsers } from '../../hooks/useAdminUsers';
 import { usePendingDocuments } from '../../hooks/useAdminDocuments';
 import { useRecentSignIns } from '../../hooks/useAuditLogs';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../ui/Pagination';
 import { useAdminVehicles } from '../../hooks/useVehicles';
 import { needsReview } from '../../lib/vehicleApproval';
 import { recentSignIns, SESSION_MINUTES, userStats, vehicleStats } from '../../lib/platformStats';
@@ -41,6 +43,7 @@ export function SignedInSection() {
   const today = recentSignIns(signIns.data, now, 24 * 60);
   // The audit log is read 200 entries at a time; if all of them are inside the window there may be more.
   const capped = (signIns.data || []).length >= 200 && recent.length > 0;
+  const pages = usePagination(recent, 10);
 
   return (
     <Section
@@ -62,15 +65,17 @@ export function SignedInSection() {
             {recent.length === 0 ? (
               <p className="text-sm text-muted">{signIns.isLoading ? 'Loading…' : 'Nobody has signed in during the last hour.'}</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-ink/5" aria-label="People signed in recently">
-                {recent.slice(0, 10).map((person) => (
-                  <li key={person.email} className="flex items-center justify-between gap-3 py-2 text-sm">
-                    <span className="text-ink break-all">{person.email}</span>
-                    <span className="text-muted text-xs shrink-0">{minutesAgo(person.at, now)}</span>
-                  </li>
-                ))}
-                {recent.length > 10 && <li className="pt-2 text-xs text-muted">and {recent.length - 10} more</li>}
-              </ul>
+              <div className="flex flex-col gap-3">
+                <ul className="flex flex-col divide-y divide-ink/5" aria-label="People signed in recently">
+                  {pages.pageItems.map((person) => (
+                    <li key={person.email} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <span className="text-ink break-all">{person.email}</span>
+                      <span className="text-muted text-xs shrink-0">{minutesAgo(person.at, now)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Pagination {...pages.props} noun="people" />
+              </div>
             )}
           </Card>
         </div>

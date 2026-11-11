@@ -6,6 +6,7 @@ import Textarea from '../ui/Textarea';
 import Button from '../ui/Button';
 import ToggleChip from '../ui/ToggleChip';
 import SignaturePad from '../payment/SignaturePad';
+import ShotPicker from '../documents/ShotPicker';
 import { FUEL_LEVELS, FUEL_LEVEL_LABELS } from '../../lib/constants';
 
 const FUEL_OPTIONS = Object.values(FUEL_LEVELS).map((value) => ({ value, label: FUEL_LEVEL_LABELS[value] }));
@@ -21,7 +22,9 @@ const FUEL_OPTIONS = Object.values(FUEL_LEVELS).map((value) => ({ value, label: 
  * itself — one side alone recording this gives the other nothing to dispute it with later.
  *
  * @param {'pickup'|'return'} type
- * @param {function} onSubmit — ({ odometerReading, fuelLevel, conditionNotes, damageNoted, damageDescription, location, signature })
+ * A photo of the odometer is required too (`odometerPhoto`, a File), so the typed reading is backed by a picture.
+ *
+ * @param {function} onSubmit — ({ odometerReading, fuelLevel, conditionNotes, damageNoted, damageDescription, location, signature, odometerPhoto })
  * @param {boolean} [pending]
  */
 export default function VehicleHandoverForm({ type, onSubmit, pending }) {
@@ -32,9 +35,10 @@ export default function VehicleHandoverForm({ type, onSubmit, pending }) {
   const [damageDescription, setDamageDescription] = useState('');
   const [location, setLocation] = useState('');
   const [signature, setSignature] = useState(null);
+  const [odometerPhoto, setOdometerPhoto] = useState(null);
 
   const odometerValid = odometerReading !== '' && Number(odometerReading) >= 0;
-  const valid = odometerValid && !!fuelLevel && !!signature;
+  const valid = odometerValid && !!odometerPhoto && !!fuelLevel && !!signature;
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -47,6 +51,7 @@ export default function VehicleHandoverForm({ type, onSubmit, pending }) {
       damageDescription: damageNoted ? damageDescription : '',
       location,
       signature,
+      odometerPhoto,
     });
   }
 
@@ -67,6 +72,19 @@ export default function VehicleHandoverForm({ type, onSubmit, pending }) {
         onChange={(e) => setOdometerReading(e.target.value)}
         required
       />
+
+      {/* The reading backed by a picture of the dashboard: the odometer, and the fuel gauge beside it. Required. */}
+      <div className="flex flex-col gap-1">
+        <ShotPicker
+          label="Photo of the odometer *"
+          file={odometerPhoto}
+          onPick={setOdometerPhoto}
+          onClear={() => setOdometerPhoto(null)}
+          disabled={pending}
+          rearCamera
+        />
+        <p className="text-xs text-muted">The dashboard showing the odometer reading clearly (and the fuel gauge if you can).</p>
+      </div>
 
       <Select
         label="Fuel level"

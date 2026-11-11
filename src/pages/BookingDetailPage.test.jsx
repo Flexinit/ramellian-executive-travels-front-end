@@ -100,6 +100,7 @@ describe('BookingDetailPage — recording a return leads straight into a review,
 
     await user.click(await screen.findByRole('button', { name: /record return/i }));
     await user.type(await screen.findByLabelText(/odometer reading/i), '12000');
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     await user.selectOptions(screen.getByLabelText(/fuel level/i), 'FULL');
     await user.click(screen.getByRole('button', { name: /confirm return/i }));
 
@@ -120,6 +121,7 @@ describe('BookingDetailPage — recording a return leads straight into a review,
 
     await user.click(await screen.findByRole('button', { name: /record return/i }));
     await user.type(await screen.findByLabelText(/odometer reading/i), '12000');
+    await user.upload(screen.getByLabelText(/photo of the odometer/i), new File(['odo'], 'odometer.jpg', { type: 'image/jpeg' }));
     await user.selectOptions(screen.getByLabelText(/fuel level/i), 'FULL');
     await user.click(screen.getByRole('button', { name: /confirm return/i }));
 

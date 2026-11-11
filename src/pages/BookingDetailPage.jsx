@@ -9,6 +9,7 @@ import Modal from '../components/ui/Modal';
 import Spinner from '../components/ui/Spinner';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useBooking } from '../hooks/useBookings';
+import { useBookingContract } from '../hooks/useContract';
 import CancelBookingModal from '../components/booking/CancelBookingModal';
 import PostponeBookingModal from '../components/booking/PostponeBookingModal';
 import OverstayPayButton from '../components/payment/OverstayPayButton';
@@ -21,7 +22,6 @@ import VehicleHandoverModal from '../components/booking/VehicleHandoverModal';
 import { useVehicle } from '../hooks/useVehicles';
 import AuthImage from '../components/vehicles/AuthImage';
 import GenericVehiclePlaceholder from '../components/vehicles/GenericVehiclePlaceholder';
-import { sessionContractId } from '../lib/contracts';
 import { formatDateRange, formatDate, formatCurrency, calculateTotalPrice, isBookingUnfulfilled, canRecordPickup } from '../lib/utils';
 import { stripPhoneNumbers } from '../lib/contactGuard';
 import { BOOKING_STATUSES } from '../lib/constants';
@@ -57,11 +57,8 @@ export default function BookingDetailPage() {
     if (booking.status === BOOKING_STATUSES.CONFIRMED && canRecordPickup(booking)) setHandover('pickup');
     setSearchParams({}, { replace: true });
   }, [recordPickup, booking, setSearchParams]);
-  // `BookingResponse` has no `contractId` field (see useContract.js's useContractDraft) — this is only
-  // ever found for a contract drafted earlier in this same browser session (sessionStorage doesn't
-  // survive a closed tab), so an older booking's contract has no download links here. There's no backend
-  // endpoint to look one up by booking id instead — see docs/backend-requests.md item 13.
-  const contractId = sessionContractId(bookingId) || booking?.contractId;
+  // The booking's contract, looked up by booking: its downloads show on any device, not just the one that drafted it.
+  const { contractId } = useBookingContract(bookingId, { enabled: !!booking });
 
   if (isLoading) {
     return (
