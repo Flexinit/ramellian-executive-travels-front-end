@@ -1,13 +1,30 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Pencil, RefreshCw, RotateCcw, Send, XCircle } from 'lucide-react';
+import { CheckCircle2, Pencil, PencilLine, RefreshCw, RotateCcw, Search, Send, XCircle } from 'lucide-react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import Select from '../ui/Select';
 import Textarea from '../ui/Textarea';
 import Modal from '../ui/Modal';
-import { PAYOUT_LABEL, useResolveDisbursement, useSyncDisbursement, useUpdateDisbursement } from '../../hooks/useDisbursements';
+import {
+  PAYOUT_LABEL,
+  useOverrideDisbursementStatus,
+  useQueryDisbursementStatus,
+  useResolveDisbursement,
+  useSyncDisbursement,
+  useUpdateDisbursement,
+} from '../../hooks/useDisbursements';
 import PayoutFormModal from './PayoutFormModal';
 import { apiErrorMessage } from '../../lib/apiError';
 import { formatCurrency } from '../../lib/utils';
+
+const STATUS_OPTIONS = [
+  { value: 'COMPLETED', label: `${PAYOUT_LABEL.COMPLETED} (the owner received it)` },
+  { value: 'FAILED', label: PAYOUT_LABEL.FAILED },
+  { value: 'PENDING', label: `${PAYOUT_LABEL.PENDING} (send it again)` },
+];
+
+// An M-Pesa confirmation code: letters and digits (10 today; allow a little room either side).
+const RECEIPT = /^[A-Z0-9]{8,20}$/;
 
 /**
  * What can be done with one owner payout, wherever it's shown (Owner Payouts, a booking's page) — for when the
@@ -23,6 +40,10 @@ import { formatCurrency } from '../../lib/utils';
  *  - **Check status** on a processing one (`.../sync`).
  *  - **Edit** (to pay or failed): corrects the owner's phone, the amount or notes before sending or retrying
  *    (`PATCH /admin/disbursements/{id}`).
+ *  - **Ask Safaricom** (processing or failed): asks Safaricom what really happened (`.../query-status`) — for a payout
+ *    stuck as Processing, and before **Try again**, so an owner isn't paid twice.
+ *  - **Set status** (processing or failed): sets it outright (`PATCH .../status`), for when Safaricom can't be
+ *    reached. Marking it **Paid** needs the M-Pesa confirmation code, so a payout is never marked paid without proof.
  *
  * @param {object} payout — `DisbursementResponse`
  */
@@ -30,6 +51,12 @@ export default function PayoutActions({ payout }) {
   const resolve = useResolveDisbursement();
   const sync = useSyncDisbursement();
   const update = useUpdateDisbursement();
+  const query = useQueryDisbursementStatus();
+  const override = useOverrideDisbursementStatus();
+  const [setting, setSetting] = useState(false);
+  const [nextStatus, setNextStatus] = useState('');
+  const [receipt, setReceipt] = useState('');
+  const [statusError, setStatusError] = useState(null);
   const [editing, setEditing] = useState(false);
   const [mode, setMode] = useState(null); // 'send' | 'manual' | 'fail'
   const [reference, setReference] = useState('');
@@ -46,6 +73,30 @@ export default function PayoutActions({ payout }) {
   const owner = payout.ownerName || payout.ownerEmail || 'the owner';
   const failed = payout.status === 'FAILED';
   const canAct = payout.status === 'PENDING' || failed;
+  // Stuck or failed: worth asking Safaricom, or setting by hand once the admin has checked the M-Pesa statement.
+  const canInvestigate = payout.status === 'PROCESSING' || failed;
+  const statusOptions = STATUS_OPTIONS.filter((o) => o.value !== payout.status);
+
+  function startSetting() {
+    setNextStatus('');
+    setReceipt('');
+    setStatusError(null);
+    override.reset();
+    setSetting(true);
+  }
+
+  const receiptCode = receipt.trim().toUpperCase();
+  const receiptInvalid = nextStatus === 'COMPLETED' && receiptCode !== '' && !RECEIPT.test(receiptCode);
+  const canSaveStatus = !!nextStatus && (nextStatus !== 'COMPLETED' || RECEIPT.test(receiptCode));
+
+  function saveStatus() {
+    if (!nextStatus) return setStatusError('Choose a status.');
+    if (!canSaveStatus) return undefined;
+    override.mutate(
+      { id: payout.id, status: nextStatus, receipt: nextStatus === 'COMPLETED' ? receiptCode : undefined },
+      { onSuccess: () => setSetting(false) }
+    );
+  }
 
   const canSubmit = mode === 'send' ? true : mode === 'manual' ? reference.trim() : notes.trim();
   const titles = { send: failed ? 'Try the payout again' : 'Send payout now', manual: 'Record a payout made by hand', fail: 'Mark payout as failed' };
@@ -64,6 +115,16 @@ export default function PayoutActions({ payout }) {
         <Button size="sm" variant="outline" loading={sync.isPending} onClick={() => sync.mutate(payout.id)}>
           {!sync.isPending && <RefreshCw size={14} aria-hidden="true" />} Check status
         </Button>
+      )}
+      {canInvestigate && (
+        <>
+          <Button size="sm" variant="outline" loading={query.isPending} disabled={query.isPending} onClick={() => query.mutate(payout.id)}>
+            {!query.isPending && <Search size={14} aria-hidden="true" />} Ask Safaricom
+          </Button>
+          <Button size="sm" variant="outline" onClick={startSetting}>
+            <PencilLine size={14} aria-hidden="true" /> Set status
+          </Button>
+        </>
       )}
       {canAct && (
         <>
@@ -99,6 +160,12 @@ export default function PayoutActions({ payout }) {
       <Modal isOpen={!!mode} onClose={() => setMode(null)} title={mode ? titles[mode] : ''}>
         {mode && (
           <div className="flex flex-col gap-4">
+            {mode === 'send' && failed && (
+              <p role="note" className="rounded-tile border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
+                A payout can show as failed even though the money arrived. Use <strong>Ask Safaricom</strong> first, or
+                check with {owner}, so they aren&apos;t paid twice.
+              </p>
+            )}
             {mode === 'send' ? (
               <p className="text-sm text-ink">
                 Send <strong>{amount}</strong> to <strong>{owner}</strong> through the payment provider now? It shows as{' '}
@@ -136,6 +203,50 @@ export default function PayoutActions({ payout }) {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal isOpen={setting} onClose={() => setSetting(false)} title="Set payout status">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-ink">
+            {amount} to {owner}, now <strong>{(PAYOUT_LABEL[payout.status] || payout.status).toLowerCase()}</strong>. Only
+            when Safaricom can&apos;t be reached and you&apos;ve checked the M-Pesa statement yourself. Try{' '}
+            <strong>Ask Safaricom</strong> first. Nothing is sent from here.
+          </p>
+          <Select
+            label="New status"
+            placeholder="Choose a status"
+            options={statusOptions}
+            value={nextStatus}
+            onChange={(e) => { setNextStatus(e.target.value); setStatusError(null); }}
+            error={statusError}
+          />
+          {nextStatus === 'COMPLETED' && (
+            <Input
+              label="M-Pesa confirmation code"
+              hint="From the M-Pesa statement for this payout, e.g. SGH7XK2ABC. Required."
+              value={receipt}
+              onChange={(e) => setReceipt(e.target.value)}
+              error={receiptInvalid ? 'Letters and numbers only, 8 to 20 characters.' : undefined}
+              autoComplete="off"
+              maxLength={20}
+            />
+          )}
+          {nextStatus === 'PENDING' && (
+            <p className="text-sm text-muted">It goes back to To pay, ready to send or record as paid by hand.</p>
+          )}
+          {override.isError && <p role="alert" className="text-sm text-red-600">{apiErrorMessage(override.error, "Couldn't set the payout's status.")}</p>}
+          <div className="flex flex-wrap gap-3 justify-end">
+            <Button variant="outline" onClick={() => setSetting(false)}>Cancel</Button>
+            <Button
+              variant={nextStatus === 'FAILED' ? 'danger' : 'default'}
+              disabled={!canSaveStatus}
+              loading={override.isPending}
+              onClick={saveStatus}
+            >
+              Save status
+            </Button>
+          </div>
+        </div>
       </Modal>
     </>
   );

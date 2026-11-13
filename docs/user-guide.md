@@ -950,6 +950,12 @@ your permissions" above): an item is only shown if your account holds the permis
     nothing is sent from the portal.
   - **Try again** on a failed payout; **Edit** first to correct the owner's M-Pesa phone, the amount or notes.
   - **Failed** marks it failed with what went wrong.
+  - **Ask Safaricom** (on **Processing** and **Failed**) asks Safaricom what really happened to the payout and updates it.
+    Use it on one stuck in Processing, and **before Try again** on a failed one: a payout can show as failed even though
+    the money arrived, and **Try again** then warns you so the owner isn't paid twice.
+  - **Set status** (on **Processing** and **Failed**) sets it by hand, for when Safaricom can't be reached and you've
+    checked the M-Pesa statement yourself. Choose **Paid**, **Failed** or **To pay** (to send it again). **Paid** needs
+    the payout's M-Pesa confirmation code (letters and numbers, e.g. `SGH7XK2ABC`). Nothing is sent from here.
   - **Batch:** on **To pay** and **Failed**, tick several payouts (or **Select all**). The bar shows how many and the
     total. Then use **Send** to pay them all through the provider, or **Mark … paid by hand** to record them all with one
     payment reference (e.g. a bulk bank transfer). You confirm first. Afterwards it lists any that didn't go through,

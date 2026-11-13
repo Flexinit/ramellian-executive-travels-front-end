@@ -3,6 +3,14 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-13 (Owner payouts: Ask Safaricom and Set status)
+
+- **Added:** on **Owner Payouts** (and a booking's **Owner payout** section), payouts that are **Processing** or
+  **Failed** now have **Ask Safaricom**, which checks with Safaricom what happened to the payout, and **Set status**,
+  which sets it by hand to Paid, Failed or To pay. Marking a payout **Paid** this way needs its M-Pesa confirmation code.
+- **Changed:** **Try again** on a failed payout now warns that the money may have arrived anyway, and suggests
+  **Ask Safaricom** first, so the owner isn't paid twice.
+
 ## 2026-11-11 (Handovers list for renters and owners)
 
 - **Added:** a **Handovers** page in the left menu for renters and for owners (and owners who are administrators),

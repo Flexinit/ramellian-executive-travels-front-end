@@ -14,6 +14,8 @@ import { apiErrorMessage } from '../lib/apiError';
  *  - `POST /admin/disbursements/{id}/trigger` `{ reference, notes? }` — marked paid
  *  - `POST /admin/disbursements/{id}/fail` `{ reference?, notes }` — marked failed
  *  - `POST /admin/disbursements/{id}/sync` — a PROCESSING payout's latest status from the payment provider
+ *  - `POST /admin/disbursements/{id}/query-status` — asks Safaricom what happened to it (local spec 2026-11-13)
+ *  - `PATCH /admin/disbursements/{id}/status?status=&receipt=` — sets its status by hand (local spec 2026-11-13)
  */
 
 export const PAYOUT_LABEL = { PENDING: 'To pay', PROCESSING: 'Processing', COMPLETED: 'Paid', FAILED: 'Failed' };
@@ -121,6 +123,49 @@ export function useSyncDisbursement() {
       toast.success(status ? `Payout status: ${(PAYOUT_LABEL[status] || status).toLowerCase()}.` : 'Payout status checked.');
     },
     onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check the payout's status.")),
+  });
+}
+
+const QUERY_WORD = { PENDING: 'not sent yet', PROCESSING: 'still processing', COMPLETED: 'paid', FAILED: 'failed' };
+
+/**
+ * Asks Safaricom directly what happened to a payout — `POST /admin/disbursements/{id}/query-status` →
+ * `DisbursementResponse` (local spec 2026-11-13). For a payout stuck as Processing (the B2C result never came back),
+ * and before **Try again** on a failed one, so an owner whose earlier payout actually went through isn't paid twice.
+ * How it differs from `.../sync` isn't documented (docs/backend-requests.md item 70).
+ */
+export function useQueryDisbursementStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiPost(`/admin/disbursements/${id}/query-status`),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: KEY });
+      const status = updated?.status;
+      toast.success(status ? `Safaricom says this payout is ${QUERY_WORD[status] || status.toLowerCase()}.` : 'Checked with Safaricom.');
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check this payout with Safaricom.")),
+  });
+}
+
+/**
+ * Sets a payout's status by hand (admin only) — `PATCH /admin/disbursements/{id}/status?status=&receipt=` →
+ * `DisbursementResponse` (local spec 2026-11-13). `status` is a plain string in the spec; the portal sends the payout
+ * statuses it reads back (`COMPLETED`, `FAILED`, `PENDING`). `receipt` is the M-Pesa confirmation code, which the portal
+ * requires for COMPLETED so a payout is never marked paid without proof.
+ */
+export function useOverrideDisbursementStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, receipt }) => {
+      const query = new URLSearchParams({ status });
+      if (receipt) query.set('receipt', receipt);
+      return apiPatch(`/admin/disbursements/${id}/status?${query}`);
+    },
+    onSuccess: (updated, { status }) => {
+      queryClient.invalidateQueries({ queryKey: KEY });
+      const now = updated?.status || status;
+      toast.success(`Payout status set to ${(PAYOUT_LABEL[now] || now).toLowerCase()}.`);
+    },
   });
 }
 

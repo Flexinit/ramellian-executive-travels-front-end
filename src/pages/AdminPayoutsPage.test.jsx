@@ -243,4 +243,100 @@ describe('AdminPayoutsPage', () => {
     await screen.findByText('Toyota Prado');
     expect(screen.queryByLabelText(/select all/i)).not.toBeInTheDocument();
   });
+
+  it('asks Safaricom about a stuck payout with POST /admin/disbursements/{id}/query-status', async () => {
+    const user = userEvent.setup();
+    let queried = false;
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'PROCESSING' && !queried ? [PAYOUT({ status: 'PROCESSING' })] : [])),
+      http.post(`${BASE}/admin/disbursements/d1/query-status`, () => {
+        queried = true;
+        return HttpResponse.json(PAYOUT({ status: 'COMPLETED', reference: 'SGH7XK2ABC' }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByRole('radio', { name: 'Processing' }));
+    await user.click(await screen.findByRole('button', { name: /ask safaricom/i }));
+
+    expect(await screen.findByText('Safaricom says this payout is paid.')).toBeInTheDocument();
+    expect(queried).toBe(true);
+  });
+
+  it('warns before Try again on a failed payout, and offers Ask Safaricom there', async () => {
+    const user = userEvent.setup();
+    server.use(http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+      HttpResponse.json(new URL(request.url).searchParams.get('status') === 'FAILED' ? [PAYOUT({ status: 'FAILED' })] : [])));
+    renderUi();
+
+    await user.click(await screen.findByRole('radio', { name: 'Failed' }));
+    expect(await screen.findByRole('button', { name: /ask safaricom/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(screen.getByRole('note')).toHaveTextContent(/even though the money arrived/i);
+  });
+
+  it('sets a payout as paid only with an M-Pesa confirmation code — PATCH .../status?status=COMPLETED&receipt=', async () => {
+    const user = userEvent.setup();
+    let asked;
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'PROCESSING' ? [PAYOUT({ status: 'PROCESSING' })] : [])),
+      http.patch(`${BASE}/admin/disbursements/d1/status`, ({ request }) => {
+        asked = Object.fromEntries(new URL(request.url).searchParams);
+        return HttpResponse.json(PAYOUT({ status: 'COMPLETED', reference: asked.receipt }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByRole('radio', { name: 'Processing' }));
+    await user.click(await screen.findByRole('button', { name: /set status/i }));
+    const dialog = screen.getByRole('dialog');
+    const picker = within(dialog).getByLabelText('New status');
+    // The current status isn't offered.
+    expect(Array.from(picker.options).map((o) => o.value)).not.toContain('PROCESSING');
+    await user.selectOptions(picker, 'COMPLETED');
+
+    const save = within(dialog).getByRole('button', { name: 'Save status' });
+    expect(save).toBeDisabled();
+    await user.type(within(dialog).getByLabelText('M-Pesa confirmation code'), 'abc');
+    expect(within(dialog).getByText(/letters and numbers only/i)).toBeInTheDocument();
+    expect(save).toBeDisabled();
+    await user.type(within(dialog).getByLabelText('M-Pesa confirmation code'), 'sgh7xk2');
+    await user.click(save);
+
+    await waitFor(() => expect(asked).toEqual({ status: 'COMPLETED', receipt: 'ABCSGH7XK2' }));
+    expect(await screen.findByText('Payout status set to paid.')).toBeInTheDocument();
+  });
+
+  it('sets a failed payout back to To pay without a receipt', async () => {
+    const user = userEvent.setup();
+    let asked;
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'FAILED' ? [PAYOUT({ status: 'FAILED' })] : [])),
+      http.patch(`${BASE}/admin/disbursements/d1/status`, ({ request }) => {
+        asked = Object.fromEntries(new URL(request.url).searchParams);
+        return HttpResponse.json(PAYOUT({ status: 'PENDING' }));
+      })
+    );
+    renderUi();
+
+    await user.click(await screen.findByRole('radio', { name: 'Failed' }));
+    await user.click(await screen.findByRole('button', { name: /set status/i }));
+    const dialog = screen.getByRole('dialog');
+    await user.selectOptions(within(dialog).getByLabelText('New status'), 'PENDING');
+    expect(within(dialog).queryByLabelText('M-Pesa confirmation code')).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Save status' }));
+
+    await waitFor(() => expect(asked).toEqual({ status: 'PENDING' }));
+  });
+
+  it("doesn't offer Ask Safaricom or Set status on a payout still to pay", async () => {
+    server.use(http.get(`${BASE}/admin/disbursements`, () => HttpResponse.json([PAYOUT()])));
+    renderUi();
+
+    expect(await screen.findByRole('button', { name: /send payout now/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ask safaricom|set status/i })).not.toBeInTheDocument();
+  });
 });

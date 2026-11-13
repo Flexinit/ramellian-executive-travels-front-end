@@ -1773,3 +1773,31 @@ live, no owner test account.
 `GET /audit-logs/mine?page=0&size=5&sort=createdAt,desc` and gets 403, so the tab says "Your activity isn't
 available right now". **Ask:** let every signed-in person read their own entries (it is "mine"), without needing
 the admin audit permission.
+
+## 70. Payout status query and override — consumed 2026-11-13
+
+Checked the local backend's spec (`http://192.168.8.9:8090/v3/api-docs`, 2026-11-13). Compared with production
+(`102.68.87.231:8090`), it has two new endpoints, both on `disbursement-controller`. Nothing else changed:
+- **`POST /admin/disbursements/{id}/query-status`** → `DisbursementResponse`: **consumed** as **Ask Safaricom** on
+  Processing and Failed payouts (Owner Payouts and a booking's Owner payout section). **Try again** on a failed payout
+  now tells the admin to use it first.
+- **`PATCH /admin/disbursements/{id}/status?status=&receipt=`** → `DisbursementResponse`: **consumed** as **Set status**
+  on Processing and Failed payouts. The portal sends `COMPLETED`, `FAILED` or `PENDING`, the statuses
+  `DisbursementResponse.status` uses. For `COMPLETED` it requires `receipt`, the M-Pesa confirmation code (upper-cased,
+  8–20 letters/digits). It never offers the payout's current status.
+
+Production doesn't have them yet, so on production these buttons will fail (404) until the backend is deployed.
+
+**Please confirm:**
+- **Status values.** `status` is a plain string in the spec. Does the override accept the payout statuses (`COMPLETED`,
+  `FAILED`, `PENDING`), or the payment ones (`SUCCESSFUL`…)? An enum in the spec would settle it.
+- **`query-status` vs `sync`.** What's the difference? The portal assumes `query-status` asks Safaricom directly (the
+  M-Pesa Transaction Status API) and `sync` re-reads the stored result. Does `query-status` also work for a payout sent
+  through **Pesapal**? And does it answer at once, or only start the query, with the result arriving later through a
+  callback (so the status may still read Processing straight after)?
+- **Safeguards on the backend too.** Please reject `COMPLETED` without a `receipt`, and reject an override on a
+  payout that's already COMPLETED. The portal doesn't offer that, but the API shouldn't allow it either, because it
+  could hide a payout or get one paid twice. Is the override recorded in the audit log (who, when, from what)?
+- **`trigger` on a FAILED payout** (**Try again**): does it check with Safaricom first, so a payout that really
+  arrived isn't sent twice?
+
