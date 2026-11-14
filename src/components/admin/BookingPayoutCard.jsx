@@ -6,6 +6,7 @@ import Spinner from '../ui/Spinner';
 import ErrorBanner from '../ui/ErrorBanner';
 import { DetailList, DetailRow } from '../ui/DetailList';
 import PayoutActions from './PayoutActions';
+import PayoutNotice from './PayoutNotice';
 import PayoutFormModal from './PayoutFormModal';
 import Button from '../ui/Button';
 import { PAYOUT_LABEL, PAYOUT_VARIANT, useBookingDisbursement, useCreateDisbursement } from '../../hooks/useDisbursements';
@@ -37,6 +38,9 @@ export default function BookingPayoutCard({ booking }) {
         </h2>
         {payout && <Badge label={PAYOUT_LABEL[payout.status] || payout.status} variant={PAYOUT_VARIANT[payout.status] || 'neutral'} />}
       </div>
+
+      {/* This booking's last payout result, and the 60-second countdown while a sent payout waits for Safaricom. */}
+      <PayoutNotice bookingId={booking.id} />
 
       {isLoading ? (
         <div className="flex justify-center py-4"><Spinner label="Loading the payout" /></div>

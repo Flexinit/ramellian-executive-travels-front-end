@@ -3,6 +3,20 @@
 Tracks changes to [user-guide.md](./user-guide.md). One entry per update, newest
 first.
 
+## 2026-11-14 (Owner payouts: results stay on screen; countdown in a banner)
+
+- **Changed:** payout results (sent, paid, failed, recorded by hand, created, edited, what Safaricom said) now show in a
+  banner at the top of Owner Payouts, and in a booking's **Owner payout** section, that stays until you close it,
+  instead of a message that disappeared after a few seconds.
+- **Changed:** the 60-second countdown after sending a payout now also shows in that banner, so it stays visible after
+  the window is closed. It now covers batch **Send** too, ending with how many were paid, failed or still processing.
+
+## 2026-11-13 (Owner payouts: 60-second countdown after sending)
+
+- **Added:** after **Send payout now** or **Try again**, a 60-second countdown waits for Safaricom to confirm the
+  payout, then says Paid (with the M-Pesa ref), Failed (with the reason) or still Processing, and warns not to send it
+  again. Closing it doesn't stop the payout.
+
 ## 2026-11-13 (Owner payouts: Ask Safaricom and Set status)
 
 - **Added:** on **Owner Payouts** (and a booking's **Owner payout** section), payouts that are **Processing** or

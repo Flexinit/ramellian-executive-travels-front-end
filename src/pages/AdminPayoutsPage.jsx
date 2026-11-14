@@ -16,6 +16,8 @@ import { usePagination } from '../hooks/usePagination';
 import PayoutActions from '../components/admin/PayoutActions';
 import CreatePayoutModal from '../components/admin/CreatePayoutModal';
 import BatchPayoutModal from '../components/admin/BatchPayoutModal';
+import PayoutSendProgress from '../components/admin/PayoutSendProgress';
+import PayoutNotice from '../components/admin/PayoutNotice';
 import { PAYOUT_LABEL, PAYOUT_VARIANT, useDisbursements } from '../hooks/useDisbursements';
 import { apiErrorMessage } from '../lib/apiError';
 import { formatCurrency, formatDateTime } from '../lib/utils';
@@ -38,6 +40,8 @@ export default function AdminPayoutsPage() {
   const [creating, setCreating] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
   const [batchKind, setBatchKind] = useState(null);
+  // The minute after sending a payout: held here, since the payout leaves this tab's list once it's sent.
+  const [showProgress, setShowProgress] = useState(false);
   const { data, isLoading, isError, error, refetch } = useDisbursements(status);
   const list = Array.isArray(data) ? data : [];
   // A page at a time; Select all still means every payout in this status, on every page.
@@ -78,6 +82,9 @@ export default function AdminPayoutsPage() {
           </Button>
         </div>
         <CreatePayoutModal isOpen={creating} onClose={() => setCreating(false)} />
+        <PayoutSendProgress isOpen={showProgress} onClose={() => setShowProgress(false)} />
+        {/* The last payout result, and the 60-second countdown while sent payouts wait for Safaricom. */}
+        <PayoutNotice />
         <BatchPayoutModal kind={batchKind} payouts={chosen} onClose={() => setBatchKind(null)} onFinished={() => setSelected(new Set())} />
 
         <SegmentedControl
@@ -155,7 +162,7 @@ export default function AdminPayoutsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 shrink-0">
                   <span className="text-lg font-bold text-ink tabular-nums">{formatCurrency(d.amount ?? 0)}</span>
-                  <PayoutActions payout={d} />
+                  <PayoutActions payout={d} onSent={() => setShowProgress(true)} />
                 </div>
               </Card>
             ))}

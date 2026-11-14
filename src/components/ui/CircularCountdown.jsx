@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const SIZE = 112;
-const STROKE = 7;
-const RADIUS = (SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const SIZES = {
+  lg: { size: 112, stroke: 7, number: 'text-3xl', unit: 'text-xs' },
+  sm: { size: 52, stroke: 4, number: 'text-base', unit: 'text-[10px]' },
+};
 
 /**
  * A round countdown clock: a ring that drains as time runs out, with the
@@ -14,8 +14,12 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  * @param {number} [durationSeconds=60]
  * @param {function} [onExpire]
  * @param {string} [label] — accessible description, e.g. "left to enter your code"
+ * @param {'lg'|'sm'} [size='lg'] — `sm` fits in a banner or a row
  */
-export default function CircularCountdown({ startedAt, durationSeconds = 60, onExpire, label = 'left' }) {
+export default function CircularCountdown({ startedAt, durationSeconds = 60, onExpire, label = 'left', size = 'lg' }) {
+  const { size: SIZE, stroke: STROKE, number, unit } = SIZES[size] || SIZES.lg;
+  const RADIUS = (SIZE - STROKE) / 2;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
   const endsAt = startedAt + durationSeconds * 1000;
   const remainingNow = () => Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
   const [remaining, setRemaining] = useState(remainingNow);
@@ -65,8 +69,8 @@ export default function CircularCountdown({ startedAt, durationSeconds = 60, onE
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
-        <span className={`font-heading text-3xl font-bold tabular-nums ${urgent ? 'text-red-600' : 'text-ink'}`}>{remaining}</span>
-        <span className="text-xs text-muted -mt-0.5">sec</span>
+        <span className={`font-heading ${number} font-bold tabular-nums leading-none ${urgent ? 'text-red-600' : 'text-ink'}`}>{remaining}</span>
+        <span className={`${unit} text-muted`}>sec</span>
       </div>
     </div>
   );

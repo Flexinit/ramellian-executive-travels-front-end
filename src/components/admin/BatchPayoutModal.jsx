@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import Pagination from '../ui/Pagination';
 import { usePagination } from '../../hooks/usePagination';
@@ -7,13 +8,15 @@ import Input from '../ui/Input';
 import Textarea from '../ui/Textarea';
 import Button from '../ui/Button';
 import { PAYOUT_LABEL, useBatchResolveDisbursements } from '../../hooks/useDisbursements';
+import { postPayoutNotice, startPayoutWatch } from '../../hooks/usePayoutNotice';
 import { formatCurrency } from '../../lib/utils';
 
 /**
  * Batch payouts (product owner, 2026-10-27): the payouts ticked on Owner Payouts, all at once — **Send** them through
  * the payment provider, or record them as **already paid by hand** with one reference (a bulk bank transfer). Confirmed
  * first with the count and total, since it moves money; then progress, then what went through and what didn't (with
- * the backend's reason), so a failed one can be fixed and retried on its own.
+ * the backend's reason), so a failed one can be fixed and retried on its own. Payouts sent start the page's 60-second
+ * wait for Safaricom (`startPayoutWatch`, shown in the `PayoutNotice` banner); ones recorded by hand are reported there too.
  *
  * @param {'send'|'manual'|null} kind — which batch action; `null` closes it
  * @param {object[]} payouts — the selected `DisbursementResponse`s
@@ -22,6 +25,7 @@ import { formatCurrency } from '../../lib/utils';
  */
 export default function BatchPayoutModal({ kind, payouts: selected, onClose, onFinished }) {
   const batch = useBatchResolveDisbursements();
+  const queryClient = useQueryClient();
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
   const [progress, setProgress] = useState(0);
@@ -55,6 +59,14 @@ export default function BatchPayoutModal({ kind, payouts: selected, onClose, onF
       {
         onSuccess: (outcome) => {
           setResult(outcome);
+          const done = outcome.done.map(({ payout, updated }) => ({ ...payout, ...(updated || {}) }));
+          if (done.length && kind === 'send') startPayoutWatch(queryClient, done.map((p) => ({ ...p, status: p.status || 'PROCESSING' })));
+          else if (done.length) {
+            postPayoutNotice(queryClient, {
+              payouts: done, tone: 'success', title: `${done.length} recorded as paid`,
+              message: `Marked as paid by hand${reference.trim() ? ` (ref ${reference.trim()})` : ''}. Nothing was sent from the portal.`,
+            });
+          }
           onFinished?.();
         },
       }
@@ -73,7 +85,7 @@ export default function BatchPayoutModal({ kind, payouts: selected, onClose, onF
               <span>
                 {kind === 'manual'
                   ? `${result.done.length} recorded as paid.`
-                  : `${result.done.length} sent${result.done.some((d) => d.updated?.status === 'PROCESSING') ? ` — they show as ${PAYOUT_LABEL.PROCESSING} until the provider confirms them` : ''}.`}
+                  : `${result.done.length} sent${result.done.some((d) => d.updated?.status === 'PROCESSING') ? ` — they show as ${PAYOUT_LABEL.PROCESSING} until the provider confirms them` : ''}. The 60-second countdown for Safaricom's answer is at the top of the page.`}
               </span>
             </p>
           )}

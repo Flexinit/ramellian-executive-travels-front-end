@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
 import { apiGet, apiPatch, apiPost } from '../lib/api';
 import { apiErrorMessage } from '../lib/apiError';
+import { postPayoutNotice, startPayoutWatch, toneFor } from './usePayoutNotice';
 
 /**
  * Owner payouts — `disbursement-controller` (live spec 2026-10-26), admin only. A payout (`DisbursementResponse`:
@@ -16,6 +16,8 @@ import { apiErrorMessage } from '../lib/apiError';
  *  - `POST /admin/disbursements/{id}/sync` — a PROCESSING payout's latest status from the payment provider
  *  - `POST /admin/disbursements/{id}/query-status` — asks Safaricom what happened to it (local spec 2026-11-13)
  *  - `PATCH /admin/disbursements/{id}/status?status=&receipt=` — sets its status by hand (local spec 2026-11-13)
+ *
+ * Results show as a banner that stays until dismissed (`usePayoutNotice`), not a toast that fades — these are money.
  */
 
 export const PAYOUT_LABEL = { PENDING: 'To pay', PROCESSING: 'Processing', COMPLETED: 'Paid', FAILED: 'Failed' };
@@ -28,8 +30,11 @@ export function useDisbursements(status, { enabled = true } = {}) {
   return useQuery({ queryKey: [...KEY, status], queryFn: () => apiGet('/admin/disbursements', { status }), enabled });
 }
 
-/** One booking's payout — `null` while there isn't one yet (pickup not recorded). */
-export function useBookingDisbursement(bookingId, { enabled = true } = {}) {
+/**
+ * One booking's payout — `null` while there isn't one yet (pickup not recorded). `refetchInterval` re-reads it while
+ * re-reading it on a schedule.
+ */
+export function useBookingDisbursement(bookingId, { enabled = true, refetchInterval = false } = {}) {
   return useQuery({
     queryKey: [...KEY, 'booking', bookingId],
     queryFn: async () => {
@@ -41,6 +46,7 @@ export function useBookingDisbursement(bookingId, { enabled = true } = {}) {
       }
     },
     enabled: !!bookingId && enabled,
+    refetchInterval,
     retry: false,
   });
 }
@@ -48,24 +54,23 @@ export function useBookingDisbursement(bookingId, { enabled = true } = {}) {
 /**
  * Acts on a payout: `action: 'trigger'` sends it (no reference — the system pays through the provider, `kind: 'send'`)
  * or records one paid by hand (with the payment's reference, `kind: 'manual'`); `'fail'` marks it failed with what went
- * wrong. The toast says what the backend reports back.
+ * wrong. A payout sent through the provider starts the 60-second wait for Safaricom (`startPayoutWatch`); the rest say
+ * what the backend reports back, in the banner.
  */
 export function useResolveDisbursement() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, action, reference, notes }) =>
       apiPost(`/admin/disbursements/${id}/${action}`, { ...(reference ? { reference } : {}), ...(notes ? { notes } : {}) }),
-    onSuccess: (updated, { action, kind }) => {
+    onSuccess: (updated, { id, action, kind, reference, payout }) => {
       queryClient.invalidateQueries({ queryKey: KEY });
-      if (action === 'fail') return toast.success('Payout marked as failed.');
-      if (kind === 'send') {
-        const status = updated?.status;
-        return toast.success(
-          status === 'PROCESSING' ? 'Payout sent — it shows as Processing until the provider confirms it.'
-            : status ? `Payout sent — now ${(PAYOUT_LABEL[status] || status).toLowerCase()}.` : 'Payout sent.'
-        );
-      }
-      return toast.success('Payment recorded — payout marked as paid.');
+      const p = { ...(payout || { id }), ...(updated || {}) };
+      if (action === 'fail') return postPayoutNotice(queryClient, { payout: p, tone: 'warning', title: 'Payout marked as failed', message: p.notes || null });
+      if (kind === 'send') return startPayoutWatch(queryClient, [{ ...p, status: p.status || 'PROCESSING' }]);
+      return postPayoutNotice(queryClient, {
+        payout: p, tone: 'success', title: 'Payment recorded',
+        message: `Marked as paid by hand${reference ? ` (ref ${reference})` : ''}. Nothing was sent from the portal.`,
+      });
     },
   });
 }
@@ -85,9 +90,9 @@ export function useCreateDisbursement() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ bookingId, ...fields }) => apiPost(`/admin/disbursements/bookings/${bookingId}`, cleanBody(fields)),
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: KEY });
-      toast.success('Payout created — it is ready to send.');
+      postPayoutNotice(queryClient, { payout: created, tone: 'success', title: 'Payout created', message: "It's under To pay, ready to send." });
     },
   });
 }
@@ -100,9 +105,9 @@ export function useUpdateDisbursement() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...fields }) => apiPatch(`/admin/disbursements/${id}`, cleanBody(fields)),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: KEY });
-      toast.success('Payout updated.');
+      postPayoutNotice(queryClient, { payout: updated, tone: 'success', title: 'Payout updated', message: null });
     },
   });
 }
@@ -120,9 +125,13 @@ export function useSyncDisbursement() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: KEY });
       const status = updated?.status;
-      toast.success(status ? `Payout status: ${(PAYOUT_LABEL[status] || status).toLowerCase()}.` : 'Payout status checked.');
+      postPayoutNotice(queryClient, {
+        payout: updated, tone: toneFor(status),
+        title: status ? `Payout status: ${(PAYOUT_LABEL[status] || status).toLowerCase()}` : 'Payout status checked',
+        message: updated?.reference && status === 'COMPLETED' ? `M-Pesa ref ${updated.reference}.` : null,
+      });
     },
-    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check the payout's status.")),
+    onError: (error) => postPayoutNotice(queryClient, { tone: 'danger', title: "Couldn't check the payout's status", message: apiErrorMessage(error, 'Please try again.') }),
   });
 }
 
@@ -141,9 +150,13 @@ export function useQueryDisbursementStatus() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: KEY });
       const status = updated?.status;
-      toast.success(status ? `Safaricom says this payout is ${QUERY_WORD[status] || status.toLowerCase()}.` : 'Checked with Safaricom.');
+      postPayoutNotice(queryClient, {
+        payout: updated, tone: toneFor(status),
+        title: status ? `Safaricom says this payout is ${QUERY_WORD[status] || status.toLowerCase()}` : 'Checked with Safaricom',
+        message: updated?.reference && status === 'COMPLETED' ? `M-Pesa ref ${updated.reference}.` : status === 'FAILED' ? updated?.notes || null : null,
+      });
     },
-    onError: (error) => toast.error(apiErrorMessage(error, "Couldn't check this payout with Safaricom.")),
+    onError: (error) => postPayoutNotice(queryClient, { tone: 'danger', title: "Couldn't check this payout with Safaricom", message: apiErrorMessage(error, 'Please try again.') }),
   });
 }
 
@@ -164,7 +177,10 @@ export function useOverrideDisbursementStatus() {
     onSuccess: (updated, { status }) => {
       queryClient.invalidateQueries({ queryKey: KEY });
       const now = updated?.status || status;
-      toast.success(`Payout status set to ${(PAYOUT_LABEL[now] || now).toLowerCase()}.`);
+      postPayoutNotice(queryClient, {
+        payout: updated, tone: toneFor(now), title: `Payout status set to ${(PAYOUT_LABEL[now] || now).toLowerCase()}`,
+        message: now === 'COMPLETED' && updated?.reference ? `M-Pesa ref ${updated.reference}.` : null,
+      });
     },
   });
 }

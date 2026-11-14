@@ -944,8 +944,16 @@ your permissions" above): an item is only shown if your account holds the permis
   Pesapal doesn't report back, **Mark refunded** or **Mark failed** settles it by hand, after you confirm.
 - **Owner Payouts** (`/admin/payouts`) — each booking's payout to its owner, under **To pay**, **Processing**, **Paid**
   and **Failed**. For when the automatic flow needs a hand:
-  - **Send payout now** pays the owner through the payment provider (you confirm first). It shows **Processing** until
-    the provider confirms; **Check status** asks for the latest.
+  - **Send payout now** pays the owner through the payment provider (you confirm first). A **60-second countdown** then
+    waits for Safaricom to confirm it, checking every few seconds. It shows large in a window, and smaller in a banner at
+    the top of Owner Payouts (and in the booking's **Owner payout** section), which stays after you close the window.
+    It ends with **Paid** (with the M-Pesa ref), **Failed** (with the reason) or **Still processing**. Closing the window
+    doesn't stop the payout. Don't send it again while it's processing; if no answer comes within the minute, use
+    **Check status** or **Ask Safaricom** on the **Processing** tab later. **Try again** and batch **Send** show the same
+    countdown (a batch ends with how many were paid, failed or still processing).
+  - **Results stay on screen.** Whatever happens to a payout (sent, paid, failed, recorded by hand, created, edited,
+    what Safaricom said) shows in that banner until you close it with **×** or the next result replaces it. It no
+    longer disappears after a few seconds.
   - **Already paid by hand** records money you sent yourself (M-Pesa, bank) — the payment reference is required, and
     nothing is sent from the portal.
   - **Try again** on a failed payout; **Edit** first to correct the owner's M-Pesa phone, the amount or notes.

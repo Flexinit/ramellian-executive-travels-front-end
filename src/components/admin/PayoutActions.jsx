@@ -14,6 +14,7 @@ import {
   useUpdateDisbursement,
 } from '../../hooks/useDisbursements';
 import PayoutFormModal from './PayoutFormModal';
+import PayoutSendProgress from './PayoutSendProgress';
 import { apiErrorMessage } from '../../lib/apiError';
 import { formatCurrency } from '../../lib/utils';
 
@@ -45,9 +46,14 @@ const RECEIPT = /^[A-Z0-9]{8,20}$/;
  *  - **Set status** (processing or failed): sets it outright (`PATCH .../status`), for when Safaricom can't be
  *    reached. Marking it **Paid** needs the M-Pesa confirmation code, so a payout is never marked paid without proof.
  *
+ * After **Send payout now** / **Try again**, a 60-second countdown waits for Safaricom to confirm it
+ * (`PayoutSendProgress`). A list whose row disappears once the payout is sent (Owner Payouts) passes `onSent` and shows
+ * the countdown itself; otherwise it's shown here.
+ *
  * @param {object} payout — `DisbursementResponse`
+ * @param {function} [onSent] — called once a payout has been sent through the provider
  */
-export default function PayoutActions({ payout }) {
+export default function PayoutActions({ payout, onSent }) {
   const resolve = useResolveDisbursement();
   const sync = useSyncDisbursement();
   const update = useUpdateDisbursement();
@@ -58,6 +64,7 @@ export default function PayoutActions({ payout }) {
   const [receipt, setReceipt] = useState('');
   const [statusError, setStatusError] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [mode, setMode] = useState(null); // 'send' | 'manual' | 'fail'
   const [reference, setReference] = useState('');
   const [notes, setNotes] = useState('');
@@ -104,8 +111,15 @@ export default function PayoutActions({ payout }) {
   function submit() {
     const action = mode === 'fail' ? 'fail' : 'trigger';
     resolve.mutate(
-      { id: payout.id, action, kind: mode, reference: mode === 'send' ? '' : reference.trim(), notes: notes.trim() },
-      { onSuccess: () => setMode(null) }
+      { id: payout.id, payout, action, kind: mode, reference: mode === 'send' ? '' : reference.trim(), notes: notes.trim() },
+      {
+        onSuccess: () => {
+          setMode(null);
+          if (mode !== 'send') return;
+          if (onSent) onSent();
+          else setShowProgress(true);
+        },
+      }
     );
   }
 
@@ -145,6 +159,8 @@ export default function PayoutActions({ payout }) {
           )}
         </>
       )}
+
+      {!onSent && <PayoutSendProgress isOpen={showProgress} onClose={() => setShowProgress(false)} />}
 
       <PayoutFormModal
         isOpen={editing}

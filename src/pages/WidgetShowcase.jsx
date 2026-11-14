@@ -19,6 +19,8 @@ import TypingDots   from '../components/ui/TypingDots';
 import Skeleton     from '../components/ui/Skeleton';
 import EmptyState   from '../components/ui/EmptyState';
 import ErrorBanner  from '../components/ui/ErrorBanner';
+import NoticeBanner from '../components/ui/NoticeBanner';
+import CircularCountdown from '../components/ui/CircularCountdown';
 import Logo         from '../components/ui/Logo';
 import Avatar       from '../components/ui/Avatar';
 import Divider      from '../components/ui/Divider';
@@ -324,6 +326,21 @@ export default function WidgetShowcase() {
         <div className="w-full max-w-lg flex flex-col gap-3">
           <ErrorBanner message="Failed to load vehicles. Please check your connection." onRetry={() => {}} />
           <ErrorBanner message="Your session has expired. Please log in again." />
+        </div>
+      </Section>
+
+      {/* Notice Banner */}
+      <Section title="Notice Banner">
+        <div className="w-full max-w-lg flex flex-col gap-3">
+          <NoticeBanner tone="success" title="Payout paid" meta="KES 9,000 to Ann Owner · at 02:14 PM" onDismiss={() => {}}>
+            The owner has received it. M-Pesa ref SGH7XK2ABC.
+          </NoticeBanner>
+          <NoticeBanner tone="warning" title="Waiting for Safaricom" meta="KES 9,000 to Ann Owner · sent at 02:13 PM"
+            aside={<CircularCountdown size="sm" startedAt={Date.now()} durationSeconds={60} />}>
+            The payout has been sent. Don&apos;t send it again.
+          </NoticeBanner>
+          <NoticeBanner tone="danger" title="Payout failed" onDismiss={() => {}}>Invalid phone number.</NoticeBanner>
+          <NoticeBanner tone="info" title="Payout status: to pay" onDismiss={() => {}} />
         </div>
       </Section>
 

@@ -32,6 +32,8 @@ function renderUi() {
 }
 
 beforeEach(() => {
+  // Sent payouts are re-read while waiting for Safaricom; a test that cares mocks this itself.
+  server.use(http.get(`${BASE}/admin/disbursements/bookings/:bookingId`, () => new HttpResponse(null, { status: 404 })));
   window.matchMedia = window.matchMedia || (() => ({ matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
 });
 
@@ -71,7 +73,7 @@ describe('AdminPayoutsPage', () => {
     await user.click(await screen.findByRole('radio', { name: 'Processing' }));
     await user.click(await screen.findByRole('button', { name: /check status/i }));
 
-    expect(await screen.findByText('Payout status: paid.')).toBeInTheDocument();
+    expect(await screen.findByText('Payout status: paid')).toBeInTheDocument();
     await waitFor(() => expect(synced).toBe(true));
     await waitFor(() => expect(screen.queryByText('Toyota Prado')).not.toBeInTheDocument());
   });
@@ -114,7 +116,31 @@ describe('AdminPayoutsPage', () => {
     await user.click(screen.getByRole('button', { name: /^send kes/i }));
 
     await waitFor(() => expect(body).toEqual({}));
-    expect(await screen.findByText(/payout sent — it shows as processing/i)).toBeInTheDocument();
+    // The banner that stays: waiting for Safaricom, with its countdown.
+    expect((await screen.findAllByText('Waiting for Safaricom')).length).toBeGreaterThan(0);
+  });
+
+  it('shows the 60-second countdown after sending, even once the payout leaves the To pay list', async () => {
+    const user = userEvent.setup();
+    let sent = false;
+    server.use(
+      http.get(`${BASE}/admin/disbursements`, ({ request }) =>
+        HttpResponse.json(new URL(request.url).searchParams.get('status') === 'PENDING' && !sent ? [PAYOUT()] : [])),
+      http.post(`${BASE}/admin/disbursements/d1/trigger`, () => { sent = true; return HttpResponse.json(PAYOUT({ status: 'PROCESSING' })); }),
+      http.get(`${BASE}/admin/disbursements/bookings/b1`, () => HttpResponse.json(PAYOUT({ status: 'PROCESSING' })))
+    );
+    renderUi();
+
+    await user.click(await screen.findByRole('button', { name: /send payout now/i }));
+    await user.click(screen.getByRole('button', { name: /^send kes/i }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Waiting for Safaricom' });
+    expect(within(dialog).getByRole('timer')).toBeInTheDocument();
+    // The row is gone from To pay, but the countdown stays: in the dialog and in the banner above the list.
+    await waitFor(() => expect(screen.queryByText('Toyota Prado')).not.toBeInTheDocument());
+    expect(screen.getAllByRole('timer')).toHaveLength(2);
+    await user.click(within(dialog).getAllByRole('button', { name: 'Close' }).at(-1));
+    expect(screen.getAllByRole('timer')).toHaveLength(1);
   });
 
   it('offers Try again on a failed payout', async () => {
@@ -260,7 +286,8 @@ describe('AdminPayoutsPage', () => {
     await user.click(await screen.findByRole('radio', { name: 'Processing' }));
     await user.click(await screen.findByRole('button', { name: /ask safaricom/i }));
 
-    expect(await screen.findByText('Safaricom says this payout is paid.')).toBeInTheDocument();
+    expect(await screen.findByText('Safaricom says this payout is paid')).toBeInTheDocument();
+    expect(screen.getByText('M-Pesa ref SGH7XK2ABC.')).toBeInTheDocument();
     expect(queried).toBe(true);
   });
 
@@ -306,7 +333,7 @@ describe('AdminPayoutsPage', () => {
     await user.click(save);
 
     await waitFor(() => expect(asked).toEqual({ status: 'COMPLETED', receipt: 'ABCSGH7XK2' }));
-    expect(await screen.findByText('Payout status set to paid.')).toBeInTheDocument();
+    expect(await screen.findByText('Payout status set to paid')).toBeInTheDocument();
   });
 
   it('sets a failed payout back to To pay without a receipt', async () => {
